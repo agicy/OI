@@ -13,17 +13,42 @@ inline int read(void){
 	return f?-res:res;
 }
 
+const int MAXN=300000+5;
+
+int n,m;
+int a[MAXN];
+ll sum[MAXN];
+
 inline void Read(void);
 inline void Work(void);
 
 int main(void){
+	Read();
+	Work();
 	return 0;
 }
 
 inline void Read(void){
+	n=read(),m=read();
+	for(reg int i=1;i<=n;++i)
+		a[i]=read();
 	return;
 }
 
 inline void Work(void){
+	for(reg int i=1;i<=n;++i)
+		sum[i]=sum[i-1]+a[i];
+	ll ans=a[1];
+	deque<int> Q;
+	Q.push_front(0);
+	for(reg int i=1;i<=n;++i){
+		while(!Q.empty()&&Q.front()+m<i)
+			Q.pop_front();
+		ans=max(ans,sum[i]-sum[Q.front()]);
+		while(!Q.empty()&&sum[Q.back()]>=sum[i])
+			Q.pop_back();
+		Q.push_back((int)i);
+	}
+	printf("%lld\n",ans);
 	return;
 }
