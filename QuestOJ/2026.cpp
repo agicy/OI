@@ -18,49 +18,8 @@ const int MAXN=300000+5;
 const int MAXM=300000+5;
 const int MAXLOG2N=19+1;
 
-struct Edge{
-	int f,t;
-	inline Edge(void){
-		f=t=0;
-		return;
-	}
-	inline Edge(reg int a,reg int b){
-		f=a,t=b;
-		return;
-	}
-};
-
-struct UnionFind{
-	int ID[MAXN];
-	inline void Init(reg int n){
-		for(reg int i=1;i<=n;++i)
-			ID[i]=i;
-		return;
-	}
-	inline int find(reg int x){
-		if(x==ID[x])
-			return x;
-		else
-			return ID[x]=find(ID[x]);
-	}
-	inline void merge(reg int a,reg int b){
-		reg int ra=find(a),rb=find(b);
-		if(ra!=rb)
-			ID[rb]=ra;
-		return;
-	}
-	inline bool search(reg int a,reg int b){
-		return find(a)==find(b);
-	}
-};
-
 int n,m;
-int Q;
-int cnt,head[MAXN],to[MAXN<<1],Next[MAXN<<1];
-bool w[MAXN<<1];
-int tot;
-Edge E[MAXM];
-UnionFind S;
+int cnt,head[MAXM],to[MAXM<<1],w[MAXM<<1],Next[MAXM<<1];
 
 inline void Read(void);
 inline void Work(void);
@@ -71,7 +30,7 @@ int main(void){
 	return 0;
 }
 
-inline void Add_Edge(reg int u,reg int v,reg bool len){
+inline void Add_Edge(reg int u,reg int v,reg int len){
 	Next[++cnt]=head[u];
 	to[cnt]=v;
 	w[cnt]=len;
@@ -80,45 +39,63 @@ inline void Add_Edge(reg int u,reg int v,reg bool len){
 }
 
 inline void Read(void){
-	reg int cnt=0;
 	n=read(),m=read();
-	S.Init(n);
 	for(reg int i=1;i<=m;++i){
 		static int x,y,z;
 		x=read(),y=read(),z=read();
-		if(z==1){
-			if(!S.search(x,y)){
-				++cnt;
-				Add_Edge(x,y,true);
-				Add_Edge(y,x,true);
-				S.merge(x,y);
-			}
-		}
-		else
-			E[++tot]=Edge(x,y);
-	}
-	for(reg int i=1;i<=tot&&cnt<n-1;++i){
-		if(!S.search(E[i].f,E[i].t)){
-			++cnt;
-			Add_Edge(E[i].f,E[i].t,false);
-			Add_Edge(E[i].t,E[i].f,false);
-			S.merge(E[i].f,E[i].t);
-		}
+		Add_Edge(x,y,z);
+		Add_Edge(y,x,z);
 	}
 	return;
 }
 
-int fa[MAXN][MAXLOG2N];
-int dep[MAXN];
+int Time,dfn[MAXN],low[MAXN];
+int top,Stack[MAXN];
+int Tarjan_cnt,color[MAXN];
+
+inline void Tarjan(reg int ID,reg int fa){
+	dfn[ID]=low[ID]=++Time;
+	Stack[++top]=ID;
+	for(reg int i=head[ID];i;i=Next[i]){
+		if(dfn[to[i]]==0){
+			Tarjan(to[i],ID);
+			low[ID]=min(low[ID],low[to[i]]);
+		}
+		else if(to[i]!=fa)
+			low[ID]=min(low[ID],dfn[to[i]]);
+	}
+	if(dfn[ID]==low[ID]){
+		reg int To;
+		++Tarjan_cnt;
+		do{
+			To=Stack[top--];
+			color[To]=Tarjan_cnt;
+		}while(To!=ID);
+	}
+	return;
+}
+
+struct Edge{
+	int to,w;
+	inline Edge(int a,int b){
+		to=a,w=b;
+		return;
+	}
+};
+
+vector<Edge> G[MAXN];
+int fa[MAXN][MAXLOG2N],dep[MAXN];
+int weight[MAXN];
 int dis[MAXN];
 
 inline void DFS(reg int ID,reg int father){
-	dep[ID]=dep[father]+1;
 	fa[ID][0]=father;
-	for(reg int i=head[ID];i;i=Next[i])
-		if(to[i]!=father){
-			dis[to[i]]=dis[ID]+w[i];
-			DFS(to[i],ID);
+	dis[ID]+=weight[ID];
+	dep[ID]=dep[father]+1;
+	for(reg int i=0;i<(int)G[ID].size();++i)
+		if(G[ID][i].to!=father){
+			dis[G[ID][i].to]=dis[ID]+G[ID][i].w;
+			DFS(G[ID][i].to,ID);
 		}
 	return;
 }
@@ -145,15 +122,20 @@ inline int LCA(int x,int y){
 }
 
 inline void Work(void){
+	Tarjan(1,0);
+	for(reg int i=1;i<=n;++i)
+		for(reg int j=head[i];j;j=Next[j])
+			if(color[i]==color[to[j]])
+				weight[color[i]]+=w[j];
+			else
+				G[color[i]].push_back(Edge(color[to[j]],w[j]));
 	DFS(1,0);
 	LCA_Init();
-	Q=read();
+	reg int Q=read();
 	while(Q--){
-		static int s,t,lca;
-		s=read(),t=read();
-		lca=LCA(s,t);
-		reg int sum=dis[s]+dis[t]-dis[lca]*2;
-		puts(sum?"YES":"NO");
+		static int u,v,lca;
+		u=color[read()],v=color[read()],lca=LCA(u,v);
+		puts(dis[u]+dis[v]-(dis[lca]<<1)+weight[lca]>0?"YES":"NO");
 	}
 	return;
 }
