@@ -13,7 +13,11 @@ inline int read(void){
 	return f?-res:res;
 }
 
-const int MAXN=200000+5;
+const int MAXM=1000+5;
+const int MAXN=2000+5;
+
+int m,n;
+int a[MAXM][MAXN];
 
 inline void Read(void);
 inline void Work(void);
@@ -28,11 +32,63 @@ int main(void){
 }
 
 inline void Read(void){
-	n=read();
-	
+	m=read(),n=read();
+	for(reg int i=1;i<=m;++i){
+		for(reg int j=1;j<=n;++j)
+			a[i][j]=read();
+		sort(a[i]+1,a[i]+n+1);
+	}
 	return;
 }
 
+struct Node{
+	int val,i,j;
+	bool last;
+	inline Node(void){
+		val=i=j=0,last=false;
+		return;
+	}
+	inline Node(reg int a,reg int b,reg int c,reg bool d){
+		val=a,i=b,j=c,last=d;
+		return;
+	}
+	inline bool operator<(const Node &a)const{
+		return val<a.val;
+	}
+	inline bool operator>(const Node &a)const{
+		return val>a.val;
+	}
+};
+
+int ans[MAXN],t[MAXN];
+int *now;
+
+inline int GetVal(reg int a,reg int b){
+	return ans[a]+now[b];
+}
+
 inline void Work(void){
+	for(reg int i=1;i<=n;++i)
+		ans[i]=a[1][i];
+	for(reg int i=2;i<=m;++i){
+		now=a[i];
+		priority_queue<Node,vector<Node>,greater<Node>/**/> Q;
+		while(!Q.empty())
+			Q.pop();
+		Q.push(Node(GetVal(1,1),1,1,false));
+		for(reg int j=1;j<=n;++j){
+			Node temp=Q.top();
+			Q.pop();
+			reg int i_=temp.i,j_=temp.j;
+			t[j]=GetVal(i_,j_);
+			Q.push(Node(GetVal(i_,j_+1),i_,j_+1,true));
+			if(!temp.last)
+				Q.push(Node(GetVal(i_+1,j_),i_+1,j_,false));
+		}
+		for(reg int j=1;j<=n;++j)
+			ans[j]=t[j];
+	}
+	for(reg int i=1;i<=n;++i)
+		printf("%d%c",ans[i],i==n?'\n':' ');
 	return;
 }
