@@ -1,34 +1,31 @@
 #include<bits/stdc++.h>
 using namespace std;
 #define reg register
-typedef long long ll;
-typedef unsigned long long ull;
-#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
-static char buf[100000],*p1=buf,*p2=buf;
-inline int read(void){
-	reg bool f=false;
-	reg char ch=getchar();
-	reg int res=0;
-	while(ch<'0'||'9'<ch)f|=(ch=='-'),ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
-	return f?-res:res;
-}
 
-inline void Read(void);
-inline void Work(void);
+string a,b;
+
+inline string Solve(string &s,int &_s){
+	++_s;
+	vector<string> V;
+	while(s[_s]=='0')
+		V.push_back(Solve(s,_s));
+	++_s;
+	sort(V.begin(),V.end());
+	string res="0";
+	for(reg int i=0;i<(int)V.size();++i)
+		res+=V[i];
+	res+='1';
+	return res;
+}
 
 int main(void){
-	Read();
-	Work();
+	int T;
+	scanf("%d",&T);
+	while(T--){
+		cin>>a>>b;
+		a='0'+a+'1',b='0'+b+'1';
+		int _a=0,_b=0;
+		puts(Solve(a,_a)==Solve(b,_b)?"same":"different");
+	}
 	return 0;
-}
-
-inline void Read(void){
-	
-	return;
-}
-
-inline void Work(void){
-	
-	return;
 }
