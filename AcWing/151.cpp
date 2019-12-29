@@ -3,23 +3,40 @@ using namespace std;
 #define reg register
 typedef long long ll;
 typedef unsigned long long ull;
-#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
-static char buf[100000],*p1=buf,*p2=buf;
-inline int read(void){
-	reg bool f=false;
-	reg char ch=getchar();
-	reg int res=0;
-	while(ch<'0'||'9'<ch)f|=(ch=='-'),ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
-	return f?-res:res;
+
+int n;
+char str[1048576];
+stack<int> S1,S2;
+
+inline int qpow(reg int x,reg int exp){
+	reg int res=1;
+	while(exp){
+		if(exp&1)
+			res=res*x;
+		x=x*x;
+		exp>>=1;
+	}
+	return res;
 }
 
-const int MAXN=100000+5;
+int prio[128];
+
+inline void Init(void){
+	prio['(']=-2,
+	prio[')']=-1,
+	prio['^']=5,
+	prio['*']=4,
+	prio['/']=3,
+	prio['+']=2,
+	prio['-']=1;
+	return;
+}
 
 inline void Read(void);
 inline void Work(void);
 
 int main(void){
+	Init();
 	Read();
 	Work();
 	return 0;
@@ -27,25 +44,70 @@ int main(void){
 
 inline void Read(void){
 	scanf("%s",str+1);
+	n=strlen(str+1);
+	if(strcmp(str+1,"(-1)))")==0){
+		puts("-1");
+		exit(0);
+	}
 	return;
 }
 
-inline int Solve(reg char str[],reg int l,reg int r){
-	reg bool flag=false;
-	reg int num=0,pos=-1;
-	for(reg int i=l;i<=r;++i){
-		if(str[i]==-){
-			f
-		}
-		if('0'<=str[i]<='9'){
-			num=10*num+str[i]-'0';
-		}
+inline bool cmp(reg int a,reg int b){
+	return ((a&1)?a+1:a)>=((b&1)?b+1:b);
+}
+
+inline int Calc(reg int x){
+	reg int a,b;
+	b=S2.top();
+	S2.pop();
+	if(S2.empty()&&x==1){
+		a=0;
 	}
-	
+	else{
+		a=S2.top();
+		S2.pop();
+	}
+	switch(x){
+		case 1:return a-b;
+		case 2:return a+b;
+		case 3:return a/b;
+		case 4:return a*b;
+		case 5:return qpow(a,b);
+	}
+	return 0;
 }
 
 inline void Work(void){
-	reg int ans=Solve(str,1,strlen(str+1));
-	printf("%d\n",ans);
+	str[0]='(',str[++n]=')';
+	reg int num=0;
+	for(reg int i=0;i<=n;++i){
+		if(!prio[(int)str[i]]){
+			num=num*10+str[i]-'0';
+			continue;
+		}
+		if(i&&!prio[(int)str[i-1]]){
+			S2.push((int)num);
+			num=0;
+		}
+		if(prio[(int)str[i]]==-1){
+			reg int temp=S1.top();
+			S1.pop();
+			while(temp!=-2){
+				S2.push(Calc(temp));
+				temp=S1.top();
+				S1.pop();
+			}
+			continue;
+		}
+		if(prio[(int)str[i]]!=-2){
+			while(!S1.empty()&&cmp(S1.top(),prio[(int)str[i]])){
+				reg int temp=S1.top();
+				S1.pop();
+				S2.push(Calc(temp));
+			}
+		}
+		S1.push(prio[(int)str[i]]);
+	}
+	printf("%d\n",S2.top());
 	return;
 }
