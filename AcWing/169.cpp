@@ -1,4 +1,3 @@
-#pragma GCC optimize (2)
 #include<bits/stdc++.h>
 using namespace std;
 #define reg register
@@ -6,164 +5,186 @@ typedef long long ll;
 typedef unsigned long long ull;
 #define lowbit(x) ( (x) & ( - (x) ) )
 
-const int SIZE=16;
-const int CSIZE=4;
+const int MAXSIZE=16;
+const int MAXCSIZE=4;
 
-int cnt[1<<SIZE];
-int GetLog[1<<SIZE];
+int cnt[1<<MAXSIZE];
+int p[1<<MAXSIZE];
 
 inline void Init(void){
-	for(reg int i=0;i<(1<<SIZE);++i)
+	for(reg int i=0;i<(1<<MAXSIZE);++i)
 		for(reg int j=i;j;j-=lowbit(j))
 			++cnt[i];
-	for(reg int i=0;i<SIZE;++i)
-		GetLog[1<<i]=i;
+	for(reg int i=0;i<MAXSIZE;++i)
+		p[1<<i]=i;
 	return;
 }
 
 struct Node{
-	int num[SIZE][SIZE];
-	int l[SIZE],r[SIZE],ch[SIZE];
-	int L[SIZE],R[SIZE],CH[SIZE];
-	inline int GetID(reg int a,reg int b){
-		return a/CSIZE*CSIZE+b/CSIZE;
-	}
-	inline void Change(reg int i,reg int j,reg int x){
-		l[i]^=(1<<x);
-		r[j]^=(1<<x);
-		ch[GetID(i,j)]^=(1<<x);
-		L[i]^=(1<<x);
-		R[j]^=(1<<x);
-		CH[GetID(i,j)]^=(1<<x);
-		return;
-	}
-	inline int GetCan(reg int i,reg int j){
-		return l[i]&r[j]&ch[GetID(i,j)];
-	}
-	inline int GetCnt(reg int i,reg int j){
-		if(num[i][j]!=-1)
-			return SIZE;
-		else
-			return cnt[GetCan(i,j)];
-	}
-	inline void draw(reg int i,reg int j,reg int x){
-		num[i][j]=x;
-		Change(i,j,x);
-		return;
-	}
+	int S[MAXSIZE][MAXSIZE];
+	char str[MAXSIZE][MAXSIZE+1];
 	inline int Read(void){
+		for(reg int i=0;i<MAXSIZE;++i)
+			for(reg int j=0;j<MAXSIZE;++j)
+				S[i][j]=(1<<MAXSIZE)-1;
 		reg int res=0;
-		for(reg int i=0;i<SIZE;++i){
-			l[i]=r[i]=ch[i]=(1<<SIZE)-1;
-			L[i]=R[i]=CH[i]=0;
-		}
-		static char str[SIZE+SIZE];
-		for(reg int i=0;i<SIZE;++i){
-			if(scanf("%s",str)==EOF)
-				exit(0);
-			for(reg int j=0;j<SIZE;++j){
-				switch(str[j]){
+		if(scanf("%s",str[0])==EOF)
+			exit(0);
+		for(reg int i=1;i<MAXSIZE;++i)
+			scanf("%s",str[i]);
+		for(reg int i=0;i<MAXSIZE;++i)
+			for(reg int j=0;j<MAXSIZE;++j)
+				switch(str[i][j]){
 					case '-':
 						++res;
-						num[i][j]=-1;
 						break;
 					default:
-						num[i][j]=str[j]-'A';
-						Change(i,j,num[i][j]);
-						break;
+						draw(i,j,str[i][j]-'A');
 				}
-			}
-		}
 		return res;
 	}
+	inline void draw(reg int x,reg int y,reg int v){
+		str[x][y]=v+'A';
+		for(reg int i=0;i<MAXSIZE;++i){
+			S[x][i]&=~(1<<v);
+			S[i][y]&=~(1<<v);
+		}
+		reg int fx=x/MAXCSIZE*MAXCSIZE,fy=y/MAXCSIZE*MAXCSIZE;
+		for(reg int i=0;i<MAXCSIZE;++i)
+			for(reg int j=0;j<MAXCSIZE;++j)
+				S[fx+i][fy+j]&=~(1<<v);
+		S[x][y]=1<<v;
+		return;
+	}
 	inline void Print(void){
-		for(reg int i=0;i<SIZE;++i,putchar('\n'))
-			for(reg int j=0;j<SIZE;++j)
-				putchar(num[i][j]+'A');
+		for(reg int i=0;i<MAXSIZE;++i,putchar('\n'))
+			for(reg int j=0;j<MAXSIZE;++j)
+				putchar(str[i][j]);
 		putchar('\n');
 		return;
 	}
 };
 
-int n;
-Node a;
 
-inline bool DFS(reg int dep,Node a){
-	if(dep==0){
+inline bool DFS(reg int need,Node a){
+	if(need<0)
+		return false;
+	if(!need){
 		a.Print();
 		return true;
 	}
-	for(reg int i=0;i<SIZE;++i)
-		for(reg int j=0;j<SIZE;++j){
-			if(a.GetCnt(i,j)==0&&a.num[i][j]==-1)
-				return false;
-			if(a.GetCnt(i,j)==1){
-				a.draw(i,j,GetLog[a.GetCan(i,j)]);
+	for(reg int i=0;i<MAXSIZE;++i)
+		for(reg int j=0;j<MAXSIZE;++j)
+			if(a.str[i][j]=='-'){
+				if(!a.S[i][j])
+					return false;
+				if(cnt[a.S[i][j]]==1){
+					a.draw(i,j,p[a.S[i][j]]);
+					--need;
+				}
 			}
+	for(reg int i=0;i<MAXSIZE;++i){
+		reg int sor=0,sand=(1<<MAXSIZE)-1,drawn=0;
+		for(reg int j=0;j<MAXSIZE;++j){
+			sand&=~(sor&a.S[i][j]);
+			sor|=a.S[i][j];
+			if(a.str[i][j]!='-')
+				drawn|=a.S[i][j];
 		}
-	for(reg int i=0;i<SIZE;++i){
-		for(reg int j=0;j<SIZE;++j){
-			if((a.L[i]&(1<<j))==0&&((1<<j)&a.l[i])==0){
-				return false;
+		if(sor!=(1<<MAXSIZE)-1)
+			return false;
+		for(reg int j=sand;j;j-=lowbit(j)){
+			if(!(drawn&lowbit(j))){
+				for(reg int k=0;k<MAXSIZE;++k){
+					if(a.S[i][k]&lowbit(j)){
+						--need;
+						a.draw(i,k,p[lowbit(j)]);
+						break;
+					}
+				}
 			}
 		}
 	}
-	for(reg int i=0;i<SIZE;++i){
-		for(reg int j=0;j<SIZE;++j){
-			if((a.R[i]&(1<<j))==0&&((1<<j)&a.r[i])==0){
-				return false;
+	for(reg int i=0;i<MAXSIZE;++i){
+		reg int sor=0,sand=(1<<MAXSIZE)-1,drawn=0;
+		for(reg int j=0;j<MAXSIZE;++j){
+			sand&=~(sor&a.S[j][i]);
+			sor|=a.S[j][i];
+			if(a.str[j][i]!='-')
+				drawn|=a.S[j][i];
+		}
+		if(sor!=(1<<MAXSIZE)-1)
+			return false;
+		for(reg int j=sand;j;j-=lowbit(j)){
+			if(!(drawn&lowbit(j))){
+				for(reg int k=0;k<MAXSIZE;++k){
+					if(a.S[k][i]&lowbit(j)){
+						--need;
+						a.draw(k,i,p[lowbit(j)]);
+						break;
+					}
+				}
 			}
 		}
 	}
-	for(reg int i=0;i<SIZE;++i){
-		for(reg int j=0;j<SIZE;++j){
-			if((a.CH[i]&(1<<j))==0&&((1<<j)&a.ch[i])==0){
-				return false;
+	for(reg int i=0;i<MAXSIZE;++i){
+		reg int sor=0,sand=(1<<MAXSIZE)-1,drawn=0;
+		for(reg int j=0;j<MAXSIZE;++j){
+			reg int sx=i/MAXCSIZE*MAXCSIZE,sy=i%MAXCSIZE*MAXCSIZE;
+			reg int dx=j/MAXCSIZE,dy=j%MAXCSIZE;
+			sand&=~(sor&a.S[sx+dx][sy+dy]);
+			sor|=a.S[sx+dx][sy+dy];
+			if(a.str[sx+dx][sy+dy]!='-')
+				drawn|=a.S[sx+dx][sy+dy];
+		}
+		if(sor!=(1<<MAXSIZE)-1)
+			return false;
+		for(reg int j=sand;j;j-=lowbit(j)){
+			if(!(drawn&lowbit(j))){
+				for(reg int k=0;k<MAXSIZE;++k){
+					reg int sx=i/MAXCSIZE*MAXCSIZE,sy=i%MAXCSIZE*MAXCSIZE;
+					reg int dx=k/MAXCSIZE,dy=k%MAXCSIZE;
+					if(a.S[sx+dx][sy+dy]&lowbit(j)){
+						--need;
+						a.draw(sx+dx,sy+dy,p[lowbit(j)]);
+						break;
+					}
+				}
 			}
 		}
 	}
-/*
-	for(reg int i=0;i<SIZE;++i)
-		for(reg int j=0;j<SIZE;++j)
-			if(a.Get(i,j)==0)
-				return false;
-	for(reg int i=0;i<SIZE;++i)
-		for(reg int j=0;j<SIZE;++j)
-			if(a.Get(j,i)==0)
-				return false;*/
-	reg int Min=SIZE,posx=-1,posy=-1;
-	for(reg int i=0;i<SIZE;++i)
-		for(reg int j=0;j<SIZE;++j){
-			if(a.GetCnt(i,j)==0&&a.num[i][j]==-1)
-				return false;
-			if(a.GetCnt(i,j)<Min){
-				Min=a.GetCnt(i,j);
+	if(!need){
+		a.Print();
+		return true;
+	}
+	reg int Min=MAXSIZE,posx=-1,posy=-1;
+	for(reg int i=0;i<MAXSIZE;++i)
+		for(reg int j=0;j<MAXSIZE;++j){
+			if(a.str[i][j]=='-'&&cnt[a.S[i][j]]<Min){
+				Min=cnt[a.S[i][j]];
 				posx=i,posy=j;
-				//a.draw(i,j,GetLog[a.GetCan(i,j)]);
 			}
 		}
 	if(posx==-1&&posy==-1)
 		return false;
-	reg int k=a.GetCan(posx,posy);
+	reg int k=a.S[posx][posy];
 	while(k){
-		a.Change(posx,posy,GetLog[lowbit(k)]);
-		a.num[posx][posy]=GetLog[lowbit(k)];
-		if(DFS(dep-1,a))
+		Node temp=a;
+		temp.draw(posx,posy,p[lowbit(k)]);
+		if(DFS(need-1,temp))
 			return true;
-		a.num[posx][posy]=-1;
-		a.Change(posx,posy,GetLog[lowbit(k)]);
 		k-=lowbit(k);
 	}
 	return false;
 }
 
+Node a;
+
 int main(void){
 	Init();
 	while(true){
-		n=a.Read();
-		printf("%d\n",n);
+		reg int n=a.Read();
 		DFS(n,a);
-		printf("%d\n",n);
 	}
 	return 0;
 }
