@@ -1,0 +1,61 @@
+#include<bits/stdc++.h>
+using namespace std;
+#define reg register
+typedef long long ll;
+typedef unsigned long long ull;
+
+inline ll mul(reg ll a,reg ll b,reg ll mod){
+	reg ll res=0;
+	while(b){
+		if(b&1)
+			res=(res+a)%mod;
+		a=(a<<1)%mod;
+		b>>=1;
+	}
+	return res;
+}
+
+inline ll pow(reg ll x,reg ll exp,reg ll mod){
+	reg ll res=1;
+	while(exp){
+		if(exp&1)
+			res=mul(res,x);
+		x=mul(x,x,mod);
+		exp>>=1;
+	}
+	return res;
+}
+
+inline bool Miller_Rabin(reg ll n){
+	if(n<3)
+		return n==2;
+	const int TEST_TIMES=8;
+	reg ll u=n-1,t=0;
+	while((u&1)==0)
+		++t,u>>=1;
+	for(reg int i=1;i<=TEST_TIMES;++i){
+		reg ll x=rand()%(n-2)+2,v=pow(x,u,n);
+		if(v==1||v==n-1)
+			continue;
+		reg int j;
+		for(j=0;j<t;++j){
+			v=v*v%n;
+			if(v==n-1)
+				break;
+		}
+		if(j>=t)
+			return false;
+	}
+	return true;
+}
+
+inline ll gcd(reg ll a,reg ll b){
+	return b==0?a:gcd(b,a%b);
+}
+
+int main(void){
+	for(reg int i=1;i<=100;++i){
+		printf("n=%d %s\n",i,Miller_Rabin(i)?"Prime":"No");
+	}
+	return 0;
+}
