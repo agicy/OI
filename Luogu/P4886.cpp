@@ -3,7 +3,7 @@ using namespace std;
 #define reg register
 typedef long long ll;
 typedef unsigned long long ull;
-#define INF 0X3F3F3F3F
+#define INF 2147483647
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
 inline int read(void){
@@ -79,7 +79,7 @@ inline void GetRoot(reg int ID,reg int father,reg int sum){
 		}
 	MaxSon=max((int)MaxSon,sum-size[ID]);
 	if(MaxSon<MaxPart)
-		root=ID;
+		root=ID,MaxPart=MaxSon;
 	return;
 }
 
