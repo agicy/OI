@@ -13,121 +13,72 @@ inline int read(void){
 	return res;
 }
 
+const int MAXN=100000+5;
+const int MAXS=500000+5;
+
 inline int add(reg int a,reg int b){
 	reg int sum=a+b;
 	return sum>=MOD?sum-MOD:sum;
 }
 
-const int MAXN=100000+5;
-const int MAXLOG2K=17+1;
-
-int n,m;
+int n;
 int f[MAXN];
-int col[MAXN];
-int link[MAXN];
-map<vector<int>,int> S;
+int fac[MAXS],invfac[MAXS];
 
-bool vis[MAXN];
-int tot,prime[MAXN];
-int from[MAXN];
+inline int pow(reg int x,reg int exp){
+	reg int res=1;
+	while(exp){
+		if(exp&1)
+			res=1ll*res*x%MOD;
+		x=1ll*x*x%MOD;
+		exp>>=1;
+	}
+	return res;
+}
 
 inline void Init(reg int n){
-	vis[1]=true;
-	from[1]=1;
-	for(reg int i=2;i<=n;++i){
-		if(!vis[i]){
-			prime[++tot]=i;
-			from[i]=i;
-		}
-		for(reg int j=1;j<=tot&&i*prime[j]<=n;++j){
-			vis[i*prime[j]]=true;
-			from[i*prime[j]]=prime[j];
-			if(i%prime[j]==0)
-				break;
-		}
-	}
+	fac[1]=invfac[1]=1;
+	for(reg int i=2;i<=n;++i)
+		fac[i]=1ll*fac[i-1]*i%MOD;
+	invfac[n]=pow(fac[n],MOD-2);
+	for(reg int i=n-1;i>=2;--i)
+		invfac[i]=1ll*invfac[i+1]*(i+1ll)%MOD;
 	return;
 }
 
-const int MAXCNT=160+1+5;
+inline int C(reg int n,reg int m){
+	return 1ll*fac[n]*invfac[m]%MOD*invfac[n-m]%MOD;
+}
 
-struct Matrix{
-	int n,m;
-	int unit[MAXCNT][MAXCNT];
-	inline Matrix(void){
-		n=m=0;
-		memset(unit,0,sizeof(unit));
-		return;
-	}
-	inline int* operator[](reg int i){
-		return unit[i];
-	}
-	inline Matrix operator*(const Matrix &a)const{
-		Matrix res;
-		res.n=n,res.m=a.m;
-		reg int r;
-		for(reg int i=1;i<=n;++i)
-			for(reg int k=1;k<=m;++k){
-				r=unit[i][k];
-				for(reg int j=1;j<=a.m;++j)
-					res[i][j]=add(res[i][j],1ll*r*a.unit[k][j]%MOD);
-			}
-		return res;
-	}
-};
-
-Matrix base[MAXLOG2K];
+inline int Solve(reg int x,reg int k){
+	reg int res=1;
+	for(reg int i=2;i*i<=x;++i)
+		if(x%i==0){
+			reg int cnt=0;
+			while(x%i==0)
+				++cnt,x/=i;
+			res=1ll*res*C(k+cnt-1,cnt)%MOD;
+		}
+	if(x>1)
+		res=1ll*res*k%MOD;
+	return res;
+}
 
 int main(void){
-	//freopen("machine.in","r",stdin);
-	//freopen("machine.out","w",stdout);
+	Init(5e5);
 	n=read();
 	for(reg int i=1;i<=n;++i)
 		f[i]=read();
-	Init(1e5);
-	reg int cnt=0;
-	col[++cnt]=1;
-	link[1]=1;
-	for(reg int i=2;i<=n;++i){
-		vector<int> V;
-		reg int tmp=i;
-		while(tmp!=1){
-			reg int p=from[tmp];
-			int cnt=0;
-			while(tmp%p==0)
-				tmp/=p,++cnt;
-			V.push_back(cnt);
-		}
-		sort(V.begin(),V.end());
-		if(S.count(V))
-			col[i]=S[V];
-		else{
-			col[i]=S[V]=++cnt;
-			link[i]=1;
-		}
-	}
-	base[0].n=base[0].m=cnt;
-	for(reg int i=1;i<=n;++i)
-		for(reg int k=1;i*k<=n;++k)
-			base[0][col[i]][col[i*k]]+=link[i*k];
-	for(reg int i=1;i<MAXLOG2K;++i)
-		base[i]=base[i-1]*base[i-1];
-	m=read();
+	reg int m=read();
 	while(m--){
 		static int k,x;
 		k=read(),x=read();
-		Matrix A;
-		A.n=1,A.m=cnt;
-		A[1][1]=1;
-		for(reg int i=0;i<MAXLOG2K;++i)
-			if((k>>i)&1)
-				A=A*base[i];
 		reg int ans=0;
 		for(reg int i=1;i*i<=x;++i)
 			if(x%i==0){
-				ans=add(ans,1ll*A[1][col[x/i]]*f[i]%MOD);
+				ans=add(ans,1ll*f[i]*Solve(x/i,k)%MOD);
 				if(i*i!=x)
-					ans=add(ans,1ll*A[1][col[i]]*f[x/i]%MOD);
+					ans=add(ans,1ll*f[x/i]*Solve(i,k)%MOD);
 			}
 		printf("%d\n",ans);
 	}
