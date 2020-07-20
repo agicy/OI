@@ -1,9 +1,9 @@
 #include<bits/stdc++.h>
 using namespace std;
 #define reg register
-typedef long long ll;
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
+typedef long long ll;
 inline int read(void){
 	reg bool f=false;
 	reg char ch=getchar();
@@ -16,53 +16,75 @@ inline int read(void){
 const int MAXN=1000+5;
 
 struct Node{
-	int fa,size;
-	int val;
-    double w;
+	int ID;
+	int size,val;
+	inline bool operator<(const Node &a)const{
+		return (double)val/size<(double)a.val/a.size;
+	}
+	inline bool operator>(const Node &a)const{
+		return (double)val/size>(double)a.val/a.size;
+	}
 };
 
 int n,root;
+int val[MAXN];
+int cnt,head[MAXN],to[MAXN],Next[MAXN];
 Node a[MAXN];
+priority_queue<Node,vector<Node>,less<Node>/**/> Q;
 
-inline int find(void);
+inline void DFS(reg int,reg int);
+inline void Add_Edge(reg int,reg int);
+inline void Read(void);
+inline void Work(void);
 
 int main(void){
-	reg int ans=0;
-	n=read(),root=read();
-	for(reg int i=1;i<=n;++i){
-		a[i].val=read();
-		ans+=a[i].val;
-		a[i].w=a[i].val;
-		a[i].size=1;
-	}
-	for(reg int i=1;i<n;++i){
-		static int x,y;
-		x=read(),y=read();
-		a[y].fa=x;
-	}
-	for(reg int i=1;i<n;++i){
-		reg int pos=find();
-		reg int f=a[pos].fa;
-		a[pos].w=0;
-		ans+=a[pos].val*a[f].size;
-		for(reg int j=1;j<=n;++j)
-			if(a[j].fa==pos)
-				a[j].fa=f;
-		a[f].val+=a[pos].val;
-		a[f].size+=a[pos].size;
-		a[f].w=(double)(a[f].val)/a[f].size;
-	}
-	printf("%d\n",ans);
-    return 0;
+	Read();
+	Work();
+	return 0;
 }
 
-inline int find(void){
-    reg int pos=0;
-    reg double Max=0;
-    for(reg int i=1;i<=n;++i)
-        if(i!=root&&Max<a[i].w){
-            Max=a[i].w;
-            pos=i;
-        }
-    return pos;
+inline void Add_Edge(reg int u,reg int v){
+	Next[++cnt]=head[u];
+	to[cnt]=v;
+	head[u]=cnt;
+	return;
+}
+
+inline void DFS(reg int ID,reg int father){
+	a[ID].ID=ID;
+	a[ID].size=1+a[father].size;
+	a[ID].val=val[ID]+a[father].val;
+	for(reg int i=head[ID];i;i=Next[i]){
+		
+		DFS(to[i],ID);
+	}
+	return;
+}
+
+inline void Read(void){
+	n=read(),root=read();
+	for(reg int i=1;i<=n;++i)
+		val[i]=read();
+	for(reg int i=1;i<n;++i){
+		static int u,v;
+		u=read(),v=read();
+		Add_Edge(u,v);
+	}
+	return;
+}
+
+inline void Work(void){
+	reg int T=1,ans=0;
+	DFS(root,0);
+	Q.push(a[root]);
+	while(!Q.empty()){
+		Node temp=Q.top();
+		Q.pop();
+		ans+=T*val[temp.ID];
+		for(reg int i=head[temp.ID];i;i=Next[i])
+			Q.push(a[to[i]]);
+		++T;
+	}
+	printf("%d\n",ans);
+	return;
 }
