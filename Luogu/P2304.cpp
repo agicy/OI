@@ -2,7 +2,8 @@
 using namespace std;
 #define reg register
 typedef long long ll;
-//#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
+#define INF 0X3F3F3F3F
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
 inline int read(void){
 	reg bool f=false;
@@ -62,7 +63,7 @@ inline void Init(void){
 		ru[i]=Tb2[a[i].b2];
 		T[a[i].x]=Tb1[a[i].b1]=Tb2[a[i].b2]=i;
 	}
-	for(reg int i=1;i<=n;++i)
+	for(int i=1;i<=n;++i)
 		F[a[i].y].push_back(i);
 	return;
 }
@@ -87,13 +88,13 @@ inline void Read(void){
 }
 
 namespace Solve1{
-	int f[MAXN],gup[MAXN],bup[MAXN];
-	int bj[MAXN];
+	int f[MAXN],Max[MAXN],bup[MAXN];
+	int op[MAXN];
 	int cnt,path[MAXN];
 	int rnk[MAXN];
 	inline void Print(reg int k){
 		path[++cnt]=a[k].id;
-		reg int next=bj[k];
+		reg int next=op[k];
 		reg int size=F[a[k].y].size();
 		if(a[next].x<a[k].x){
 			for(reg int i=rnk[k]+1;i<size;++i){
@@ -120,38 +121,38 @@ namespace Solve1{
 		return;
 	}
 	inline void Solve(void){
-		reg int Max,ptr;
+		reg int Max_,ptr;
 		for(reg int i=Vy.size();i>=1;--i){
 			reg int size=F[i].size();
-			Max=ptr=0;
+			Max_=ptr=0;
 			for(reg int j=0;j<size;++j){
 				reg int u=F[i][j];
 				rnk[u]=j;
-				if(up[u]&&f[up[u]]>gup[u]){
-					gup[u]=f[up[u]];
+				if(up[u]&&f[up[u]]>Max[u]){
+					Max[u]=f[up[u]];
 					bup[u]=up[u];
 				}
-				if(lu[u]&&f[lu[u]]>gup[u]){
-					gup[u]=f[lu[u]];
+				if(lu[u]&&f[lu[u]]>Max[u]){
+					Max[u]=f[lu[u]];
 					bup[u]=lu[u];
 				}
-				if(ru[u]&&f[ru[u]]>gup[u]){
-					gup[u]=f[ru[u]];
+				if(ru[u]&&f[ru[u]]>Max[u]){
+					Max[u]=f[ru[u]];
 					bup[u]=ru[u];
 				}
-				f[u]=Max,bj[u]=ptr;
-				if(size-j+gup[u]>Max)
-					Max=size-j+gup[u],ptr=u;
+				f[u]=Max_,op[u]=ptr;
+				if(size-j+Max[u]>Max_)
+					Max_=size-j+Max[u],ptr=u;
 			}
-			Max=ptr=0;
+			Max_=ptr=0;
 			for(reg int j=size-1;j>=0;--j){
 				reg int u=F[i][j];
-				if(Max>f[u])
-					f[u]=Max,bj[u]=ptr;
-				if(gup[u]+1>f[u])
-					f[u]=gup[u]+1,bj[u]=u;
-				if(j+1+gup[u]>Max)
-					Max=i+1+gup[u],ptr=u;
+				if(Max_>f[u])
+					f[u]=Max_,op[u]=ptr;
+				if(Max[u]+1>f[u])
+					f[u]=Max[u]+1,op[u]=u;
+				if(j+1+Max[u]>Max_)
+					Max_=j+1+Max[u],ptr=u;
 			}
 		}
 		printf("%d\n",f[n]-1);
@@ -163,6 +164,8 @@ namespace Solve1{
 }
 
 namespace Solve2{
+	const int MAXV=MAXN+5;
+	const int MAXE=MAXN*10;
 	int cnt=1,head[MAXV],to[MAXE],w[MAXE],Next[MAXE];
 	inline void Add_Edge(reg int u,reg int v,reg int len){
 		Next[++cnt]=head[u];
@@ -202,7 +205,7 @@ namespace Solve2{
 		reg int flow=0;
 		for(reg int &i=cur[u];i;i=Next[i]){
 			reg int v=to[i];
-			if(dep[v]==dep[u]+w[i]&&w[i]>0){
+			if(dep[v]==dep[u]+1&&w[i]>0){
 				reg int f=DFS(v,t,min(lim-flow,w[i]));
 				if(f){
 					flow+=f;
@@ -219,18 +222,72 @@ namespace Solve2{
 		reg int res=0;
 		while(BFS(s,t)){
 			memcpy(cur,head,sizeof(head));
-			res+=DFS(s,t);
+			res+=DFS(s,t,INF);
 		}
 		return res;
 	}
-	inline void Calc(void){
+	bool vis[MAXN];
+	int deg[MAXN];
+	inline void Add(reg int x,reg int y){
+		for(reg int i=head[x];i;i=Next[i])
+			if(to[i]==y)
+				return;
+		vis[y]=true;
+		++deg[y],--deg[x];
+		Add_Tube(x,y,INF);
+		return;
+	}
+	inline void Calc(reg int y,reg int i){
+		using Solve1::f;
+		reg int size=F[y].size();
+		reg int p=F[y][i];
+		for(reg int j=0;j<i;++j){
+			reg int u=F[y][j];
+			if(up[u]&&f[up[u]]+size-j==f[p])
+				Add(u,up[u]);
+			if(lu[u]&&f[lu[u]]+size-j==f[p])
+				Add(u,lu[u]);
+			if(ru[u]&&f[ru[u]]+size-j==f[p])
+				Add(u,ru[u]);
+		}
+		for(reg int j=i+1;j<size;++j){
+			reg int u=F[y][j];
+			if(up[u]&&f[up[u]]+j+1==f[p])
+				Add(u,up[u]);
+			if(lu[u]&&f[lu[u]]+j+1==f[p])
+				Add(u,lu[u]);
+			if(ru[u]&&f[ru[u]]+j+1==f[p])
+				Add(u,ru[u]);
+		}
+		if(up[p]&&f[up[p]]+1==f[p])
+			Add(p,up[p]);
+		if(lu[p]&&f[lu[p]]+1==f[p])
+			Add(p,lu[p]);
+		if(ru[p]&&f[ru[p]]+1==f[p])
+			Add(p,ru[p]);
 		return;
 	}
 	inline void Build(void){
+		vis[n]=true;
+		for(reg int i=1;i<=(int)Vy.size();++i)
+			for(reg int j=0,size=F[i].size();j<size;++j)
+				if(vis[F[i][j]])
+					Calc(i,j);
 		return;
 	}
 	inline void Solve(void){
 		Build();
+		reg int s=n+1,t=n+2;
+		reg int ans=0;
+		for(reg int i=1;i<=n;++i)
+			if(deg[i]>0){
+				Add_Tube(s,i,deg[i]);
+				ans+=deg[i];
+			}
+			else
+				Add_Tube(i,t,-deg[i]);
+		ans-=Dinic(s,t);
+		printf("%d\n",ans);
 		return;
 	}
 }
