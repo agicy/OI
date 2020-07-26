@@ -17,13 +17,13 @@ inline int read(void){
 double n,m;
 
 int main(void){
-    while(scanf("%lf%lf",&n,&m)!=EOF){
-        reg double ans=0,pos;
-        for(reg double i=1;i<n;i+=1){
-            pos=i/n*(n+m);
-            ans+=fabs(pos-floor(pos+0.5))/(n+m);
-        }
-        printf("%.4f\n",ans*1e4);
-    }
-    return 0;
+	while(scanf("%lf%lf",&n,&m)!=EOF){
+		reg double ans=0,pos;
+		for(reg double i=1;i<n;i+=1){
+			pos=i/n*(n+m);
+			ans+=fabs(pos-floor(pos+0.5))/(n+m);
+		}
+		printf("%.4f\n",ans*1e4);
+	}
+	return 0;
 }
