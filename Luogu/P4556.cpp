@@ -33,7 +33,7 @@ namespace S{
 	}
 	int top,S[MAXSIZE];
 	inline int New(void){
-		if(top) 
+		if(top)
 			return S[top--];
 		else
 			return ++cnt;

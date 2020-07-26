@@ -120,10 +120,8 @@ int main(void){
 		if(ch=='Q'){
 			ch=getchar();
 			if(ch=='M'){
-				
 			}
 			if(ch=='S'){
-				
 			}
 		}
 	}

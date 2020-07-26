@@ -82,7 +82,6 @@ struct SegmentTree{
 		if(R>mid)
 			res+=Query(rson,mid+1,r,L,R);
 		return res;
-		
 	}
 	#undef lson
 	#undef rson

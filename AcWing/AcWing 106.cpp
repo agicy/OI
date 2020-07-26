@@ -7,8 +7,8 @@ using std::less;
 using std::greater;
 
 int P,ID,n;
-priority_queue<int,vector<int>,greater<int>/**/> A;//小根堆 
-priority_queue<int,vector<int>,less<int>/**/> B;//大根堆 
+priority_queue<int,vector<int>,greater<int>/**/> A;//小根堆
+priority_queue<int,vector<int>,less<int>/**/> B;//大根堆
 
 int main(void){
 	register int i,count;
@@ -50,4 +50,4 @@ int main(void){
 			B.pop();
 	}
 	return 0;
-} 
+}

@@ -68,7 +68,7 @@ inline void BFS(const Node& s){
 			printf("%d\n",f[x][y]);
 			exit(0);
 		}
-		const int 
+		const int
 			dx[]={-2,-2,-1,-1,+1,+1,+2,+2},
 			dy[]={-1,+1,-2,+2,-2,+2,-1,+1};
 		for(reg int i=0;i<8;++i){

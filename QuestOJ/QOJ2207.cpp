@@ -103,9 +103,7 @@ int main(void){
 			G.unit[E[j].u][E[j].v]=true;
 		reg int exp=E[i].lv-E[i-1].lv;
 		pow(G,exp,t);
-		
 		Add_Edge(E[i].u,E[i].v,1);
-		
 		memset(vis,false,sizeof(vis));
 		memset(dis,0X3F,sizeof(dis));
 		for(reg int j=1;j<=n;++j)

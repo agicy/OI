@@ -57,7 +57,6 @@ inline int expand(Node st,Node en,Node c){
 }
 
 inline void BFS(void){
-	
 	return;
 }
 

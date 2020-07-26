@@ -71,7 +71,7 @@ inline void Divide(reg ll n){
 			while(n%i==0)
 				n/=i;
 		}
-	if(n>1)	
+	if(n>1)
 		Prime[++cnt]=n;
 	return;
 }

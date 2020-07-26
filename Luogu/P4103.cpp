@@ -73,7 +73,6 @@ inline void Work(void){
 			vis[h[i]]=true;
 		}
 		sort(h+1,h+K+1,cmp);
-		
 		printf("%lld %lld %lld\n",sum,Min,Max);
 	}
 	return;

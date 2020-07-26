@@ -38,6 +38,5 @@ inline void Read(void){
 }
 
 inline void Work(void){
-	
 	return;
 }

@@ -110,7 +110,7 @@ int main(void){
 	root=Build(1,n,0);
 	sort(p+1,p+n+1);
 	for(reg int i=1;i<=n;++i)
-		if(!ans[p[i].id])	
+		if(!ans[p[i].id])
 			Query(root,p[i]);
 	for(reg int i=1;i<=n;++i)
 		printf("%d%c",ans[i],i==n?'\n':' ');

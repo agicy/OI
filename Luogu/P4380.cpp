@@ -101,7 +101,7 @@ int main(void){
 				V[M[i][j]].push_back(GetID(i,j));
 	for(reg int i=1;i<=n;++i)
 		for(reg int j=1;j<=n;++j){
-			if(i!=n&& M[i][j]!=M[i+1][j]) 
+			if(i!=n&& M[i][j]!=M[i+1][j])
 				Add_Edge(GetID(i,j),GetID(i+1,j),make_pair(M[i][j],M[i+1][j]));
 			if(j!=n&&M[i][j]!=M[i][j+1])
 				Add_Edge(GetID(i,j),GetID(i,j+1),make_pair(M[i][j],M[i][j+1]));

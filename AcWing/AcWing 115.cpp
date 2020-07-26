@@ -54,10 +54,8 @@ inline void DFS(reg int ID,reg int father){
 	a[ID].ID=ID;
 	a[ID].size=1+a[father].size;
 	a[ID].val=val[ID]+a[father].val;
-	for(reg int i=head[ID];i;i=Next[i]){
-		
+	for(reg int i=head[ID];i;i=Next[i])
 		DFS(to[i],ID);
-	}
 	return;
 }
 

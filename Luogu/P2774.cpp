@@ -70,7 +70,6 @@ inline void Read(void){
 				Add_Edge(ID[i][j],t,a);
 				Add_Edge(t,ID[i][j],0);
 			}
-			
 		}
 	}
 	return;

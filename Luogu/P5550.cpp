@@ -80,7 +80,7 @@ inline void Work(void){
 	}
 	if(cnr==-1)
 		st.Print();
-	else{ 
+	else{
 		k%=cnr;
 		while(k--)
 			st.opt();

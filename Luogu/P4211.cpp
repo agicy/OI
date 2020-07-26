@@ -191,7 +191,7 @@ inline void Work(void){
 		if(Q[i].flag)
 			ans[ID][0]=Query(1,Q[i].z);
 		else
-			ans[ID][1]=Query(1,Q[i].z); 
+			ans[ID][1]=Query(1,Q[i].z);
 	}
 	for(reg int i=1;i<=m;++i)
 		printf("%d\n",(ans[i][0]-ans[i][1]+MOD)%MOD);

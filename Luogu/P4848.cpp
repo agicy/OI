@@ -54,7 +54,7 @@ namespace SegmentTree{
 			return;
 		}
 		inline void flat(reg int k){
-			if(lson(k)) 
+			if(lson(k))
 				flat(lson(k));
 			p[++cnt]=k;
 			if(rson(k))

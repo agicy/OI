@@ -84,7 +84,7 @@ namespace kD_Tree{
 		if(chk==4)
 			return T[k].sum;
 		else if(chk==0)
-			return 0; 
+			return 0;
 		reg ll res=0;
 		if(check(T[k].val.x[0],T[k].val.x[1]))
 			res+=T[k].val.val;

@@ -106,7 +106,7 @@ struct Node{
 				for(reg int j=0;j<MAXSIZE-1;++j)
 					a[2][j]=a[2][j+1];
 				a[2][MAXSIZE-1]=temp;
-				break;		
+				break;
 			default:
 				break;
 		}

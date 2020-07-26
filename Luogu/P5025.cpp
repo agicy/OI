@@ -49,7 +49,7 @@ struct Graph{
 
 Graph G1,G2;
 
-struct Node{ 
+struct Node{
 	int l,r;
 	inline Node(reg int l=0,reg int r=0):l(l),r(r){
 		return;
@@ -98,7 +98,7 @@ namespace SegmentTree{
 		a[k]=Node(l,r);
 		tot=max(tot,k);
 		if(l==r){
-			id[l]=k; 
+			id[l]=k;
 			return;
 		}
 		Build(lson,l,mid),Build(rson,mid+1,r);
@@ -123,7 +123,7 @@ namespace SegmentTree{
 	#undef mid
 }
 
-inline void DFS(reg int ID,const Graph& G){ 
+inline void DFS(reg int ID,const Graph& G){
 	vis[ID]=true;
 	for(reg int i=G.head[ID];i;i=G.Next[i]){
 		if(!vis[G.to[i]])

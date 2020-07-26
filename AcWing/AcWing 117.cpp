@@ -22,7 +22,7 @@ int main(void){
 			Q[i].push_front(x);
 		}
 	for(reg int i=1;i<=4;++i){
-		reg char now=Q[13].front();	
+		reg char now=Q[13].front();
 		Q[13].pop_front();
 		while(now!='K'){
 			++cnt[(int)now];

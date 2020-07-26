@@ -1,8 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
-int open[200005]; 
-int prime[200005]; 
-int yes[200005]; 
+int open[200005];
+int prime[200005];
+int yes[200005];
 int isit[200005];
 int line[700005];
 int to[700005];
@@ -34,7 +34,7 @@ int add(int k)
 		if (yes[to[j]])
 			minx = max(minx, yes[to[j]]);
 		j = line[j];
-	} 
+	}
 	if (minx > 0)
 		return minx;
 	j = isit[k];
@@ -42,7 +42,7 @@ int add(int k)
 	{
 		yes[to[j]] = k;
 		j = line[j];
-	} 
+	}
 	open[k] = 1;
 	return 0;
 }

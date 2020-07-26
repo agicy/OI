@@ -29,7 +29,6 @@ int main(void){
 				break;
 			}
 			case 4:{
-				
 				break;
 			}
 			default:break;

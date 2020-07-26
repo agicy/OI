@@ -31,12 +31,10 @@ inline void Read(void){
 	reg
 	for(reg int i)
 	for(reg int i=1;i<=k;++i){
-		
 	}
 	return;
 }
 
 inline void Work(void){
-	
 	return;
 }
