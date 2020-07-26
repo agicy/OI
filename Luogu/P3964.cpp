@@ -22,31 +22,31 @@ ll Rx[MAXN],Ry[MAXN];
 ll sumx[MAXN],sumy[MAXN];
 
 inline ll Calc(reg int u){
-    reg ll ansx=0,ansy=0;
-    reg int posx=lower_bound(x+1,x+1+n,Rx[u])-x;
-    reg int posy=lower_bound(y+1,y+1+n,Ry[u])-y;
-    ansx=posx*Rx[u]-sumx[posx]+sumx[n]-sumx[posx]-(n-posx)*Rx[u];
-    ansy=posy*Ry[u]-sumy[posy]+sumy[n]-sumy[posy]-(n-posy)*Ry[u];
-    return ansx+ansy;
+	reg ll ansx=0,ansy=0;
+	reg int posx=lower_bound(x+1,x+1+n,Rx[u])-x;
+	reg int posy=lower_bound(y+1,y+1+n,Ry[u])-y;
+	ansx=posx*Rx[u]-sumx[posx]+sumx[n]-sumx[posx]-(n-posx)*Rx[u];
+	ansy=posy*Ry[u]-sumy[posy]+sumy[n]-sumy[posy]-(n-posy)*Ry[u];
+	return ansx+ansy;
 }
 
 int main(void){
 	n=read();
 	for(reg int i=1;i<=n;++i){
-    	static ll a,b;
-    	a=read(),b=read();
-        x[i]=Rx[i]=a+b;
-        y[i]=Ry[i]=a-b;
-    }
-    sort(x+1,x+n+1);
-    sort(y+1,y+n+1);
+		static ll a,b;
+		a=read(),b=read();
+		x[i]=Rx[i]=a+b;
+		y[i]=Ry[i]=a-b;
+	}
+	sort(x+1,x+n+1);
+	sort(y+1,y+n+1);
 	for(reg int i=1;i<=n;++i){
-        sumx[i]=sumx[i-1]+x[i];
-        sumy[i]=sumy[i-1]+y[i];
-    }
-    ll ans=INF;
+		sumx[i]=sumx[i-1]+x[i];
+		sumy[i]=sumy[i-1]+y[i];
+	}
+	ll ans=INF;
 	for(reg int i=1;i<=n;++i)
-        ans=min(ans,Calc(i));
-    printf("%llu\n",ans>>1);
-    return 0;
+		ans=min(ans,Calc(i));
+	printf("%llu\n",ans>>1);
+	return 0;
 }

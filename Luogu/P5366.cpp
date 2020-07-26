@@ -19,18 +19,18 @@ inline int add(int x, int y) { x += y; return x >= P ? x - P : x; }
 inline int dec(int x, int y) { x -= y; return x < 0 ? x + P : x; }
 
 inline void GetFac(reg int x,vector<pair<int,int>/**/> &fac){
-    for(reg int i=2;i*i<=x;++i)
-        if(x%i==0){
-            reg int cnt=0;
-            while(x%i==0){
-                ++cnt;
-                x/=i;
-            }
+	for(reg int i=2;i*i<=x;++i)
+		if(x%i==0){
+			reg int cnt=0;
+			while(x%i==0){
+				++cnt;
+				x/=i;
+			}
 		fac.push_back(make_pair(i, cnt));
 	}
 	if(x!=1)
-        fac.push_back(mp(x, 1));
-    return;
+		fac.push_back(mp(x, 1));
+	return;
 }
 
 inline pair<int, int> GetState(int x) {
@@ -47,12 +47,12 @@ inline pair<int, int> GetState(int x) {
 inline void PreSolve(void){
 	GetFac(L,facL);
 	pow2[0]=1;
-    reg int size=facL.size();
-    N=(size<<1);
-    U=(1<<N)-1;
-    for(reg int i=1;i<=U;++i)
-        pow2[i]=add(pow2[i-1],pow2[i-1]);
-    for(reg int i=0,)
+	reg int size=facL.size();
+	N=(size<<1);
+	U=(1<<N)-1;
+	for(reg int i=1;i<=U;++i)
+		pow2[i]=add(pow2[i-1],pow2[i-1]);
+	for(reg int i=0,)
 	rep(i, 0, SIZE(facL) - 1) {
 		r[i]=facL[i].second;
 		int x=G;
@@ -71,27 +71,27 @@ inline int Solve(int x, int rnt=0) {
 	auto it=*lower_bound(data.begin(), data.end(), mp(x, 0));
 	if(ans[it.second] != -1) return ans[it.second];
 	int T=it.second, S=U ^ T; rnt=__builtin_popcount(T) & 1 ? dec(rnt, pow2[siz[T] - 1]) : pow2[siz[T] - 1];
-	for(int S1=S; S1; S1=(S1 - 1) & S) 
+	for(int S1=S; S1; S1=(S1 - 1) & S)
 		if(__builtin_popcount(S1 | T) & 1) rnt=dec(rnt, pow2[siz[S1 | T] - 1]);
 		else rnt=add(rnt, pow2[siz[S1 | T] - 1]);
 	return ans[it.second]=rnt;
 }
 
 int main(void){
-    n=read(),G=read(),L=read(),Q=read();
+	n=read(),G=read(),L=read(),Q=read();
 	if(L%G){
-        while(Q--)
-            puts("0");
-        return 0;
-    }
+		while(Q--)
+			puts("0");
+		return 0;
+	}
 	PreSolve();
 	memset(ans,-1,sizeof(ans));
-    while(Q--){
+	while(Q--){
 		reg int x=read();
 		if(x%G!=0||L%x!=0||x>n)
-            puts("0");
+			puts("0");
 		else
-            printf("%d\n",Solve(x));
+			printf("%d\n",Solve(x));
 	}
 	return 0;
 }

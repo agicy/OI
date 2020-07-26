@@ -30,11 +30,11 @@ inline void Work(void);
 int main(void){
 	Read();
 	Work();
-    return 0;
+	return 0;
 }
 
 inline void Read(void){
-    reg int i;
+	reg int i;
 	n=read(),k=read();
 	for(i=1;i<=n;++i)
 		a[i]=read();

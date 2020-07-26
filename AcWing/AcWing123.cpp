@@ -35,14 +35,14 @@ inline void Read(void){
 }
 
 inline void Work(void){
-    sort(x+1,x+n+1);
-    sort(y+1,y+n+1);
-    for(reg int i=1;i<=n;++i)
-        x[i]-=i;
-    sort(x+1,x+n+1);
-    reg ll midx=x[(n+1)>>1],midy=y[(n+1)>>1],ans=0;
-    for(reg int i=1;i<=n;++i)
-        ans+=abs(x[i]-midx)+abs(y[i]-midy);
-    printf("%lld\n",ans);
+	sort(x+1,x+n+1);
+	sort(y+1,y+n+1);
+	for(reg int i=1;i<=n;++i)
+		x[i]-=i;
+	sort(x+1,x+n+1);
+	reg ll midx=x[(n+1)>>1],midy=y[(n+1)>>1],ans=0;
+	for(reg int i=1;i<=n;++i)
+		ans+=abs(x[i]-midx)+abs(y[i]-midy);
+	printf("%lld\n",ans);
 	return;
 }

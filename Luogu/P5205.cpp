@@ -36,7 +36,7 @@ namespace Poly{
 	inline void Init(void){
 		inv_[1]=1;
 		for(reg int i=2;i<MAXSIZE;++i)
-        	inv_[i]=1ll*(p-p/i)*inv_[p%i]%p;
+			inv_[i]=1ll*(p-p/i)*inv_[p%i]%p;
 	}
 	int r[MAXSIZE];
 	inline int Init(const int len){
@@ -141,7 +141,7 @@ namespace Poly{
 		for(reg int i=0;i<n;++i)
 			Ln[i]=f[i]>=Ln[i]?f[i]-Ln[i]:f[i]-Ln[i]+p;
 		for(reg int i=n;i<limit;++i)
-			Ln[i]=res[i]=0; 
+			Ln[i]=res[i]=0;
 		++Ln[0];
 		NTT(Ln,limit,1),NTT(res,limit,1);
 		for(reg int i=0;i<limit;++i)

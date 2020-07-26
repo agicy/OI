@@ -38,7 +38,7 @@ inline ll mul(reg ll a,reg ll b,reg ll mod){
 	reg ll res=0;
 	while(b){
 		if(b&1)
-		    res=(res+a)%mod;
+			res=(res+a)%mod;
 		a=(a<<1)%mod;
 		b>>=1;
 	}

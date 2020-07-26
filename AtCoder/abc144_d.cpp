@@ -20,5 +20,5 @@ int main(void){
 		ans=atan((b-y)/a)/PI*180;
 	}
 	printf("%.10f\n",ans);
-    return 0;
+	return 0;
 }

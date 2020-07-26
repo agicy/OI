@@ -25,7 +25,7 @@ double E[MAXN][MAXN];
 vector<int> V[MAXN];
 
 int main(void){
-    reg int i,j,k,size;
+	reg int i,j,k,size;
 	reg double ans;
 	n=read(),m=read();
 	for(i=1;i<=m;++i){
@@ -56,5 +56,5 @@ int main(void){
 		ans=min((double)ans,P[1]+E[1][u[i]]*(newf-P[u[i]]));
 	}
 	printf("%.10f\n",ans);
-    return 0;
+	return 0;
 }

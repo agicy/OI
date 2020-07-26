@@ -8,6 +8,6 @@ int n,m;
 
 
 int main(void){
-    ios::sync_with_stdin(false);
+	ios::sync_with_stdin(false);
 	return 0;
 }

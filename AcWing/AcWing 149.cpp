@@ -15,11 +15,11 @@ inline ll read(void){
 }
 
 struct Node{
-    ll w,h;
-    inline Node(reg ll a,reg ll b){
-        w=a,h=b;
+	ll w,h;
+	inline Node(reg ll a,reg ll b){
+		w=a,h=b;
 		return;
-    }
+	}
 	inline bool operator<(const Node& a)const{
 		return w!=a.w?w>a.w:h>a.h;
 	}

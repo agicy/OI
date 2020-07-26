@@ -24,50 +24,50 @@ inline void Read(void);
 inline void Work(void);
 
 int main(void){
-    Read();
-    Work();
-    return 0;
+	Read();
+	Work();
+	return 0;
 }
 
 inline void Read(void){
-    n=read();
-    for(reg int i=1;i<=n;++i)
-        a[i]=read();
-    m=read();
-    for(reg int i=1;i<=m;++i)
-        b[i]=read();
-    for(reg int i=1;i<=m;++i)
-        c[i]=read();
-    return;
+	n=read();
+	for(reg int i=1;i<=n;++i)
+		a[i]=read();
+	m=read();
+	for(reg int i=1;i<=m;++i)
+		b[i]=read();
+	for(reg int i=1;i<=m;++i)
+		c[i]=read();
+	return;
 }
 
 inline void Work(void){
-    for(reg int i=1;i<=n;++i)
-        V.push_back(a[i]);
-    for(reg int i=1;i<=m;++i)
-        V.push_back(b[i]),V.push_back(c[i]);
-    sort(V.begin(),V.end());
-    V.erase(unique(V.begin(),V.end()),V.end());
-    for(reg int i=1;i<=n;++i)
-        a[i]=lower_bound(V.begin(),V.end(),a[i])-V.begin()+1;
-    for(reg int i=1;i<=m;++i)
-        b[i]=lower_bound(V.begin(),V.end(),b[i])-V.begin()+1;
-    for(reg int i=1;i<=m;++i)
-        c[i]=lower_bound(V.begin(),V.end(),c[i])-V.begin()+1;
-    for(reg int i=1;i<=n;++i)
-        ++T[a[i]];
-    reg int Max1=0,Max2=0,pos=0;
-    for(reg int i=1;i<=m;++i){
-        if(Max1<T[b[i]]){
-            Max1=T[b[i]];
-            Max2=T[c[i]];
-            pos=i;
-        }
-        else if(Max1==T[b[i]]&&Max2<T[c[i]]){
-            Max2=T[c[i]];
-            pos=i;
-        }
-    }
-    printf("%d\n",pos);
-    return;
+	for(reg int i=1;i<=n;++i)
+		V.push_back(a[i]);
+	for(reg int i=1;i<=m;++i)
+		V.push_back(b[i]),V.push_back(c[i]);
+	sort(V.begin(),V.end());
+	V.erase(unique(V.begin(),V.end()),V.end());
+	for(reg int i=1;i<=n;++i)
+		a[i]=lower_bound(V.begin(),V.end(),a[i])-V.begin()+1;
+	for(reg int i=1;i<=m;++i)
+		b[i]=lower_bound(V.begin(),V.end(),b[i])-V.begin()+1;
+	for(reg int i=1;i<=m;++i)
+		c[i]=lower_bound(V.begin(),V.end(),c[i])-V.begin()+1;
+	for(reg int i=1;i<=n;++i)
+		++T[a[i]];
+	reg int Max1=0,Max2=0,pos=0;
+	for(reg int i=1;i<=m;++i){
+		if(Max1<T[b[i]]){
+			Max1=T[b[i]];
+			Max2=T[c[i]];
+			pos=i;
+		}
+		else if(Max1==T[b[i]]&&Max2<T[c[i]]){
+			Max2=T[c[i]];
+			pos=i;
+		}
+	}
+	printf("%d\n",pos);
+	return;
 }
