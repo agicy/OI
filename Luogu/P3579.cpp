@@ -16,7 +16,7 @@ int a,b,c,d;
 
 int main(void){
 	reg int T=read();
-    while(T--){
+	while(T--){
 		a=read(),b=read(),c=read(),d=read();
 		if(c<a){
 			swap(a,c);
@@ -34,8 +34,8 @@ int main(void){
 				if(b/last>(a-1)/last&&d/last>(c-1)/last)
 					ans=last;
 			}
-        	printf("%d\n",ans);
+			printf("%d\n",ans);
 		}
-    }
-    return 0;
+	}
+	return 0;
 }

@@ -59,7 +59,7 @@ int ans[MAXM];
 inline bool cmp(const Node& a,const Node& b){
 	if(ID[a.l]!=ID[b.l])
 		return a.l<b.l;
-    if(ID[a.l]&1)
+	if(ID[a.l]&1)
 		return a.r<b.r;
 	return a.r>b.r;
 }

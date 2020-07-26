@@ -14,67 +14,67 @@ void Tarjan(int);
 
 int main(void)
 {
-    register int i, j, To, ans = 0;
-    scanf("%d%d", &n, &m);
-    for (i = 1; i <= m; ++i)
-    {
-        static int b, e;
-        scanf("%d%d", &b, &e);
-        Add_Edge(b, e);
-    }
-    for (i = 1; i <= n; ++i)
-        if (!dfn[i])
-            Tarjan(i);
-    for (i = 1; i <= n; ++i)
-        for (j = head[i]; j; j = Next[j])
-        {
-            To = to[j];
-            if (color[i] != color[To])
-                ++inDeg[color[To]];
-        }
-    for (i = 1; i <= Tarjan_cnt; ++i)
-        if (!inDeg[i])
-            ++ans;
-    printf("%d\n", ans);
-    return 0;
+	register int i, j, To, ans = 0;
+	scanf("%d%d", &n, &m);
+	for (i = 1; i <= m; ++i)
+	{
+		static int b, e;
+		scanf("%d%d", &b, &e);
+		Add_Edge(b, e);
+	}
+	for (i = 1; i <= n; ++i)
+		if (!dfn[i])
+			Tarjan(i);
+	for (i = 1; i <= n; ++i)
+		for (j = head[i]; j; j = Next[j])
+		{
+			To = to[j];
+			if (color[i] != color[To])
+				++inDeg[color[To]];
+		}
+	for (i = 1; i <= Tarjan_cnt; ++i)
+		if (!inDeg[i])
+			++ans;
+	printf("%d\n", ans);
+	return 0;
 }
 
 void Add_Edge(int f, int t)
 {
-    Next[++cnt] = head[f];
-    to[cnt] = t;
-    head[f] = cnt;
-    return;
+	Next[++cnt] = head[f];
+	to[cnt] = t;
+	head[f] = cnt;
+	return;
 }
 
 void Tarjan(int ID)
 {
-    register int i, To;
-    vis[ID] = true;
-    dfn[ID] = low[ID] = ++time;
-    Stack[++top] = ID;
-    for (i = head[ID]; i; i = Next[i])
-    {
-        To = to[i];
-        if (!dfn[To])
-        {
-            Tarjan(To);
-            low[ID] = min(low[ID], low[To]);
-        }
-        else if (vis[To])
-            low[ID] = min(low[ID], dfn[To]);
-        else
-            continue;
-    }
-    if (dfn[ID] == low[ID])
-    {
-        ++Tarjan_cnt;
-        do
-        {
-            To = Stack[top--];
-            vis[To] = false;
-            color[To] = Tarjan_cnt;
-        } while (To != ID);
-    }
-    return;
+	register int i, To;
+	vis[ID] = true;
+	dfn[ID] = low[ID] = ++time;
+	Stack[++top] = ID;
+	for (i = head[ID]; i; i = Next[i])
+	{
+		To = to[i];
+		if (!dfn[To])
+		{
+			Tarjan(To);
+			low[ID] = min(low[ID], low[To]);
+		}
+		else if (vis[To])
+			low[ID] = min(low[ID], dfn[To]);
+		else
+			continue;
+	}
+	if (dfn[ID] == low[ID])
+	{
+		++Tarjan_cnt;
+		do
+		{
+			To = Stack[top--];
+			vis[To] = false;
+			color[To] = Tarjan_cnt;
+		} while (To != ID);
+	}
+	return;
 }

@@ -64,8 +64,8 @@ int main(void){
 			ll Max=0;
 			for(reg int j=1;j<=n;++j)
 				if(vis[j])
-				    Max=max(Max,dis[j]);
-            ans=max(ans,Max);
+					Max=max(Max,dis[j]);
+			ans=max(ans,Max);
 		}
 		printf("%lld\n",ans*100ll);
 	}

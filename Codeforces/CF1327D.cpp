@@ -20,23 +20,23 @@ int p[MAXN],c[MAXN];
 int V[MAXN];
 
 inline bool check(reg int x,reg int len){
-    reg bool flag=false;
-    for(reg int i=0;i<x;++i){
-        reg bool temp=true;
-        reg int ID=i;
-        for(reg int j=0;j<len/x;++j){
-            if(c[V[ID]]!=c[V[(ID+x)%len]]){
+	reg bool flag=false;
+	for(reg int i=0;i<x;++i){
+		reg bool temp=true;
+		reg int ID=i;
+		for(reg int j=0;j<len/x;++j){
+			if(c[V[ID]]!=c[V[(ID+x)%len]]){
 				temp=0;
 				break;
 			}
-            ID+=x;
-        }
-        if(temp){
+			ID+=x;
+		}
+		if(temp){
 			flag=true;
 			break;
 		}
-    }
-    return flag;
+	}
+	return flag;
 }
 
 int main(void){
@@ -50,26 +50,26 @@ int main(void){
 		for(reg int i=1;i<=n;++i)
 			c[i]=read();
 		for(reg int i=1;i<=n;++i){
-            if(!vis[i]){
-                reg int ID=i,len=0;
-                while(!vis[ID]){
-                    vis[ID]=true;
-                    V[len++]=ID;
-                    ID=p[ID];
-                }
-                for(reg int j=1;j*j<=len;++j){
-                    if(len%j==0){
+			if(!vis[i]){
+				reg int ID=i,len=0;
+				while(!vis[ID]){
+					vis[ID]=true;
+					V[len++]=ID;
+					ID=p[ID];
+				}
+				for(reg int j=1;j*j<=len;++j){
+					if(len%j==0){
 						Ans[j]|=check(j,len);
 						Ans[len/j]|=check(len/j,len);
 					}
-                }
-            }
-        }
-        for(reg int i=1;i<=n;++i)
+				}
+			}
+		}
+		for(reg int i=1;i<=n;++i)
 			if(Ans[i]){
 				printf("%d\n",i);
 				break;
 			}
-    }
-    return 0;
+	}
+	return 0;
 }

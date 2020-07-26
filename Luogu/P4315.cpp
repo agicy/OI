@@ -105,19 +105,19 @@ struct SegmentTree{
 	inline void Cover(reg int k,reg int val){
 		unit[k].Max=val;
 		unit[k].tagCover=val;
-        unit[k].tagAdd=0;
+		unit[k].tagAdd=0;
 		return;
 	}
 	inline void pushdown(reg int k){
 		if(unit[k].tagCover!=-1){
-            Cover(lson,unit[k].tagCover);
-            Cover(rson,unit[k].tagCover);
-            unit[k].tagCover=-1;
+			Cover(lson,unit[k].tagCover);
+			Cover(rson,unit[k].tagCover);
+			unit[k].tagCover=-1;
 		}
 		if(unit[k].tagAdd){
-            Add(lson,unit[k].tagAdd);
-            Add(rson,unit[k].tagAdd);
-            unit[k].tagAdd=0;
+			Add(lson,unit[k].tagAdd);
+			Add(rson,unit[k].tagAdd);
+			unit[k].tagAdd=0;
 		}
 		return;
 	}

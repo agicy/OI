@@ -26,8 +26,8 @@ int main(void){
 		else{
 			string S;
 			for(reg int i=0;i<len;++i){
-                S+=T[i];
-                if(T[i+1]==T[i])
+				S+=T[i];
+				if(T[i+1]==T[i])
 					S+=T[i]^1;
 			}
 			if(S.length()&1)

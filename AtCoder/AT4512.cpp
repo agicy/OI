@@ -9,10 +9,10 @@ int a[MAXN][MAXN];
 
 int main(void){
 	scanf("%d",&K);
-    if(K<=500){
-    	printf("%d\n",K);
-    	for(reg int i=1;i<=K;++i)
-    		for(reg int j=1;j<=K;++j)
+	if(K<=500){
+		printf("%d\n",K);
+		for(reg int i=1;i<=K;++i)
+			for(reg int j=1;j<=K;++j)
 				printf("%d%c",i,j==K?'\n':' ');
 	}
 	else{

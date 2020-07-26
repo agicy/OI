@@ -163,7 +163,7 @@ inline void Work(void){
 			opt=getchar();
 		while(opt!='C'&&opt!='Q'&&opt!='D');
 		if(opt=='D')
-		    break;
+			break;
 		switch(opt){
 			case 'C':{
 				reg int i=read(),t=read();

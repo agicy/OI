@@ -43,7 +43,7 @@ queue<int> Q;
 
 inline bool SPFA(int s,reg int t){
 	memset(dis,0X3F,sizeof(dis));
-    while(!Q.empty())Q.pop();
+	while(!Q.empty())Q.pop();
 	inque[s]=true,dis[s]=0,Q.push(s);
 	while(!Q.empty()){
 		reg int ID=Q.front();

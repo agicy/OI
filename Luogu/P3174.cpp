@@ -26,52 +26,52 @@ inline void Add_Edge(reg int,reg int);
 inline void DFS(reg int,reg int);
 
 int main(void){
-    Read();
-    Work();
-    return 0;
+	Read();
+	Work();
+	return 0;
 }
 
 inline void Read(void){
-    n=read(),m=read();
-    for(reg int i=1;i<=m;++i){
-        static int a,b;
-        a=read(),b=read();
-        ++Deg[a],++Deg[b];
-        Add_Edge(a,b);
-        Add_Edge(b,a);
-    }
-    return;
+	n=read(),m=read();
+	for(reg int i=1;i<=m;++i){
+		static int a,b;
+		a=read(),b=read();
+		++Deg[a],++Deg[b];
+		Add_Edge(a,b);
+		Add_Edge(b,a);
+	}
+	return;
 }
 
 inline void Work(void){
-    for(reg int i=1;i<=n;++i)
-        --Deg[i];
-    DFS(1,0);
-    int Max=0,pos=0;
-    for(reg int i=1;i<=n;++i)
-        if(f[i]>Max){
-            Max=f[i];
-            pos=i;
-        }
-    memset(f,0,sizeof(f));
-    DFS(pos,0);
-    for(reg int i=1;i<=n;++i)
-        Max=max(Max,f[i]);
-    printf("%d\n",Max+2);
-    return;
+	for(reg int i=1;i<=n;++i)
+		--Deg[i];
+	DFS(1,0);
+	int Max=0,pos=0;
+	for(reg int i=1;i<=n;++i)
+		if(f[i]>Max){
+			Max=f[i];
+			pos=i;
+		}
+	memset(f,0,sizeof(f));
+	DFS(pos,0);
+	for(reg int i=1;i<=n;++i)
+		Max=max(Max,f[i]);
+	printf("%d\n",Max+2);
+	return;
 }
 
 inline void Add_Edge(reg int u,reg int v){
-    Next[++cnt]=head[u];
-    to[cnt]=v;
-    head[u]=cnt;
-    return;
+	Next[++cnt]=head[u];
+	to[cnt]=v;
+	head[u]=cnt;
+	return;
 }
 
 inline void DFS(reg int ID,reg int father){
-    f[ID]=f[father]+Deg[ID];
-    for(reg int i=head[ID];i;i=Next[i])
-        if(to[i]!=father)
-            DFS(to[i],ID);
-    return;
+	f[ID]=f[father]+Deg[ID];
+	for(reg int i=head[ID];i;i=Next[i])
+		if(to[i]!=father)
+			DFS(to[i],ID);
+	return;
 }

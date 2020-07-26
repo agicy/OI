@@ -18,8 +18,8 @@ struct TreeArray{
 	ll Query(int ID){
 		register ll sum=0;
 		while(ID){
-            sum+=unit[ID];
-            ID-=lowbit(ID);
+			sum+=unit[ID];
+			ID-=lowbit(ID);
 		}
 		return sum;
 	}

@@ -220,7 +220,7 @@ inline void Work(void){
 		for(reg int j=i+1;j<=n;++j){
 			reg int cut=LCA(i,j).second;
 			if(cut)
-			    TA.Update(cut,1);
+				TA.Update(cut,1);
 			else
 				++zero;
 		}

@@ -75,9 +75,9 @@ struct BigNumber{
 	inline void Print(void)const{
 		printf("%d",unit[len]);
 		for(reg int i=len-1;i>=0;--i)
-            printf("%0*d",LGBASE,unit[i]);
-        putchar('\n');
-        return;
+			printf("%0*d",LGBASE,unit[i]);
+		putchar('\n');
+		return;
 	}
 	inline void operator=(const BigNumber& a){
 		len=a.len;
@@ -92,19 +92,19 @@ BigNumber four(4);
 
 int main(void){
 	scanf("%d",&n);
-    for(reg int i=3;i<=n;++i){
+	for(reg int i=3;i<=n;++i){
 		if(i&1)
 			Ans1=Ans1+Ans2;
-        else
+		else
 			Ans2=Ans2+Ans1;
 	}
-    if(n%2)
+	if(n%2)
 		Ans=Ans1;
-    else
+	else
 		Ans=Ans2;
 	Ans=Ans*Ans;
-    if((n&1)==0)
+	if((n&1)==0)
 		Ans=Ans-four;
-    Ans.Print();
-    return 0;
+	Ans.Print();
+	return 0;
 }

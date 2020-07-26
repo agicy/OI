@@ -50,7 +50,7 @@ int size[MAXN];
 __int128 dp[MAXN][MAXN];
 
 inline void DFS(int ID,int father){
-    size[ID]=1;
+	size[ID]=1;
 	dp[ID][0]=dp[ID][1]=1;
 	for(reg int i=head[ID];i;i=Next[i]){
 		if(to[i]!=father){
@@ -62,7 +62,7 @@ inline void DFS(int ID,int father){
 				}
 		}
 	}
-    for(reg int i=1;i<=size[ID];++i)
+	for(reg int i=1;i<=size[ID];++i)
 		dp[ID][0]=max(dp[ID][0],dp[ID][i]*i);
 	return;
 }

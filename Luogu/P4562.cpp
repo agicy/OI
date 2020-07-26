@@ -22,14 +22,7 @@ int main(void)
 				vis[j] = true;
 		}
 	}
-	printf("%lld\n",
-		   (
-			   (
-				   (
-					   sum * frac(r - l + 2, MOD)) %
-				   MOD) *
-			   inv(sum + 1, MOD)) %
-			   MOD);
+	printf("%lld\n",(((sum*frac(r-l+2,MOD))%MOD)*inv(sum+1,MOD))%MOD);
 	return 0;
 }
 

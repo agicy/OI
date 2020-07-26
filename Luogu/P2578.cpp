@@ -103,6 +103,6 @@ int main(void){
 	}
 	Print(s);
 	for(reg int i=cnt;i>=1;--i)
-        Print(X[i]);
+		Print(X[i]);
 	return 0;
 }

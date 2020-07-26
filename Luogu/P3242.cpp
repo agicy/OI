@@ -178,9 +178,9 @@ int main(void){
 		if(lca==x){
 			reg int z=getson(y,x);
 			if(dfn[z]>1){
-                Q[++cnt]=(Query){1,1,dfn[y],ed[y],k,1,0};
-                Q[++cnt]=(Query){1,dfn[z],dfn[y],ed[y],k,-1,0};
-            }
+				Q[++cnt]=(Query){1,1,dfn[y],ed[y],k,1,0};
+				Q[++cnt]=(Query){1,dfn[z],dfn[y],ed[y],k,-1,0};
+			}
 			if(ed[z]<n){
 				Q[++cnt]=(Query){1,dfn[y],ed[z]+1,n,k,1,0};
 				Q[++cnt]=(Query){1,ed[y]+1,ed[z]+1,n,k,-1,0};

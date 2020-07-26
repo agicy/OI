@@ -13,9 +13,9 @@ inline int read(void){
 }
 
 int main(void){
-    reg int T=read();
-    while(T--){
-        a=read(),b=read();
-    }
+	reg int T=read();
+	while(T--){
+		a=read(),b=read();
+	}
 	return 0;
 }

@@ -5,9 +5,9 @@ typedef long long ll;
 
 struct Segment_Tree //线段树模板
 {
-	ll unit[(200000 << 2) + 1];          //线段树空间要开到4倍
+	ll unit[(200000 << 2) + 1]; //线段树空间要开到4倍
 	void Update(int, int, int, int, ll); //更新函数
-	ll Query(int, int, int, int, int);   //查询函数
+	ll Query(int, int, int, int, int); //查询函数
 };
 
 char ch[2];

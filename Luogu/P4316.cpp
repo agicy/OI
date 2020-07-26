@@ -32,28 +32,28 @@ queue<int> Q;
 
 inline void Topo(void){
 	Q.push(n);
-    while(!Q.empty()){
-    	reg int ID=Q.front();
-    	Q.pop();
-        for(reg int i=head[ID];i;i=Next[i]){
-        	f[to[i]]+=(f[ID]+w[i])/Deg[to[i]];
-        	--inDeg[to[i]];
-        	if(!inDeg[to[i]])
+	while(!Q.empty()){
+		reg int ID=Q.front();
+		Q.pop();
+		for(reg int i=head[ID];i;i=Next[i]){
+			f[to[i]]+=(f[ID]+w[i])/Deg[to[i]];
+			--inDeg[to[i]];
+			if(!inDeg[to[i]])
 				Q.push(to[i]);
-        }
-    }
-    return;
+		}
+	}
+	return;
 }
 
 int main(void){
-    n=read(),m=read();
-    for(reg int i=1;i<=m;++i){
-    	static int u,v,w;
+	n=read(),m=read();
+	for(reg int i=1;i<=m;++i){
+		static int u,v,w;
 		u=read(),v=read(),w=read();
 		++Deg[u],++inDeg[u];
-        Add_Edge(v,u,w);
-    }
-    Topo();
-    printf("%.2lf\n",f[1]);
-    return 0;
+		Add_Edge(v,u,w);
+	}
+	Topo();
+	printf("%.2lf\n",f[1]);
+	return 0;
 }

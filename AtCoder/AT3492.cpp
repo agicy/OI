@@ -2,6 +2,6 @@
 
 int main(void)
 {
-    puts("52 97");
-    return 0;
+	puts("52 97");
+	return 0;
 }

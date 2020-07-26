@@ -11,22 +11,22 @@ static char buf[100000], *p1 = buf, *p2 = buf;
 
 inline int read(void)
 {
-    register char ch = getchar();
-    register int sum = 0;
-    while (!(ch >= '0' && ch <= '9'))
-        ch = getchar();
-    while (ch >= '0' && ch <= '9')
-        sum = sum * 10 + ch - 48, ch = getchar();
-    return sum;
+	register char ch = getchar();
+	register int sum = 0;
+	while (!(ch >= '0' && ch <= '9'))
+		ch = getchar();
+	while (ch >= '0' && ch <= '9')
+		sum = sum * 10 + ch - 48, ch = getchar();
+	return sum;
 }
 
 struct Node
 {
-    int ID, dis;
-    bool operator<(const Node &a) const
-    {
-        return dis > a.dis;
-    }
+	int ID, dis;
+	bool operator<(const Node &a) const
+	{
+		return dis > a.dis;
+	}
 };
 
 bool vis[101];
@@ -39,64 +39,64 @@ void Dijkstra(int);
 
 int main(void)
 {
-    register int m, op, s, t, u, v, e;
-    read();
-    m = read();
-    while (m--)
-    {
-        op = read();
-        if (op == 0)
-        {
-            s = read(), t = read();
-            Dijkstra(s);
-            printf("%d\n", (dis[t] == INF) ? (-1) : (dis[t]));
-        }
-        if (op == 1)
-        {
-            u = read(), v = read(), e = read();
-            Add_Edge(u, v, e);
-            Add_Edge(v, u, e);
-        }
-    }
-    return 0;
+	register int m, op, s, t, u, v, e;
+	read();
+	m = read();
+	while (m--)
+	{
+		op = read();
+		if (op == 0)
+		{
+			s = read(), t = read();
+			Dijkstra(s);
+			printf("%d\n", (dis[t] == INF) ? (-1) : (dis[t]));
+		}
+		if (op == 1)
+		{
+			u = read(), v = read(), e = read();
+			Add_Edge(u, v, e);
+			Add_Edge(v, u, e);
+		}
+	}
+	return 0;
 }
 
 void Add_Edge(int f, int t, int val)
 {
-    Next[++cnt] = head[f];
-    to[cnt] = t;
-    w[cnt] = val;
-    head[f] = cnt;
-    return;
+	Next[++cnt] = head[f];
+	to[cnt] = t;
+	w[cnt] = val;
+	head[f] = cnt;
+	return;
 }
 
 void Dijkstra(int s)
 {
-    register int i, ID, To;
-    Node temp;
-    memset(vis, false, sizeof(vis));
-    memset(dis, 0X3F, sizeof(dis));
-    dis[s] = 0;
-    temp.ID = s, temp.dis = 0;
-    Q.push(temp);
-    while (!Q.empty())
-    {
-        temp = Q.top();
-        Q.pop();
-        ID = temp.ID;
-        if (vis[ID])
-            continue;
-        vis[ID] = true;
-        for (i = head[ID]; i; i = Next[i])
-        {
-            To = to[i];
-            if (dis[To] > dis[ID] + w[i])
-            {
-                dis[To] = dis[ID] + w[i];
-                temp.ID = To, temp.dis = dis[To];
-                Q.push(temp);
-            }
-        }
-    }
-    return;
+	register int i, ID, To;
+	Node temp;
+	memset(vis, false, sizeof(vis));
+	memset(dis, 0X3F, sizeof(dis));
+	dis[s] = 0;
+	temp.ID = s, temp.dis = 0;
+	Q.push(temp);
+	while (!Q.empty())
+	{
+		temp = Q.top();
+		Q.pop();
+		ID = temp.ID;
+		if (vis[ID])
+			continue;
+		vis[ID] = true;
+		for (i = head[ID]; i; i = Next[i])
+		{
+			To = to[i];
+			if (dis[To] > dis[ID] + w[i])
+			{
+				dis[To] = dis[ID] + w[i];
+				temp.ID = To, temp.dis = dis[To];
+				Q.push(temp);
+			}
+		}
+	}
+	return;
 }

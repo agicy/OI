@@ -6,6 +6,7 @@
 #define inf 2147483646
 #define N 10000
 using namespace std;
+#define reg register
 
 struct ed{
 	int u,w,next,f;
@@ -37,7 +38,8 @@ bool spfa()
 	q.push(0); v[0]=1; d[0]=0;
 	while (!q.empty())
 	{
-		int k=q.front(); q.pop();  v[k]=0;
+		int k=q.front(); q.pop();
+		v[k]=0;
 		for (int i=fir[k];i;i=e[i].next){
 			int u=e[i].u,w=e[i].f;
 			if (d[u]>d[k]+w&&e[i].w){
@@ -51,7 +53,8 @@ bool spfa()
 int dfs(int p,int now)
 {
 	if (p==N){v[N]=1; return now;}
-	int mw=0;  v[p]=1;
+	int mw=0;
+	v[p]=1;
 	for (int i=fir[p];i;i=e[i].next)
 	{
 		int u=e[i].u,w=e[i].f;
@@ -93,10 +96,9 @@ int main()
 	for(reg int i=1;i<=n;++i)
 	for (int i=1;i<=n;i++) add(0,i,a[i],0);
 	sm=n;
-	//for (int k=1;k<=n;k++) ʱ��K(������Ϊn�ˣ�
-	for (int j=1;j<=m;j++) {//��ʦj
+	for(int j=1;j<=m;j++){
 		add(++sm,N,1,0); ha[sm]=j; sp[j]=1;
-		for (int i=1;i<=n;i++) add(i,sm,1,g[i][j]); //��i
+		for (int i=1;i<=n;i++) add(i,sm,1,g[i][j]);
 	}
 	dinic();
 	cout<<cost<<endl;

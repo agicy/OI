@@ -106,7 +106,7 @@ inline void DFS2(reg int ID,reg int father,reg int topf){
 	top[ID]=topf;
 	dfn[ID]=++DFN;
 	rank[dfn[ID]]=ID;
-    if(!son[ID])
+	if(!son[ID])
 		return;
 	DFS2(son[ID],ID,topf);
 	for(reg int i=head[ID];i;i=Next[i])

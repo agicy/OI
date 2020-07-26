@@ -158,13 +158,13 @@ int W[(MAXN*MAXM+MAXN+MAXM)<<1];
 
 inline void Work(void){
 	reg int ans1,ans2;
-    memcpy(W,w,sizeof(w));
+	memcpy(W,w,sizeof(w));
 	Dinic_Min(s,t);
-    ans1=Cost;
-    Cost=0;
-    memcpy(w,W,sizeof(W));
-    Dinic_Max(s,t);
-    ans2=Cost;
-    printf("%d\n%d\n",ans1,ans2);
+	ans1=Cost;
+	Cost=0;
+	memcpy(w,W,sizeof(W));
+	Dinic_Max(s,t);
+	ans2=Cost;
+	printf("%d\n%d\n",ans1,ans2);
 	return;
 }

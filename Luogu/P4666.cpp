@@ -110,7 +110,7 @@ struct Splay{
 		while(true){
 			pushdown(now);
 			if(x<=Max[ch[now][0]])
-			    now=ch[now][0];
+				now=ch[now][0];
 			else{
 				res+=size[ch[now][0]];
 				if(x<=val[now])
@@ -126,7 +126,7 @@ struct Splay{
 		while(true){
 			pushdown(now);
 			if(x<=size[ch[now][0]])
-			    now=ch[now][0];
+				now=ch[now][0];
 			else{
 				x-=size[ch[now][0]];
 				if(x==1){

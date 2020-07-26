@@ -115,8 +115,8 @@ inline void Topo(void){
 
 inline void Work(void){
 	Topo();
-    DFS(0,G2);
-    for(reg int i=1;i<=n;++i)
+	DFS(0,G2);
+	for(reg int i=1;i<=n;++i)
 		printf("%d\n",size[i]-1);
 	return;
 }

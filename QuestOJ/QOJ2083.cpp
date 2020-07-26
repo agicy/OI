@@ -46,8 +46,8 @@ inline void Add_Tube(reg int u,reg int v,reg int len){
 
 inline void Read(void){
 	n=read(),m=read(),s=0,t=n*m+1;
-    for(reg int i=1;i<=n;++i)
-    	scanf("%s",M[i]+1);
+	for(reg int i=1;i<=n;++i)
+		scanf("%s",M[i]+1);
 	return;
 }
 

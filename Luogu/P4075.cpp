@@ -147,7 +147,7 @@ inline void DFS(int ID,const int& father,const int& dep,reg int &Maxdep,const ch
 inline void Calc(const int& ID){
 	if(val[ID]==pre[1])
 		++sumpre[0];
-    if(val[ID]==suf[1])
+	if(val[ID]==suf[1])
 		++sumsuf[0];
 	int Tag=0;
 	for(reg int i=head[ID];i;i=Next[i])

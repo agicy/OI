@@ -87,7 +87,7 @@ struct Splay{
 		while(true){
 			pushdown(now);
 			if(x<=size[ch[now][0]])
-			    now=ch[now][0];
+				now=ch[now][0];
 			else{
 				x-=size[ch[now][0]]+1;
 				if(!x)

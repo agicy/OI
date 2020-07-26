@@ -10,7 +10,7 @@ int a[MAXN][MAXN];
 int main(void){
 	scanf("%d",&n);
 	if(n<=2)
-	    puts("-1");
+		puts("-1");
 	else{
 		reg int cnt=0;
 		for(reg int i=n;i>=4;--i)

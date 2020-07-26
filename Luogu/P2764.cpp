@@ -137,10 +137,10 @@ stack<int> S;
 UnionFind U;
 
 inline void DFS(int ID){
-    for(reg int i=head[ID];i;i=Next[i])
-    	if(w[i]==0&&to[i]>n)
+	for(reg int i=head[ID];i;i=Next[i])
+		if(w[i]==0&&to[i]>n)
 			DFS(to[i]-n);
-    S.push(ID);
+	S.push(ID);
 	return;
 }
 

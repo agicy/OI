@@ -48,7 +48,7 @@ inline void Read(void){
 	n=read(),m=read(),A=read(),B=read(),C=read();
 	for(reg int i=1;i<=m;++i){
 		s[i].Read();
-        T=max(T,s[i].q);
+		T=max(T,s[i].q);
 	}
 	return;
 }

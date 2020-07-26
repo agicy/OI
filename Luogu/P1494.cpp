@@ -28,9 +28,9 @@ int main(void){
 }
 
 inline void Read(void){
-    n=read(),m=read();
-    for(reg int i=1;i<=n;++i)
-        c[i]=read();
+	n=read(),m=read();
+	for(reg int i=1;i<=n;++i)
+		c[i]=read();
 	return;
 }
 

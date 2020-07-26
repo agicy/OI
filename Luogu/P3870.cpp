@@ -97,8 +97,8 @@ inline void Work(void){
 		opt=read(),a=read(),b=read();
 		switch(opt){
 			case 0:T.Update(1,1,n,a,b);break;
-            case 1:printf("%d\n",T.Query(1,1,n,a,b));break;
-            default:break;
+			case 1:printf("%d\n",T.Query(1,1,n,a,b));break;
+			default:break;
 		}
 	}
 	return;

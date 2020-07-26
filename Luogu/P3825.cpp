@@ -102,7 +102,7 @@ inline void Solve(void){
 			return;
 	for(reg int i=1;i<=n;++i)
 		putchar('A'+Ans[i+(color[i]<color[i+n]?0:n)]);
-    exit(0);
+	exit(0);
 	return;
 }
 

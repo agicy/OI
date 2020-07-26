@@ -34,7 +34,7 @@ namespace Poly{
 	inline void Init(void){
 		inv_[1]=1;
 		for(reg int i=2;i<MAXSIZE;++i)
-        	inv_[i]=1ll*(p-p/i)*inv_[p%i]%p;
+			inv_[i]=1ll*(p-p/i)*inv_[p%i]%p;
 	}
 	int r[MAXSIZE];
 	inline int Init(const int len){
