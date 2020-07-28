@@ -20,7 +20,6 @@ namespace SolveA{
 	const int INF=0X3F3F3F3F;
 
 	int n,m;
-	int x[MAXK],y[MAXK];
 	bool G[MAXN][MAXM];
 	int id[MAXN][MAXM];
 
