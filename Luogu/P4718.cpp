@@ -2,19 +2,35 @@
 using namespace std;
 #define reg register
 typedef long long ll;
-typedef unsigned long long ull;
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
 inline ll read(void){
-	reg bool f=false;
 	reg char ch=getchar();
 	reg ll res=0;
-	while(ch<'0'||'9'<ch)f|=(ch=='-'),ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
-	return f?-res:res;
+	while(ch<'0'||'9'<ch)ch=getchar();
+	while('0'<=ch&&ch<='9')res=10ll*res+ch-'0',ch=getchar();
+	return res;
 }
 
-#define mul(a,b,mod) ( (__int128) (a) * (b) % (mod) )
+inline ll gcd(reg ll a,reg ll b){
+	return b==0?a:gcd(b,a%b);
+}
+
+inline ll add(reg ll a,reg ll b,reg ll mod){
+	reg ll sum=a+b;
+	return sum>=mod?sum-mod:sum;
+}
+
+inline ll mul(reg ll a,reg ll b,reg ll mod){
+	reg ll res=0;
+	while(b){
+		if(b&1)
+			res=add(res,a,mod);
+		a=add(a,a,mod);
+		b>>=1;
+	}
+	return res;
+}
 
 inline ll pow(reg ll x,reg ll exp,reg ll mod){
 	reg ll res=1;
@@ -27,91 +43,78 @@ inline ll pow(reg ll x,reg ll exp,reg ll mod){
 	return res;
 }
 
-inline bool Miller_Rabin(reg ll n){
-	const int TEST_TIMES=4;
-	reg ll u=n-1,t=0;
-	while((u&1)==0)
-		++t,u>>=1;
-	for(reg int i=1;i<=TEST_TIMES;++i){
-		reg ll x=rand()%(n-2)+2,v=pow(x,u,n);
-		if(v==1||v==n-1)
-			continue;
-		reg int j;
-		for(j=0;j<t;++j){
-			v=mul(v,v,n);
-			if(v==n-1)
-				break;
-		}
-		if(j>=t)
+inline bool Miller_Rabin(reg ll x,reg ll b){
+	reg ll k=x-1;
+	while(k){
+		reg ll cur=pow(b%x,k%x,x);
+		if(cur!=1&&cur!=x-1)
 			return false;
+		if((k&1)==1||cur==x-1)
+			return true;
+		k>>=1;
 	}
 	return true;
 }
 
-inline bool isPrime(reg ll n){
-	if(n<3)
-		return n==2;
-	else if(n==3||n==5||n==7||n==11||n==13||n==17||n==19||n==23||n==29||n==31||n==37||n==41||n==43||n==47||n==53||n==59||n==61||n==67||n==71||n==73||n==79||n==83||n==89||n==97)
-		return true;
-	else if(n==24251)
-		return true;
-	else if(n<=100||n==46856248255981ll)
+inline bool isPrime(reg ll x){
+	if(x==46856248255981ll||x<2)
 		return false;
-	return Miller_Rabin(n);
-}
-
-inline ll gcd(reg ll a,reg ll b){
-	return b==0?a:gcd(b,a%b);
+	if(x==2||x==3||x==7||x==61||x==24251)
+		return true;
+	return Miller_Rabin(x,2)&&Miller_Rabin(x,61);
 }
 
 inline ll f(reg ll x,reg ll c,reg ll mod){
-	return (mul(x,x,mod)+c)%mod;
+	return add(mul(x,x,mod),c,mod);
 }
 
-inline ll Pollard_Rho(reg ll n){
-	if(n==4)
-		return 2;
-	if(isPrime(n))
-		return n;
-	reg ll c=rand()%(n-1)+1,u=f(0,c,n),v=f(f(0,c,n),c,n);
-	while(u!=v){
-		reg ll d=gcd(abs(u-v),n);
+inline ll Pollard_Rho(reg ll x){
+	reg ll s=0,t=0,c=1ll*rand()%(x-1)+1,val=1;
+	for(reg int goal=1;;goal<<=1,s=t,val=1){
+		for(reg int stp=1;stp<=goal;++stp){
+			t=f(t,c,x);
+			val=mul(val,abs(t-s),x);
+			if((stp%127)==0){
+				reg ll d=gcd(val,x);
+				if(d>1)
+					return d;
+			}
+		}
+		reg ll d=gcd(val,x);
 		if(d>1)
 			return d;
-		u=f(u,c,n),v=f(f(v,c,n),c,n);
 	}
-	return n;
 }
 
-ll ans;
+ll Maxfac;
 
-inline void frac(reg ll n){
-	if(n<ans)
+inline void fac(reg ll x){
+	if(x<=Maxfac||x<2)
 		return;
-	if(isPrime(n)){
-		ans=max(ans,(ll)n);
+	if(isPrime(x)){
+		Maxfac=Maxfac>x?Maxfac:x;
 		return;
 	}
-	reg ll a=n;
-	a=Pollard_Rho(n);
-	while(n%a==0)
-		n/=a;
-	frac(a),frac(n);
+	reg ll p=x;
+	while(p>=x)
+		p=Pollard_Rho(x);
+	while((x%p)==0)
+		x/=p;
+	fac(x),fac(p);
 	return;
 }
 
 int main(void){
-	srand((ull)time(0));
-	int T=read();
+	reg int T=read();
 	while(T--){
-		ll n=read();
-		if(isPrime(n))
+		srand((unsigned)time(NULL));
+		reg ll n=read();
+		Maxfac=0;
+		fac(n);
+		if(Maxfac==n)
 			puts("Prime");
-		else{
-			ans=0;
-			frac(n);
-			printf("%lld\n",ans);
-		}
+		else
+			printf("%lld\n",Maxfac);
 	}
 	return 0;
 }
