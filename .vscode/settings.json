@@ -19,6 +19,7 @@
 		"vector": "cpp",
 		"cmath": "cpp",
 		"thread": "cpp",
-		"type_traits": "cpp"
+		"type_traits": "cpp",
+		"algorithm": "cpp"
 	}
 }
