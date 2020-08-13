@@ -21,6 +21,7 @@
 		"thread": "cpp",
 		"type_traits": "cpp",
 		"algorithm": "cpp",
-		"ratio": "cpp"
+		"ratio": "cpp",
+		"complex": "cpp"
 	}
 }
