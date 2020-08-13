@@ -22,6 +22,8 @@
 		"type_traits": "cpp",
 		"algorithm": "cpp",
 		"ratio": "cpp",
-		"complex": "cpp"
+		"complex": "cpp",
+		"typeinfo": "cpp",
+		"charconv": "cpp"
 	}
 }
