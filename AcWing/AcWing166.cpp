@@ -2,7 +2,6 @@
 using namespace std;
 #define reg register
 typedef long long ll;
-typedef unsigned long long ull;
 #define lowbit(x) ( (x) & ( - (x) ) )
 
 const int MAXSIZE=9;
@@ -13,8 +12,7 @@ int p[1<<MAXSIZE];
 
 inline void Init(void){
 	for(reg int i=0;i<(1<<MAXSIZE);++i)
-		for(reg int j=i;j;j-=lowbit(j))
-			++cnt[i];
+		cnt[i]=cnt[i>>1]+(i&1);
 	for(reg int i=0;i<MAXSIZE;++i)
 		p[1<<i]=i;
 	return;
@@ -38,11 +36,14 @@ struct Node{
 		for(reg int i=0;i<MAXSIZE;++i)
 			for(reg int j=0;j<MAXSIZE;++j)
 				switch(str[i][j]){
-					case '.':
+					case '.':{
 						++res;
 						break;
-					default:
+					}
+					default:{
 						draw(i,j,str[i][j]-'1');
+						break;
+					}
 				}
 		return res;
 	}
@@ -96,17 +97,14 @@ inline bool DFS(reg int need,Node a){
 		}
 		if(sor!=(1<<MAXSIZE)-1)
 			return false;
-		for(reg int j=sand;j;j-=lowbit(j)){
-			if(!(drawn&lowbit(j))){
-				for(reg int k=0;k<MAXSIZE;++k){
+		for(reg int j=sand;j;j-=lowbit(j))
+			if(!(drawn&lowbit(j)))
+				for(reg int k=0;k<MAXSIZE;++k)
 					if(a.S[i][k]&lowbit(j)){
 						--need;
 						a.draw(i,k,p[lowbit(j)]);
 						break;
 					}
-				}
-			}
-		}
 	}
 	for(reg int i=0;i<MAXSIZE;++i){
 		reg int sor=0,sand=(1<<MAXSIZE)-1,drawn=0;
@@ -118,17 +116,14 @@ inline bool DFS(reg int need,Node a){
 		}
 		if(sor!=(1<<MAXSIZE)-1)
 			return false;
-		for(reg int j=sand;j;j-=lowbit(j)){
-			if(!(drawn&lowbit(j))){
-				for(reg int k=0;k<MAXSIZE;++k){
+		for(reg int j=sand;j;j-=lowbit(j))
+			if(!(drawn&lowbit(j)))
+				for(reg int k=0;k<MAXSIZE;++k)
 					if(a.S[k][i]&lowbit(j)){
 						--need;
 						a.draw(k,i,p[lowbit(j)]);
 						break;
 					}
-				}
-			}
-		}
 	}
 	for(reg int i=0;i<MAXSIZE;++i){
 		reg int sor=0,sand=(1<<MAXSIZE)-1,drawn=0;
@@ -142,8 +137,8 @@ inline bool DFS(reg int need,Node a){
 		}
 		if(sor!=(1<<MAXSIZE)-1)
 			return false;
-		for(reg int j=sand;j;j-=lowbit(j)){
-			if(!(drawn&lowbit(j))){
+		for(reg int j=sand;j;j-=lowbit(j))
+			if(!(drawn&lowbit(j)))
 				for(reg int k=0;k<MAXSIZE;++k){
 					reg int sx=i/MAXCSIZE*MAXCSIZE,sy=i%MAXCSIZE*MAXCSIZE;
 					reg int dx=k/MAXCSIZE,dy=k%MAXCSIZE;
@@ -153,8 +148,6 @@ inline bool DFS(reg int need,Node a){
 						break;
 					}
 				}
-			}
-		}
 	}
 	if(!need){
 		a.Print();
@@ -162,12 +155,11 @@ inline bool DFS(reg int need,Node a){
 	}
 	reg int Min=MAXSIZE,posx=-1,posy=-1;
 	for(reg int i=0;i<MAXSIZE;++i)
-		for(reg int j=0;j<MAXSIZE;++j){
+		for(reg int j=0;j<MAXSIZE;++j)
 			if(a.str[i][j]=='.'&&cnt[a.S[i][j]]<Min){
 				Min=cnt[a.S[i][j]];
 				posx=i,posy=j;
 			}
-		}
 	if(posx==-1&&posy==-1)
 		return false;
 	reg int k=a.S[posx][posy];
