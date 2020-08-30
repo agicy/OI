@@ -1,14 +1,12 @@
 #include<bits/stdc++.h>
 using namespace std;
-#define reg register
 typedef long long ll;
-typedef unsigned long long ull;
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
 inline int read(void){
-	reg bool f=false;
-	reg char ch=getchar();
-	reg int res=0;
+	bool f=false;
+	char ch=getchar();
+	int res=0;
 	while(ch<'0'||'9'<ch)f|=(ch=='-'),ch=getchar();
 	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
 	return f?-res:res;
@@ -18,19 +16,19 @@ const int MAXN=100000+5;
 
 struct Splay{
 	int rt,tot,fa[MAXN],ch[MAXN][2],val[MAXN],cnt[MAXN],sz[MAXN];
-	inline void maintain(reg int x){
+	inline void maintain(int x){
 		sz[x]=sz[ch[x][0]]+sz[ch[x][1]]+cnt[x];
 		return;
 	}
-	inline bool get(reg int x){
+	inline bool get(int x){
 		return x==ch[fa[x]][1];
 	}
-	inline void clear(reg int x){
+	inline void clear(int x){
 		ch[x][0]=ch[x][1]=fa[x]=val[x]=sz[x]=cnt[x]=0;
 		return;
 	}
-	inline void rotate(reg int x){
-		reg int y=fa[x],z=fa[y],chk=get(x);
+	inline void rotate(int x){
+		int y=fa[x],z=fa[y],chk=get(x);
 		ch[y][chk]=ch[x][chk^1];
 		fa[ch[x][chk^1]]=y;
 		ch[x][chk^1]=y;
@@ -42,8 +40,8 @@ struct Splay{
 		maintain(y);
 		return;
 	}
-	inline void splay(reg int x,reg int goal){
-		reg int f;
+	inline void splay(int x,int goal){
+		int f;
 		for(f=fa[x];f=fa[x],f!=goal;rotate(x))
 			if(fa[f]!=goal)
 				rotate(get(x)==get(f)?f:x);
@@ -51,7 +49,7 @@ struct Splay{
 			rt=x;
 		return;
 	}
-	inline void ins(reg int k){
+	inline void ins(int k){
 		if(!rt){
 			val[++tot]=k;
 			++cnt[tot];
@@ -59,7 +57,7 @@ struct Splay{
 			maintain(rt);
 			return;
 		}
-		reg int cnr=rt,f=0;
+		int cnr=rt,f=0;
 		while(true){
 			if(val[cnr]==k){
 				++cnt[cnr];
@@ -82,8 +80,8 @@ struct Splay{
 			}
 		}
 	}
-	inline int rk(reg int k){
-		reg int res=0,cnr=rt;
+	inline int rk(int k){
+		int res=0,cnr=rt;
 		while(true)
 			if(k<val[cnr])
 				cnr=ch[cnr][0];
@@ -97,8 +95,8 @@ struct Splay{
 				cnr=ch[cnr][1];
 			}
 	}
-	inline int kth(reg int k){
-		reg int cnr=rt;
+	inline int kth(int k){
+		int cnr=rt;
 		while(true)
 			if(ch[cnr][0]&&k<=sz[ch[cnr][0]])
 				cnr=ch[cnr][0];
@@ -110,18 +108,18 @@ struct Splay{
 			}
 	}
 	inline int pre(void){
-		reg int cnr=ch[rt][0];
+		int cnr=ch[rt][0];
 		while(ch[cnr][1])
 			cnr=ch[cnr][1];
 		return cnr;
 	}
 	inline int nxt(void){
-		reg int cnr=ch[rt][1];
+		int cnr=ch[rt][1];
 		while(ch[cnr][0])
 			cnr=ch[cnr][0];
 		return cnr;
 	}
-	inline void del(reg int k){
+	inline void del(int k){
 		rk(k);
 		if(cnt[rt]>1){
 			--cnt[rt];
@@ -147,7 +145,7 @@ struct Splay{
 			clear(cnr);
 			return;
 		}
-		reg int x=pre(),cnr=rt;
+		int x=pre(),cnr=rt;
 		splay(x,0);
 		fa[ch[cnr][1]]=x;
 		ch[x][1]=ch[cnr][1];
