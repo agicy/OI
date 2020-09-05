@@ -1,104 +1,74 @@
-#include <algorithm>
-#include <cmath>
-#include <cstdio>
-using std::swap;
-
-#define M_PI 3.14159265358979323846
-
-#define getchar() (p1 == p2 && (p2 = (p1 = buf) + fread(buf, 1, 100000, stdin), p1 == p2) ? EOF : *p1++)
-static char buf[100000], *p1 = buf, *p2 = buf;
-
-inline long long read(void)
-{
-	register bool f = false;
-	register char ch = getchar();
-	register long long sum = 0;
-	while (!(ch >= '0' && ch <= '9'))
-		ch = getchar(),
-		f = (ch == '-') ? (!f) : (f);
-	while (ch >= '0' && ch <= '9')
-		sum = sum * 10 + ch - 48, ch = getchar();
-	return sum;
+#include<bits/stdc++.h>
+using namespace std;
+#define reg register
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
+static char buf[100000],*p1=buf,*p2=buf;
+inline int read(void){
+	reg char ch=getchar();
+	reg int res=0;
+	while(ch<'0'||'9'<ch)ch=getchar();
+	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
+	return res;
 }
 
-struct Complex
-{
-	double x, y;
-	Complex(void)
-	{
-		x = y = 0;
-		return;
-	}
-	Complex(double _x, double _y)
-	{
-		x = _x, y = _y;
-		return;
-	}
-	Complex operator+(Complex op)
-	{
-		return Complex(this->x + op.x, this->y + op.y);
-	}
-	Complex operator-(Complex op)
-	{
+const double pi=acos(-1.0);
 
-		return Complex(this->x - op.x, this->y - op.y);
+struct Complex{
+	double x,y;
+	inline Complex(reg double x=0,reg double y=0):x(x),y(y){
+		return;
 	}
-	Complex operator*(Complex op)
-	{
-		return Complex(
-			this->x * op.x - this->y * op.y,
-			this->x * op.y + this->y * op.x);
+	inline Complex operator+(const Complex& a){
+		return Complex(x+a.x,y+a.y);
+	}
+	inline Complex operator-(const Complex& a){
+		return Complex(x-a.x,y-a.y);
+	}
+	inline Complex operator*(const Complex& a){
+		return Complex(x*a.x-y*a.y,x*a.y+y*a.x);
 	}
 };
 
-int n, m, limit = 1, l, r[10000001];
-Complex a[10000001], b[10000001];
+const int MAXSIZE=2097152*4;
 
-void FFT(Complex a[], int f);
+int n,m;
+int limit,l,r[MAXSIZE];
+Complex a[MAXSIZE], b[MAXSIZE];
 
-int main(void)
-{
-	register int i;
-	n = read(), m = read();
-	for (i = 0; i <= n; ++i)
-		a[i].x = read();
-	for (i = 0; i <= m; ++i)
-		b[i].x = read();
-	while (limit <= n + m)
-		limit <<= 1, ++l;
-	for (i = 0; i < limit; ++i)
-		r[i] = (r[i >> 1] >> 1) | ((i & 1) << (l - 1));
-	FFT(a, 1);
-	FFT(b, 1);
-	for (i = 0; i <= limit; ++i)
-		a[i] = a[i] * b[i];
-	FFT(a, -1);
-	for (i = 0; i <= n + m; ++i)
-		printf("%d ", (int)(a[i].x / limit + 0.5));
-	putchar('\n');
-	return 0;
-}
-
-void FFT(Complex a[], int f)
-{
-	register int i, j, k;
-	Complex w, e, x, y;
-	for (i = 0; i < limit; ++i)
-		if (i < r[i])
-			swap(a[i], a[r[i]]);
-	for (i = 1; i < limit; i <<= 1)
-	{
-		w = Complex(cos(M_PI / i), f * sin(M_PI / i));
-		for (j = 0; j < limit; j += i << 1)
-		{
-			e = Complex(1, 0);
-			for (k = 0; k < i; ++k, e = e * w)
-			{
-				x = a[j + k], y = a[j + k + i] * e;
-				a[j + k] = x + y;
-				a[j + k + i] = x - y;
+inline void DFT(reg Complex a[],reg int f){
+	for(reg int i=0;i<limit;++i)
+		if(i<r[i])
+			swap(a[i],a[r[i]]);
+	for(reg int i=1;i<limit;i<<=1){
+		Complex w(cos(pi/i),f*sin(pi/i));
+		for(reg int j=0;j<limit;j+=(i<<1)){
+			Complex e(1,0);
+			for(reg int k=0;k<i;++k,e=e*w){
+				static Complex x,y;
+				x=a[j+k],y=a[j+k+i]*e;
+				a[j+k]=x+y,a[j+k+i]=x-y;
 			}
 		}
 	}
 	return;
+}
+
+int main(void){
+	n=read(),m=read();
+	for(reg int i=0;i<=n;++i)
+		a[i].x=read();
+	for(reg int i=0;i<=m;++i)
+		b[i].x=read();
+	limit=1;
+	while(limit<=n+m)
+		limit<<=1,++l;
+	for(reg int i=0;i<limit;++i)
+		r[i]=(r[i>>1]>>1)|((i&1)<<(l-1));
+	DFT(a,1),DFT(b,1);
+	for(reg int i=0;i<=limit;++i)
+		a[i]=a[i]*b[i];
+	DFT(a,-1);
+	for(reg int i=0;i<=n+m;++i)
+		printf("%d%c",(int)(a[i].x/limit+0.5),i==n+m?'\n':' ');
+	return 0;
 }

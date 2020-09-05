@@ -15,12 +15,14 @@ inline int read(void){
 const int MAXN=100000+5;
 const int MAXM=100000+5;
 
+inline void Init(void);
 inline void Read(void);
 inline void Work(void);
 
 int main(void){
 	reg int T=read();
 	while(T--){
+		Init();
 		Read();
 		Work();
 	}
@@ -29,28 +31,16 @@ int main(void){
 
 int n,m;
 int ans[MAXM];
-bool vis[MAXN];
-int cnt,head[MAXN],to[MAXN<<1],Next[MAXN<<1];
-
-inline void Add_Edge(reg int u,reg int v){
-	Next[++cnt]=head[u];
-	to[cnt]=v;
-	head[u]=cnt;
-	return;
-}
-
+vector<int> G[MAXN];
 vector<pair<int,int>/**/> q[MAXN];
 
 inline void Read(void){
 	n=read(),m=read();
-	cnt=0;
-	for(reg int i=1;i<=n;++i)
-		head[i]=0,q[i].clear(),vis[i]=false;
 	for(reg int i=1;i<n;++i){
 		static int a,b;
 		a=read(),b=read();
-		Add_Edge(a,b);
-		Add_Edge(b,a);
+		G[a].push_back(b);
+		G[b].push_back(a);
 	}
 	for(int i=1;i<=m;++i){
 		static int x,k;
@@ -68,16 +58,17 @@ inline void Read(void){
 int tot,Min;
 int root;
 int size[MAXN];
+bool vis[MAXN];
 
 inline void find(reg int ID,reg int father){
 	int Max=0;
 	size[ID]=1;
-	for(reg int i=head[ID];i;i=Next[i]){
-		reg int v=to[i];
-		if(v!=father&&!vis[v]){
-			find(v,ID);
-			size[ID]+=size[v];
-			Max=max(Max,size[v]);
+	for(reg int i=0,S=G[ID].size();i<S;++i){
+		reg int to=G[ID][i];
+		if(to!=father&&!vis[to]){
+			find(to,ID);
+			size[ID]+=size[to];
+			Max=max(Max,size[to]);
 		}
 	}
 	Max=max(Max,tot-size[ID]);
@@ -95,10 +86,10 @@ inline void Query(reg int ID,reg int father,reg int dep){
 		if(q[ID][i].second>=dep)
 			ans[q[ID][i].first]+=T[q[ID][i].second-dep];
 	}
-	for(reg int i=head[ID];i;i=Next[i]){
-		reg int v=to[i];
-		if(v!=father&&!vis[v])
-			Query(v,ID,dep+1);
+	for(reg int i=0,size=G[ID].size();i<size;++i){
+		reg int to=G[ID][i];
+		if(to!=father&&!vis[to])
+			Query(to,ID,dep+1);
 	}
 	return;
 }
@@ -107,10 +98,10 @@ int top,S[MAXN];
 
 inline void Update(reg int ID,reg int father,reg int dep){
 	++T[dep],S[++top]=dep;
-	for(reg int i=head[ID];i;i=Next[i]){
-		reg int v=to[i];
-		if(v!=father&&!vis[v])
-			Update(v,ID,dep+1);
+	for(reg int i=0,size=G[ID].size();i<size;++i){
+		reg int to=G[ID][i];
+		if(!vis[to]&&to!=father)
+			Update(to,ID,dep+1);
 	}
 	return;
 }
@@ -119,32 +110,33 @@ inline void Solve(reg int ID){
 	vis[ID]=true;
 	++T[0];
 	S[++top]=0;
-	int St[MAXN];
-	reg int topt=0;
-	for(reg int i=head[ID];i;i=Next[i]){
-		reg int v=to[i];
-		if(!vis[v]){
-			St[++topt]=v;
-			Query(v,0,1);
-			Update(v,0,1);
+	for(reg int i=0,size=G[ID].size();i<size;++i){
+		reg int to=G[ID][i];
+		if(!vis[to]){
+			Query(to,0,1);
+			Update(to,0,1);
 		}
 	}
 	while(top)
 		T[S[top--]]=0;
-	while(topt){
-		reg int v=St[topt--];
-		Query(v,0,1);
-		Update(v,0,1);
+	reverse(G[ID].begin(),G[ID].end());
+	for(reg int i=0,size=G[ID].size();i<size;++i){
+		reg int to=G[ID][i];
+		if(!vis[to]){
+			Query(to,0,1);
+			Update(to,0,1);
+		}
 	}
-	for(reg int i=0,size=q[ID].size();i<size;++i)
+	for(reg int i=0,size=q[ID].size();i<size;++i){
 		ans[q[ID][i].first]+=T[q[ID][i].second];
+	}
 	while(top)
 		T[S[top--]]=0;
-	for(reg int i=head[ID];i;i=Next[i]){
-		reg int v=to[i];
-		if(!vis[v]){
-			tot=size[v],Min=INF;
-			find(v,0);
+	for(reg int i=0,S=G[ID].size();i<S;++i){
+		reg int to=G[ID][i];
+		if(!vis[to]){
+			tot=size[to],Min=INF;
+			find(to,0);
 			Solve(root);
 		}
 	}
@@ -156,6 +148,12 @@ inline void Work(void){
 	find(1,0);
 	Solve(root);
 	for(reg int i=1;i<=m;++i)
-		printf("%d\n",ans[i]);
+		printf("%d%c",ans[i],i==m?'\n':' ');
+	return;
+}
+
+inline void Init(void){
+	for(reg int i=1;i<=n;++i)
+		G[i].clear(),q[i].clear(),vis[i]=false;
 	return;
 }
