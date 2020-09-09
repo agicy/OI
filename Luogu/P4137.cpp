@@ -4,73 +4,63 @@ using namespace std;
 typedef long long ll;
 
 const int MAXN=2e5+5;
-const int MAXM=2e5+5;
+const int MAX=1e9+5;
 
-struct querys{
-	int l,r,id,bl;
-	inline querys(reg int l=0,reg int r=0,reg int id=0,reg int bl=0):l(l),r(r),id(id),bl(bl){
+namespace SegmentTree{
+	#define mid ( ( (l) + (r) ) >> 1 )
+	const int MAXSIZE=MAXN*40;
+	struct Node{
+		int lson,rson;
+		int val;
+		#define lson(x) unit[(x)].lson
+		#define rson(x) unit[(x)].rson
+		#define val(x) unit[(x)].val
+	};
+	int tot,root[MAXN];
+	Node unit[MAXSIZE];
+	inline void pushup(reg int k){
+		val(k)=min(val(lson(k)),val(rson(k)));
 		return;
 	}
-	inline bool operator<(const querys& a)const{
-		return bl==a.bl?r<a.r:bl<a.bl;
+	inline int update(reg int pre,reg int l,reg int r,reg int pos,reg int Val){
+		reg int k=++tot;
+		lson(k)=lson(pre),rson(k)=rson(pre);
+		if(l==r){
+			val(k)=Val;
+			return k;
+		}
+		if(pos<=mid)
+			lson(k)=update(lson(pre),l,mid,pos,Val);
+		else
+			rson(k)=update(rson(pre),mid+1,r,pos,Val);
+		pushup(k);
+		return k;
 	}
-};
+	inline int query(reg int k,reg int l,reg int r,reg int Val){
+		if(l==r)
+			return l;
+		if(val(lson(k))<Val)
+			return query(lson(k),l,mid,Val);
+		else
+			return query(rson(k),mid+1,r,Val);
+	}
+}
+
+using namespace SegmentTree;
 
 int n,m;
 int a[MAXN];
-int B;
-int Ans;
-int cnt[MAXN<<1];
-int ans[MAXM];
-querys Q[MAXM];
-
-inline void del(reg int x){
-	--cnt[a[x]];
-	if(!cnt[a[x]])
-		Ans=min(Ans,a[x]);
-	return;
-}
-
-inline void add(reg int x){
-	++cnt[a[x]];
-	while(cnt[Ans])
-		++Ans;
-	return;
-}
-
-vector<int> V;
 
 int main(void){
 	scanf("%d%d",&n,&m);
-	reg int B=sqrt(n);
 	for(reg int i=1;i<=n;++i){
 		scanf("%d",&a[i]);
-		V.push_back(a[i]);
-		V.push_back(a[i]+1);
+		root[i]=update(root[i-1],0,MAX,a[i],i);
 	}
-	sort(V.begin(),V.end());
-	V.erase(unique(V.begin(),V.end()),V.end());
-	for(reg int i=1;i<=n;++i)
-		a[i]=lower_bound(V.begin(),V.end(),a[i])-V.begin();
 	for(reg int i=1;i<=m;++i){
 		static int l,r;
 		scanf("%d%d",&l,&r);
-		Q[i]=querys(l,r,i,(l-1)/B+1);
+		printf("%d\n",query(root[r],0,MAX,l));
 	}
-	reg int l=1,r=0;
-	sort(Q+1,Q+m+1);
-	for(reg int i=1;i<=m;++i){
-		while(r<Q[i].r)
-			add(++r);
-		while(r>Q[i].r)
-			del(r--);
-		while(l<Q[i].l)
-			del(l++);
-		while(l>Q[i].l)
-			add(--l);
-		ans[Q[i].id]=V[Ans];
-	}
-	for(reg int i=1;i<=m;++i)
-		printf("%d\n",ans[i]);
 	return 0;
 }
