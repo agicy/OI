@@ -106,7 +106,7 @@ namespace SubtaskA{
 		inline void update(reg int k,reg int l,reg int r,reg int pos,reg int val){
 			if(l==r){
 				Max(k)=Min(k)=val;
-                cnt(k)=(val!=0)?1:0;
+				cnt(k)=(val!=0)?1:0;
 				return;
 			}
 			pushdown(k,l,r);

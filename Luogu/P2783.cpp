@@ -59,8 +59,8 @@ namespace Graph{
 					low[ID]=min(low[ID],dfn[to[i]]);
 			}
 		if(dfn[ID]==low[ID]){
-		    color[ID]=++Tarjan_cnt;
-		    while(S[top]!=ID)
+			color[ID]=++Tarjan_cnt;
+			while(S[top]!=ID)
 				color[S[top--]]=Tarjan_cnt;
 			--top;
 		}

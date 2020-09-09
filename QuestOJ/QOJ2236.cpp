@@ -133,8 +133,8 @@ PLI edge[MAXN];
 int main(void){
 	using namespace UnionFind;
 	using namespace SegmentTree;
-    n=read(),m=read();
-    reg int tot=0;
+	n=read(),m=read();
+	reg int tot=0;
 	for(reg int i=1;i<=m;++i){
 		static int l1,r1,l2,r2;
 		static ll w;
