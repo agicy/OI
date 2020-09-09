@@ -89,9 +89,8 @@ int main(void){
 	for(reg int r=1,l=1;r<=n;++r){
 		for(reg int i=0,siz=add[r].size();i<siz;++i)
 			SegmentTree::update(1,1,m,add[r][i].l,add[r][i].r,1);
-		int Max=SegmentTree::unit[1].Max;
-		ans=max(ans,min(Max,r-l+1));
-		if(r-l+1>Max){
+		ans=max(ans,min(SegmentTree::unit[1].Max,r-l+1));
+		while(r-l+1>SegmentTree::unit[1].Max){
 			for(reg int i=0,siz=del[l].size();i<siz;++i)
 				SegmentTree::update(1,1,m,del[l][i].l,del[l][i].r,-1);
 			++l;
