@@ -121,9 +121,9 @@ int main(void){
 			for(reg int j=1;j<=m;++j){
 				id[i][j]=++tot;
 				if(pos[i].y<=S[j].r)
-					Add_Edge(s,tot,S[j].c);
+					Add_Edge(s,id[i][j],S[j].c);
 				if(pos[i].y+S[j].r>=W)
-					Add_Edge(tot,t,0);
+					Add_Edge(id[i][j],t,0);
 			}
 		for(reg int i=1;i<=n;++i)
 			for(reg int j=1;j<m;++j)
