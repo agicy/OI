@@ -98,9 +98,6 @@ inline int dijkstra(reg int s,reg int t){
 	return dis[t];
 }
 
-bool is[MAXM];
-int suf[MAXM];
-
 int main(void){
 	reg int T=read();
 	while(T--){
@@ -110,19 +107,13 @@ int main(void){
 		for(reg int i=1;i<=m;++i)
 			pie[i].r=read(),pie[i].c=read();
 		sort(pie+1,pie+m+1);
-		suf[m]=pie[m].c;
-		for(reg int i=m-1;i>=1;--i)
-			suf[i]=min(suf[i+1],pie[i].c);
-		memset(is,false,sizeof(is));
-		for(reg int i=1;i<m;++i)
-			if(pie[i].c>=suf[i+1])
-				is[i]=true;
 		reg int top=0;
-		for(reg int i=1;i<=m;++i)
-			if(!is[i])
-				S[++top]=pie[i];
+		for(reg int i=1;i<=m;++i){
+			while(top&&S[top].c>=pie[i].c)
+				--top;
+			S[++top]=pie[i];
+		}
 		m=top;
-
 		reg int s=0,t=n*m+1,tot=0;
 		for(reg int i=s;i<=t;++i)
 			G[i].clear();
@@ -130,9 +121,9 @@ int main(void){
 			for(reg int j=1;j<=m;++j){
 				id[i][j]=++tot;
 				if(pos[i].y<=S[j].r)
-					Add_Edge(s,id[i][j],S[j].c);
+					Add_Edge(s,tot,S[j].c);
 				if(pos[i].y+S[j].r>=W)
-					Add_Edge(id[i][j],t,0);
+					Add_Edge(tot,t,0);
 			}
 		for(reg int i=1;i<=n;++i)
 			for(reg int j=1;j<m;++j)
