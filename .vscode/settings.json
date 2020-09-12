@@ -74,5 +74,6 @@
 		"any": "cpp",
 		"bit": "cpp",
 		"variant": "cpp"
-	}
+	},
+	"files.eol": "\n"
 }
