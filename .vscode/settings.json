@@ -70,6 +70,9 @@
 		"sstream": "cpp",
 		"stdexcept": "cpp",
 		"streambuf": "cpp",
-		"typeindex": "cpp"
+		"typeindex": "cpp",
+		"any": "cpp",
+		"bit": "cpp",
+		"variant": "cpp"
 	}
 }

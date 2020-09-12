@@ -14,8 +14,11 @@
             "cStandard": "c18",
             "cppStandard": "c++20",
             "compilerArgs": [
-                "-m64"
-            ]
+                "-m64",
+                "-Wall",
+                "-Wextra"
+            ],
+            "intelliSenseMode": "gcc-x64"
         },
         {
             "name": "FZOI-1",
@@ -31,8 +34,31 @@
             "cStandard": "c18",
             "cppStandard": "c++20",
             "compilerArgs": [
-                "-m64"
-            ]
+                "-m64",
+                "-Wall",
+                "-Wextra"
+            ],
+            "intelliSenseMode": "gcc-x64"
+        },
+        {
+            "name": "DESKTOP-42AMUUH",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "C:\\Program Files\\TDM-GCC-64\\bin\\gcc.exe",
+            "cStandard": "c11",
+            "cppStandard": "gnu++14",
+            "compilerArgs": [
+                "-m64",
+                "-Wall",
+                "-Wextra"
+            ],
+            "intelliSenseMode": "gcc-x64"
         }
     ],
     "version": 4
