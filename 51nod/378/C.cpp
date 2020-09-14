@@ -17,187 +17,66 @@ const int MAXN=1e5+5;
 int n;
 int a[MAXN];
 
-namespace Subtask1{
-	struct Q2Q{
-		priority_queue<int,vector<int>,less<int>/**/> fr;
-		priority_queue<int,vector<int>,greater<int>/**/> ba;
-		inline void Init(void){
-			while(!fr.empty())fr.pop();
-			while(!ba.empty())ba.pop();
-			return;
-		}
-		inline void push(int x){
-			if(fr.empty())
-				fr.push(x);
-			else
-				ba.push(x);
-			while(fr.size()>ba.size()){
-				ba.push(fr.top());
-				fr.pop();
-			}
-			while(ba.size()>fr.size()+1){
-				fr.push(ba.top());
-				ba.pop();
-			}
-			while(!ba.empty()&&!fr.empty()&&fr.top()>ba.top()){
-				int tmp1=fr.top(),tmp2=ba.top();
-				fr.pop(),ba.pop();
-				fr.push(tmp2),ba.push(tmp1);
-			}
-			return;
-		}
-		inline int top(void){
-			return ba.top();
-		}
-	};
-	Q2Q q,Q;
-	inline void Solve(void){
-		Q.Init();
-		for(reg int i=1;i<=n;++i){
-			q.Init();
-			for(reg int j=i;j<=n;++j){
-				q.push(a[j]);
-				Q.push(q.top());
-			}
-		}
-		printf("%d\n",Q.top());
+int c[MAXN];
+int T[MAXN];
+ll sum,tot;
+
+namespace BIT{
+	inline int lowbit(reg int x){
+		return x&(-x);
+	}
+	int n,unit[MAXN*2];
+	inline void Init(reg int s){
+		n=s;
+		memset(unit,0,sizeof(unit));
 		return;
+	}
+	inline void update(reg int id,reg int val){
+		for(reg int i=id;i<=n;i+=lowbit(i))
+			unit[i]+=val;
+		return;
+	}
+	inline int query(reg int id){
+		reg int res=0;
+		for(reg int i=id;i;i-=lowbit(i))
+			res+=unit[i];
+		return res;
 	}
 }
 
-namespace Subtask2{
-	struct Q2Q{
-		priority_queue<int,vector<int>,less<int>/**/> fr;
-		priority_queue<int,vector<int>,greater<int>/**/> ba;
-		inline void Init(void){
-			while(!fr.empty())fr.pop();
-			while(!ba.empty())ba.pop();
-			return;
-		}
-		inline void push(int x){
-			if(fr.empty())
-				fr.push(x);
-			else
-				ba.push(x);
-			while(fr.size()>ba.size()){
-				ba.push(fr.top());
-				fr.pop();
-			}
-			while(ba.size()>fr.size()+1){
-				fr.push(ba.top());
-				ba.pop();
-			}
-			while(!ba.empty()&&!fr.empty()&&fr.top()>ba.top()){
-				int tmp1=fr.top(),tmp2=ba.top();
-				fr.pop(),ba.pop();
-				fr.push(tmp2),ba.push(tmp1);
-			}
-			return;
-		}
-		inline int top(void){
-			return ba.top();
-		}
-	};
-	Q2Q q,Q;
-	vector<int> V;
-	int S[MAXN];
-	inline double sqr(reg double x){
-		return x*x;
+int p[MAXN];
+
+const int Delta=MAXN;
+
+inline ll check(reg int mid){
+	for(reg int i=1;i<=n;++i)
+		p[i]=p[i-1]+(a[i]>mid)*2;
+	reg ll res=0;
+	for(reg int i=1;i<=n;++i){
+		BIT::update(Delta+i-p[i],1);
+		res+=BIT::query(Delta+i-p[i]-1);
 	}
-	inline void Solve(void){
-		reg double sum=0;
-		for(reg int i=1;i<=n;++i)
-			sum+=a[i];
-		reg double bar=sum/n;
-		reg double s2n=0;
-		for(reg int i=1;i<=n;++i)
-			s2n+=sqr(a[i]-bar);
-		reg double s2=s2n/n;
-		reg double s=sqrt(s2);
-
-		const double alpha=0.7;
-		reg double delta=s*alpha;
-
-		reg double l=bar-delta,r=bar+delta;
-		
-		reg int top=0;
-		for(reg int i=1;i<=n;++i)
-			if(l<=a[i]&&a[i]<=r)
-				S[++top]=a[i];
-		
-		Q.Init();
-		for(reg int i=1;i<=top;++i){
-			q.Init();
-			for(reg int j=i;j<=top;++j){
-				q.push(S[j]);
-				Q.push(q.top());
-			}
-		}
-		printf("%d\n",Q.top());
-		return;
-	}
-}
-
-namespace Subtask3{
-	vector<int> V;
-	int tmp[MAXN];
-
-	int T[MAXN*2];
-	const int delta=MAXN;
-	inline void Solve(reg int l,reg int r){
-		reg int mid=(l+r)>>1;
-		reg int sum=0;
-		for(reg int i=mid;i>=l;--i){
-			sum+=tmp[i];
-			++T[sum+delta];
-		}
-		for(reg int i=mid+1;i<=r;++i){
-			
-		}
-		return;
-	}
-	inline void check(reg int mid){
-		for(reg int i=1;i<=n;++i)
-			tmp[i]=(a[i]<mid)?-1:1;
-		
-		return;
-	}
-	inline void Solve(void){
-		V.resize(n);
-		for(reg int i=1;i<=n;++i)
-			V[i-1]=a[i];
-		sort(V.begin(),V.end());
-		V.erase(unique(V.begin(),V.end()),V.end());
-		for(reg int i=1;i<=n;++i)
-			a[i]=lower_bound(V.begin(),V.end(),a[i])-V.begin()+1;
-		reg int l=1,r=V.size(),mid;
-		while(l<r){
-			mid=(l+r)>>1;
-			if(check(mid))
-
-			else
-
-		}
-	}
+	for(reg int i=1;i<=n;++i)
+		BIT::update(Delta+i-p[i],-1);
+	return res;
 }
 
 int main(void){
 	n=read();
 	for(reg int i=1;i<=n;++i)
 		a[i]=read();
-	reg bool flag=true;
-	for(reg int i=2;i<=n;++i)
-		if(a[i]!=a[i-1]){
-			flag=false;
-			break;
+	reg int l=1,r=1e9,mid,ans;
+	BIT::Init(Delta+n);
+	BIT::update(Delta,1);
+	while(l<=r){
+		mid=(l+r)>>1;
+		if(check(mid)<(1ll*n*(n+1ll)/4ll+1ll))
+			l=mid+1;
+		else{
+			ans=mid;
+			r=mid-1;
 		}
-	if(flag)
-		printf("%d\n",a[n]);
-	else{
-		if(n<=300)
-			Subtask1::Solve();
-		else
-			Subtask2::Solve();
 	}
+	printf("%d\n",ans);
 	return 0;
 }
