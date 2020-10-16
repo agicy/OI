@@ -2,7 +2,6 @@
 using namespace std;
 #define reg register
 typedef long long ll;
-#define MOD 1000000007
 inline int read(void){
 	reg char ch=getchar();
 	reg int res=0;
@@ -11,9 +10,10 @@ inline int read(void){
 	return res;
 }
 
-const int MAXLEN=100000+5;
-const int MAXN=100000+5;
-const int MAXM=100000+5;
+const int MAXLEN=1e5+5;
+const int MAXN=1e5+5;
+const int MAXM=1e5+5;
+const int p=1e9+7;
 
 int fac[MAXN],finv[MAXN];
 int pow25[MAXN],pow26[MAXN];
@@ -23,18 +23,18 @@ inline void Init(reg int n=1e5){
 	fac[0]=finv[0]=pow25[0]=pow26[0]=invpow26[0]=1;
 	finv[n]=716327852ll;
 	for(reg int i=1;i<=n;++i){
-		fac[i]=1ll*fac[i-1]*i%MOD;
-		pow25[i]=25ll*pow25[i-1]%MOD;
-		pow26[i]=26ll*pow26[i-1]%MOD;
-		invpow26[i]=576923081ll*invpow26[i-1]%MOD;
+		fac[i]=1ll*fac[i-1]*i%p;
+		pow25[i]=25ll*pow25[i-1]%p;
+		pow26[i]=26ll*pow26[i-1]%p;
+		invpow26[i]=576923081ll*invpow26[i-1]%p;
 	}
 	for(reg int i=n-1;i>=1;--i)
-		finv[i]=1ll*finv[i+1]*(i+1ll)%MOD;
+		finv[i]=1ll*finv[i+1]*(i+1ll)%p;
 	return;
 }
 
 inline int C(reg int n,reg int m){
-	return 1ll*fac[n]*finv[m]%MOD*finv[n-m]%MOD;
+	return 1ll*fac[n]*finv[m]%p*finv[n-m]%p;
 }
 
 const int Size=26;
@@ -62,8 +62,8 @@ inline void Solve(void){
 	for(reg int i=1;i<=top;++i){
 		reg int r=S[i].val;
 		for(;ptr<=r;++ptr)
-			sum=(sum+1ll*pow25[ptr-l]*invpow26[ptr]%MOD*C(ptr-1,l-1)%MOD)%MOD;
-		ans[S[i].id]=1ll*sum*pow26[r]%MOD;
+			sum=(sum+1ll*pow25[ptr-l]*invpow26[ptr]%p*C(ptr-1,l-1)%p)%p;
+		ans[S[i].id]=1ll*sum*pow26[r]%p;
 	}
 	for(reg int i=1;i<=top;++i)
 		printf("%d\n",ans[i]);
