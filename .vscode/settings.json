@@ -75,5 +75,10 @@
 		"bit": "cpp",
 		"variant": "cpp"
 	},
+	"[cpp]":{
+		"editor.wordBasedSuggestions": true,
+		"editor.suggest.insertMode": "replace",
+		"editor.semanticHighlighting.enabled": true
+	},
 	"files.eol": "\n"
 }
