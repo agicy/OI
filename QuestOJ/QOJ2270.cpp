@@ -28,6 +28,15 @@ namespace SegmentTree{
 		val(k)=val(lson)|val(rson);
 		return;
 	}
+	inline void build(reg int k,reg int l,reg int r){
+		if(l==r){
+			val(k)=1;
+			return;
+		}
+		build(lson,l,mid),build(rson,mid+1,r);
+		pushup(k);
+		return;
+	}
 	inline void set(reg int k,reg int x){
 		val(k)=tag(k)=x;
 		return;
@@ -71,31 +80,27 @@ namespace SegmentTree{
 
 int n,m,k;
 
-inline int lowbit(reg int x){
-	return x&(-x);
-}
-
 inline int getCnt(reg int x){
 	reg int res=0;
-	while(x){
-		++res;
-		x^=lowbit(x);
-	}
+	for(reg int i=0;i<k;++i)
+		if((x>>i)&1)
+			++res;
 	return res;
 }
 
 int main(void){
 	n=read(),m=read(),k=read();
+	SegmentTree::build(1,1,n);
 	while(m--){
 		static char opt;
 		static int l,r,x;
 		do
 			opt=getchar();
-		while(!isalpha(opt));
+		while(opt!='C'&&opt!='P');
 		switch(opt){
 			case 'C':{
-				l=read(),r=read(),x=read()-1;
-				SegmentTree::update(1,1,n,l,r,1<<x);
+				l=read(),r=read(),x=read();
+				SegmentTree::update(1,1,n,l,r,1<<(x-1));
 				break;
 			}
 			case 'P':{
