@@ -2,156 +2,105 @@
 using namespace std;
 #define reg register
 typedef long long ll;
-typedef unsigned long long ull;
-#define INF 0X3F3F3F3F
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
+static char buf[100000],*p1=buf,*p2=buf;
 inline int read(void){
 	reg bool f=false;
 	reg char ch=getchar();
 	reg int res=0;
-	while(ch<'0'||'9'<ch)f|=(ch=='-'),ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
+	while(!isdigit(ch))f|=(ch=='-'),ch=getchar();
+	while(isdigit(ch))res=10*res+ch-'0',ch=getchar();
 	return f?-res:res;
 }
 
 const int MAXN=100+5;
 const int MAXM=100+5;
-const int MAXSIZE=MAXN*MAXM;
+const int MAXV=MAXN*MAXM;
+const int MAXE=MAXN*MAXM*4;
+const int inf=0x3f3f3f3f;
 
-inline void Read(void);
-inline void Work(void);
-
-int main(void){
-	Read();
-	Work();
-	return 0;
-}
-
-int n,m,s,t;
+int n,m;
 char M[MAXN][MAXM];
-int cnt=1,head[MAXSIZE],to[MAXSIZE*8],w[MAXSIZE*8],Next[MAXSIZE*8];
+int id[MAXN][MAXM];
+int cnt,head[MAXV],to[MAXE],Next[MAXE];
 
-inline void Add_Edge(reg int u,reg int v,reg int len){
+inline void Add_Edge(reg int u,reg int v){
 	Next[++cnt]=head[u];
 	to[cnt]=v;
-	w[cnt]=len;
 	head[u]=cnt;
 	return;
 }
 
-inline void Add_Tube(reg int u,reg int v,reg int len){
-	Add_Edge(u,v,len);
-	Add_Edge(v,u,0);
-	return;
-}
+int mat[MAXV];
+int tim,vis[MAXV];
 
-inline void Read(void){
-	n=read(),m=read(),s=0,t=n*m+1;
-	for(reg int i=1;i<=n;++i)
-		scanf("%s",M[i]+1);
-	return;
-}
-
-int dep[MAXSIZE];
-queue<int> Q;
-
-inline bool BFS(int s,reg int t){
-	memset(dep,-1,sizeof(dep));
-	while(!Q.empty())Q.pop();
-	dep[s]=1,Q.push(s);
-	while(!Q.empty()){
-		reg int ID=Q.front();
-		Q.pop();
-		for(reg int i=head[ID];i;i=Next[i])
-			if(dep[to[i]]==-1&&w[i]>0){
-				dep[to[i]]=dep[ID]+1;
-				Q.push(to[i]);
-			}
-	}
-	return dep[t]!=-1;
-}
-
-int cur[MAXSIZE];
-
-inline int DFS(reg int ID,reg int t,reg int lim){
-	if(ID==t)
-		return lim;
-	reg int flow=0;
-	for(reg int &i=cur[ID];i;i=Next[i]){
-		if(dep[to[i]]==dep[ID]+1&&w[i]>0){
-			reg int f=DFS(to[i],t,min(lim-flow,w[i]));
-			if(f){
-				flow+=f;
-				w[i]-=f;
-				w[i^1]+=f;
-				if(flow==lim)
-					break;
-			}
+inline bool dfs(reg int u){
+	for(reg int i=head[u];i;i=Next[i]){
+		reg int v=to[i];
+		if(vis[v]==tim)
+			continue;
+		vis[v]=tim;
+		if(!mat[v]||dfs(mat[v])){
+			mat[v]=u;
+			mat[u]=v;
+			return true;
 		}
 	}
-	return flow;
+	return false;
 }
 
-inline int Dinic(reg int s,reg int t){
-	reg int res=0;
-	while(BFS(s,t)){
-		memcpy(cur,head,sizeof(head));
-		res+=DFS(s,t,INF);
+bool chk[MAXV];
+
+inline void dfs_ans(reg int u){
+	chk[u]=true;
+	for(reg int i=head[u];i;i=Next[i]){
+		reg int v=to[i];
+		if(!chk[mat[v]])
+			dfs_ans(mat[v]);
 	}
-	return res;
-}
-
-inline int GetID(reg int i,reg int j){
-	return (i-1)*m+j;
-}
-
-int tot;
-bool bel[MAXSIZE];
-bool vis[MAXSIZE];
-bool ans[MAXSIZE];
-
-inline void GetAns(reg int ID,reg bool lim){
-	if(vis[ID])
-		return;
-	vis[ID]=true;
-	if(bel[ID]==lim){
-		++tot;
-		ans[ID]=true;
-	}
-	for(reg int i=head[ID];i;i=Next[i])
-		if((bool)w[i]==lim)
-			GetAns(to[i],lim);
 	return;
 }
 
-inline void Work(void){
-	const int dx[]={-1,0,0,1};
-	const int dy[]={0,-1,1,0};
+pair<int,int> ans[MAXV];
+
+int main(void){
+	n=read(),m=read();
+	reg int Id=0;
 	for(reg int i=1;i<=n;++i)
 		for(reg int j=1;j<=m;++j){
-			reg int now=GetID(i,j);
-			if(((i^j)&1)&&M[i][j]!='#'){
-				bel[now]=true;
-				Add_Tube(s,now,1);
-				for(reg int k=0;k<4;++k){
-					reg int fx=i+dx[k],fy=j+dy[k];
-					if(1<=fx&&fx<=n&&1<=fy&&fy<=m&&M[fx][fy]!='#')
-						Add_Tube(now,GetID(fx,fy),1);
-				}
-			}
-			else if(!((i^j)&1)&&M[i][j]!='#')
-				Add_Tube(now,t,1);
+			do
+				M[i][j]=getchar();
+			while(M[i][j]!='.'&&M[i][j]!='#');
+			id[i][j]=++Id;
 		}
-	Dinic(s,t);
-	GetAns(s,1);
-	memset(vis,false,sizeof(vis));
-	GetAns(t,0);
-	vector<pair<int,int>/**/> V;
+	for(reg int i=1;i<=n;++i)
+		for(reg int j=1;j<=m;++j){
+			if(M[i][j]=='#')
+				continue;
+			if(i<n&&M[i+1][j]=='.'){
+				Add_Edge(id[i][j],id[i+1][j]);
+				Add_Edge(id[i+1][j],id[i][j]);
+			}
+			if(j<m&&M[i][j+1]=='.'){
+				Add_Edge(id[i][j],id[i][j+1]);
+				Add_Edge(id[i][j+1],id[i][j]);
+			}
+		}
 	for(reg int i=1;i<=n;++i)
 		for(reg int j=1;j<=m;++j)
-			if(ans[GetID(i,j)])
-				V.push_back(make_pair(i,j));
-	printf("%d\n",(int)V.size());
-	for(reg int i=0;i<(int)V.size();++i)
-		printf("%d %d\n",V[i].first,V[i].second);
-	return;
+			if(((i+j)&1)&&M[i][j]=='.')
+				++tim,dfs(id[i][j]);
+	for(reg int i=1;i<=n;++i)
+		for(reg int j=1;j<=m;++j)
+			if(M[i][j]=='.'&&!mat[id[i][j]]&&!chk[id[i][j]])
+				dfs_ans(id[i][j]);
+	reg int tot=0;
+	for(int i=1;i<=n;i++)
+		for(int j=1;j<=m;j++)
+			if(chk[id[i][j]])
+				ans[++tot]=make_pair(i,j);
+	printf("%d\n",tot);
+	for(reg int i=1;i<=tot;++i)
+		printf("%d %d\n",ans[i].first,ans[i].second);
+	return 0;
 }
