@@ -12,15 +12,13 @@ inline int read(void){
 	return res;
 }
 
-const int MAXN=2e6+5;
-
 int n;
 
 int main(void){
 	n=read();
 	reg double ans=1;
-	for(reg int i=n;i>1;--i)
-		ans*=(2.0*i-2.0)/(2.0*i-1.0);
-	printf("%.9lf\n",ans);
+	for(reg int i=2*n-1;i>=3;i-=2)
+		ans*=(i-1.0)/i;
+	printf("%.6lf\n",ans);
 	return 0;
 }
