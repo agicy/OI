@@ -23,74 +23,115 @@ struct querys{
 int n,q;
 ll a[MAXN];
 
-struct BIT{
+struct Node{
+	ll first,second;
+	inline Node(reg ll first=0,reg ll second=0):first(first),second(second){
+		return;
+	}
+	inline Node operator+(const Node& a)const{
+		return Node(first+a.first,second+a.second);
+	}
+	inline void operator+=(const Node& a){
+		first+=a.first,second+=a.second;
+	}
+	inline Node operator-(const Node& a)const{
+		return Node(first-a.first,second-a.second);
+	}
+};
+
+namespace BIT{
 	inline int lowbit(reg int x){
 		return x&(-x);
 	}
 	int n;
-	ll unit[MAXN];
+	Node unit[MAXN];
 	inline void Init(reg int s){
-		n=s;
+		n=s;/*
 		for(reg int i=1;i<=s;++i)
-			unit[i]=0;
+			unit[i][0]=unit[i][1]=0;*/
 		return;
 	}
-	inline void update(reg int id,reg ll val){
+	inline void update(reg int id,const Node& val){
 		for(reg int i=id;i<=n;i+=lowbit(i))
 			unit[i]+=val;
 		return;
 	}
-	inline ll query(reg int id){
+	inline Node query(reg int id){
 		if(!id)
-			return 0;
-		reg ll res=0;
+			return Node(0,0);
+		Node res(0,0);
 		for(reg int i=id;i;i^=lowbit(i))
 			res+=unit[i];
 		return res;
 	}
-	inline ll query(reg int l,reg int r){
+	inline Node query(reg int l,reg int r){
 		return query(r)-query(l-1);
 	}
-};
+}
 
-BIT T,Ti;
-
-namespace SegmentTree{
+namespace SegmentTreeSum{
 	#define lson ( (k) << 1 )
 	#define rson ( (k) << 1 | 1 )
 	#define mid ( ( (l) + (r) ) >> 1 )
 	struct Node{
 		ll sum;
-		int cnt;
-		int tag;
 		#define sum(x) unit[(x)].sum
+	};
+	Node unit[MAXN<<2];
+	inline void build(reg int k,reg int l,reg int r,reg ll a[]){
+		if(l==r){
+			sum(k)=a[l];
+			return;
+		}
+		build(lson,l,mid,a),build(rson,mid+1,r,a);
+		sum(k)=sum(lson)+sum(rson);
+		return;
+	}
+	inline void update(reg int k,reg int l,reg int r,reg int pos,reg int val){
+		while(true){
+			sum(k)+=val;
+			if(l==r)
+				break;
+			if(pos<=mid)
+				k=lson,r=mid;
+			else
+				k=rson,l=mid+1;
+		}
+		return;
+	}
+	inline int query(reg int k,reg int l,reg int r,reg ll val){
+		while(true){
+			if(l==r)
+				return l;
+			reg ll Sum=sum(lson);
+			if(val<=Sum)
+				k=lson,r=mid;
+			else
+				k=rson,l=mid+1,val-=Sum;
+		}
+		return -1;
+	}
+	#undef lson
+	#undef rson
+	#undef mid
+}
+
+namespace SegmentTreeCnt{
+	#define lson ( (k) << 1 )
+	#define rson ( (k) << 1 | 1 )
+	#define mid ( ( (l) + (r) ) >> 1 )
+	struct Node{
+		int cnt,tag;
 		#define cnt(x) unit[(x)].cnt
 		#define tag(x) unit[(x)].tag
 	};
 	Node unit[MAXN<<2];
-	inline void pushup(reg int k){
-		sum(k)=sum(lson)+sum(rson);
-		cnt(k)=cnt(lson)+cnt(rson);
-		return;
-	}
-	inline void build(reg int k,reg int l,reg int r,reg ll a[]){
-		tag(k)=-1;
-		if(l==r){
-			sum(k)=a[l],cnt(k)=1;
-			return;
-		}
-		build(lson,l,mid,a),build(rson,mid+1,r,a);
-		pushup(k);
-		return;
-	}
 	inline void set0(reg int k){
-		cnt(k)=0;
-		tag(k)=0;
+		cnt(k)=tag(k)=0;
 		return;
 	}
 	inline void set1(reg int k,reg int l,reg int r){
-		cnt(k)=r-l+1;
-		tag(k)=1;
+		cnt(k)=r-l+1,tag(k)=1;
 		return;
 	}
 	inline void pushdown(reg int k,reg int l,reg int r){
@@ -103,19 +144,6 @@ namespace SegmentTree{
 		}
 		return;
 	}
-	inline void update(reg int k,reg int l,reg int r,reg int pos,reg int val){
-		if(l==r){
-			sum(k)=val;
-			return;
-		}
-		pushdown(k,l,r);
-		if(pos<=mid)
-			update(lson,l,mid,pos,val);
-		else
-			update(rson,mid+1,r,pos,val);
-		pushup(k);
-		return;
-	}
 	inline void update0(reg int k,reg int l,reg int r,reg int L,reg int R){
 		if(L<=l&&r<=R){
 			set0(k);
@@ -126,7 +154,7 @@ namespace SegmentTree{
 			update0(lson,l,mid,L,R);
 		if(R>mid)
 			update0(rson,mid+1,r,L,R);
-		pushup(k);
+		cnt(k)=cnt(lson)+cnt(rson);
 		return;
 	}
 	inline void update1(reg int k,reg int l,reg int r,reg int L,reg int R){
@@ -139,46 +167,40 @@ namespace SegmentTree{
 			update1(lson,l,mid,L,R);
 		if(R>mid)
 			update1(rson,mid+1,r,L,R);
-		pushup(k);
+		cnt(k)=cnt(lson)+cnt(rson);
 		return;
-	}
-	inline int query(reg int k,reg int l,reg int r,reg ll val){
-		if(l==r)
-			return l;
-		pushdown(k,l,r);
-		reg ll Sum=sum(lson);
-		if(val<=Sum)
-			return query(lson,l,mid,val);
-		else
-			return query(rson,mid+1,r,val-Sum);
 	}
 	inline int queryR(reg int k,reg int l,reg int r,reg int val){
 		if(val>cnt(k))
 			return 0;
-		if(l==r)
-			return l;
-		pushdown(k,l,r);
-		reg int V=cnt(lson);
-		if(val<=V)
-			return queryR(lson,l,mid,val);
-		else
-			return queryR(rson,mid+1,r,val-V);
+		while(true){
+			if(l==r)
+				return l;
+			pushdown(k,l,r);
+			reg int V=cnt(lson);
+			if(val<=V)
+				k=lson,r=mid;
+			else
+				k=rson,l=mid+1,val-=V;
+		}
+		return -1;
 	}
 	inline int queryL(reg int k,reg int l,reg int r,reg int val){
 		if(val>cnt(k))
 			return n+1;
-		if(l==r)
-			return l;
-		pushdown(k,l,r);
-		reg int V=cnt(rson);
-		if(val<=V)
-			return queryL(rson,mid+1,r,val);
-		else
-			return queryL(lson,l,mid,val-V);
+		while(true){
+			if(l==r)
+				return l;
+			pushdown(k,l,r);
+			reg int V=cnt(rson);
+			if(val<=V)
+				k=rson,l=mid+1;
+			else
+				k=lson,r=mid,val-=V;
+		}
+		return -1;
 	}
 	inline int queryCnt(reg int k,reg int l,reg int r,reg int L,reg int R){
-		if(L>R)
-			return 0;
 		if(L<=l&&r<=R)
 			return cnt(k);
 		pushdown(k,l,r);
@@ -195,60 +217,52 @@ namespace SegmentTree{
 }
 
 inline ll getVal(reg int pos){
-	return T.query(1,pos)*pos-Ti.query(1,pos)+
-		   Ti.query(pos,n)-T.query(pos,n)*pos;
+	return BIT::query(1,pos).first*pos-BIT::query(1,pos).second+
+		   BIT::query(pos,n).second-BIT::query(pos,n).first*pos;
 }
 
 int main(void){
-	freopen("position.in","r",stdin);
-	freopen("position.out","w",stdout);
-
 	n=read(),q=read();
-	T.Init(n),Ti.Init(n);
+	BIT::Init(n);
 	reg ll sum=0;
 	for(reg int i=1;i<=n;++i){
 		a[i]=read();
 		sum+=a[i];
-		T.update(i,a[i]);
-		Ti.update(i,a[i]*i);
+		BIT::update(i,Node(a[i],a[i]*i));
 	}
-	SegmentTree::build(1,1,n,a);
-	for(reg int i=1;i<=q;++i){
+	SegmentTreeSum::build(1,1,n,a);
+	SegmentTreeCnt::set1(1,1,n);
+	for(reg int i=1,mid,lcnt,rcnt,lpos,rpos;i<=q;++i){
 		static int type,x,y;
 		type=read(),x=read(),y=read();
 		switch(type){
 			case 1:{
-				T.update(x,y);
-				Ti.update(x,1ll*y*x);
-				a[x]+=y;
+				BIT::update(x,Node(y,1ll*y*x));
 				sum+=y;
-				SegmentTree::update(1,1,n,x,a[x]);
+				SegmentTreeSum::update(1,1,n,x,y);
 				break;
 			}
 			case 2:{
-				T.update(x,-y);
-				Ti.update(x,-1ll*y*x);
-				a[x]-=y;
+				BIT::update(x,Node(-y,-1ll*y*x));
 				sum-=y;
-				SegmentTree::update(1,1,n,x,a[x]);
+				SegmentTreeSum::update(1,1,n,x,-y);
 				break;
 			}
 			case 3:{
-				SegmentTree::update1(1,1,n,x,y);
+				SegmentTreeCnt::update1(1,1,n,x,y);
 				break;
 			}
 			case 4:{
-				SegmentTree::update0(1,1,n,x,y);
+				SegmentTreeCnt::update0(1,1,n,x,y);
 				break;
 			}
 		}
-		reg int mid=SegmentTree::query(1,1,n,(sum+1)/2);
-
-		reg int lcnt=SegmentTree::queryCnt(1,1,n,1,mid-1);
-		reg int rcnt=SegmentTree::queryCnt(1,1,n,mid+1,n);
-
-		reg int lpos=SegmentTree::queryR(1,1,n,lcnt+1);
-		reg int rpos=SegmentTree::queryL(1,1,n,rcnt+1);
+		mid=SegmentTreeSum::query(1,1,n,(sum+1)/2);
+		lcnt=0,rcnt=0;
+		if(mid>1)lcnt=SegmentTreeCnt::queryCnt(1,1,n,1,mid-1);
+		if(mid<n)rcnt=SegmentTreeCnt::queryCnt(1,1,n,mid+1,n);
+		lpos=SegmentTreeCnt::queryR(1,1,n,lcnt+1);
+		rpos=SegmentTreeCnt::queryL(1,1,n,rcnt+1);
 
 		reg ll val=inf;
 		reg int ans=-1;
@@ -264,8 +278,5 @@ int main(void){
 		}
 		printf("%d\n",ans);
 	}
-
-	fclose(stdin);
-	fclose(stdout);
 	return 0;
 }
