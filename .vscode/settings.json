@@ -73,7 +73,13 @@
 		"typeindex": "cpp",
 		"any": "cpp",
 		"bit": "cpp",
-		"variant": "cpp"
+		"variant": "cpp",
+		"compare": "cpp",
+		"concepts": "cpp",
+		"numbers": "cpp",
+		"ranges": "cpp",
+		"span": "cpp",
+		"stop_token": "cpp"
 	},
 	"[cpp]":{
 		"editor.wordBasedSuggestions": true,
