@@ -1,72 +1,57 @@
 #include<bits/stdc++.h>
 using namespace std;
 #define reg register
-inline int read(void){
-	reg bool f=false;
-	reg char ch=getchar();
-	reg int res=0;
-	while(ch<'0'||'9'<ch)f|=(ch=='-'),ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
-	return f?-res:res;
-}
 
-const int MAXSIZE=500000+5;
+const int MAXN=1e6+5;
+const int MAXSIZE=5e5+5;
 
-inline void Read(void);
-inline void Work(void);
-
-int main(void){
-	Read();
-	Work();
-	return 0;
-}
-
-struct Accepted_Automachine{
+namespace AC{
+	struct Node{
+		int nex[26];
+		int fail,val;
+		#define nex(x) unit[(x)].nex
+		#define fail(x) unit[(x)].fail
+		#define val(x) unit[(x)].val
+	};
 	int tot;
-	int trie[MAXSIZE][26];
-	int fail[MAXSIZE];
-	int val[MAXSIZE];
-	inline void insert(reg char str[MAXSIZE]){
-		reg int ID=0;
-		reg int len=strlen(str);
+	Node unit[MAXSIZE];
+	inline void insert(reg int len,reg char str[]){
+		reg int id=0;
 		for(reg int i=0;i<len;++i){
 			reg int ch=str[i]-'a';
-			if(!trie[ID][ch])
-				trie[ID][ch]=++tot;
-			ID=trie[ID][ch];
+			if(!nex(id)[ch])
+				nex(id)[ch]=++tot;
+			id=nex(id)[ch];
 		}
-		++val[ID];
+		++val(id);
 		return;
 	}
-	inline void BFS(void){
+	inline void bfs(void){
 		queue<int> Q;
-		while(!Q.empty())
-			Q.pop();
 		for(reg int i=0;i<26;++i)
-			if(trie[0][i]){
-				fail[trie[0][i]]=0;
-				Q.push(trie[0][i]);
+			if(nex(0)[i]){
+				fail(nex(0)[i])=0;
+				Q.push(nex(0)[i]);
 			}
 		while(!Q.empty()){
-			reg int ID=Q.front();
+			reg int u=Q.front();
 			Q.pop();
-			for(reg int i=0;i<26;++i){
-				if(trie[ID][i])
-					fail[trie[ID][i]]=trie[fail[ID]][i],Q.push(trie[ID][i]);
+			for(reg int i=0;i<26;++i)
+				if(nex(u)[i])
+					fail(nex(u)[i])=nex(fail(u))[i],Q.push(nex(u)[i]);
 				else
-					trie[ID][i]=trie[fail[ID]][i];
-			}
+					nex(u)[i]=nex(fail(u))[i];
 		}
 		return;
 	}
-	inline int Query(reg char str[]){
-		reg int res=0,ID=0,len=strlen(str);
+	inline int query(reg int len,reg char str[]){
+		reg int res=0,u=0;
 		for(reg int i=0;i<len;++i){
 			reg int ch=str[i]-'a';
-			ID=trie[ID][ch];
-			for(reg int j=ID;j&&(~val[j]);j=fail[j]){
-				res+=val[j];
-				val[j]=-1;
+			u=nex(u)[ch];
+			for(reg int j=u;j&&(~val(j));j=fail(j)){
+				res+=val(j);
+				val(j)=-1;
 			}
 		}
 		return res;
@@ -74,22 +59,19 @@ struct Accepted_Automachine{
 };
 
 int n;
-char str[1000000+4];
-Accepted_Automachine AC;
+char str[MAXN];
 
-inline void Read(void){
-	n=read();
+int main(void){
+	scanf("%d",&n);
 	for(reg int i=1;i<=n;++i){
 		scanf("%s",str);
-		AC.insert(str);
+		reg int len=strlen(str);
+		AC::insert(len,str);
 	}
-	return;
-}
-
-inline void Work(void){
-	AC.BFS();
+	AC::bfs();
 	scanf("%s",str);
-	reg int ans=AC.Query(str);
+	reg int len=strlen(str);
+	reg int ans=AC::query(len,str);
 	printf("%d\n",ans);
-	return;
+	return 0;
 }

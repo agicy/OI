@@ -5,18 +5,24 @@ typedef long long ll;
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
 inline int read(void){
-	reg bool f=false;
 	reg char ch=getchar();
 	reg int res=0;
-	while(ch<'0'||'9'<ch)f|=(ch=='-'),ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
-	return f?-res:res;
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	return res;
 }
 
 const int MAXN=1e5+5;
 
-int n,m,r,p;
-int val[MAXN];
+int n,m,r;
+ll p;
+
+inline ll add(reg ll a,reg ll b){
+	a+=b;
+	return a>=p?a-p:a;
+}
+
+ll a[MAXN];
 int cnt,head[MAXN],to[MAXN<<1],Next[MAXN<<1];
 
 inline void Add_Edge(reg int u,reg int v){
@@ -27,7 +33,7 @@ inline void Add_Edge(reg int u,reg int v){
 }
 
 int fa[MAXN],dep[MAXN];
-int son[MAXN],siz[MAXN];
+int siz[MAXN],son[MAXN];
 
 inline void dfs1(reg int u,reg int father){
 	siz[u]=1;
@@ -45,13 +51,14 @@ inline void dfs1(reg int u,reg int father){
 	return;
 }
 
-int tim,dfn[MAXN],rnk[MAXN];
 int top[MAXN];
+int tim,dfn[MAXN];
+ll val[MAXN];
 
 inline void dfs2(reg int u,reg int father,reg int topf){
 	top[u]=topf;
 	dfn[u]=++tim;
-	rnk[tim]=u;
+	val[tim]=a[u];
 	if(!son[u])
 		return;
 	dfs2(son[u],u,topf);
@@ -74,34 +81,34 @@ namespace SegmentTree{
 	};
 	Node unit[MAXN<<2];
 	inline void pushup(reg int k){
-		sum(k)=(sum(lson)+sum(rson))%p;
+		sum(k)=add(sum(lson),sum(rson));
 		return;
 	}
-	inline void build(reg int k,reg int l,reg int r,reg int a[]){
+	inline void build(reg int k,reg int l,reg int r,reg ll a[]){
 		if(l==r){
-			sum(k)=a[rnk[l]]%p;
+			sum(k)=a[l];
 			return;
 		}
 		build(lson,l,mid,a),build(rson,mid+1,r,a);
 		pushup(k);
 		return;
 	}
-	inline void add(reg int k,reg int l,reg int r,reg ll val){
-		sum(k)=(sum(k)+1ll*(r-l+1)*val%p)%p;
-		tag(k)=(tag(k)+val)%p;
+	inline void Add(reg int k,reg int l,reg int r,reg ll val){
+		sum(k)=add(sum(k),1ll*(r-l+1)*val%p);
+		tag(k)=add(tag(k),val);
 		return;
 	}
 	inline void pushdown(reg int k,reg int l,reg int r){
 		if(tag(k)){
-			add(lson,l,mid,tag(k));
-			add(rson,mid+1,r,tag(k));
+			Add(lson,l,mid,tag(k));
+			Add(rson,mid+1,r,tag(k));
 			tag(k)=0;
 		}
 		return;
 	}
 	inline void update(reg int k,reg int l,reg int r,reg int L,reg int R,reg ll val){
 		if(L<=l&&r<=R){
-			add(k,l,r,val);
+			Add(k,l,r,val);
 			return;
 		}
 		pushdown(k,l,r);
@@ -116,12 +123,12 @@ namespace SegmentTree{
 		if(L<=l&&r<=R)
 			return sum(k);
 		pushdown(k,l,r);
-		reg ll res=0;
-		if(L<=mid)
-			res=(res+query(lson,l,mid,L,R))%p;
-		if(R>mid)
-			res=(res+query(rson,mid+1,r,L,R))%p;
-		return res;
+		if(L<=mid&&mid<R)
+			return add(query(lson,l,mid,L,R),query(rson,mid+1,r,L,R));
+		else if(L<=mid)
+			return query(lson,l,mid,L,R);
+		else
+			return query(rson,mid+1,r,L,R);
 	}
 	#undef lson
 	#undef rson
@@ -146,19 +153,19 @@ inline ll query(int x,int y){
 	while(top[x]!=top[y]){
 		if(dep[top[x]]>dep[top[y]])
 			swap(x,y);
-		res=(res+SegmentTree::query(1,1,n,dfn[top[y]],dfn[y]))%p;
+		res=add(res,SegmentTree::query(1,1,n,dfn[top[y]],dfn[y]));
 		y=fa[top[y]];
 	}
 	if(dep[x]>dep[y])
 		swap(x,y);
-	res=(res+SegmentTree::query(1,1,n,dfn[x],dfn[y]))%p;
+	res=add(res,SegmentTree::query(1,1,n,dfn[x],dfn[y]));
 	return res;
 }
 
 int main(void){
 	n=read(),m=read(),r=read(),p=read();
 	for(reg int i=1;i<=n;++i)
-		val[i]=read();
+		a[i]=read()%p;
 	for(reg int i=1;i<n;++i){
 		static int x,y;
 		x=read(),y=read();
@@ -169,7 +176,8 @@ int main(void){
 	dfs2(r,0,r);
 	SegmentTree::build(1,1,n,val);
 	while(m--){
-		static int opt,x,y,z;
+		static int opt,x,y;
+		static ll z;
 		opt=read();
 		switch(opt){
 			case 1:{
@@ -179,7 +187,8 @@ int main(void){
 			}
 			case 2:{
 				x=read(),y=read();
-				printf("%lld\n",query(x,y)%p);
+				reg ll ans=query(x,y);
+				printf("%lld\n",ans);
 				break;
 			}
 			case 3:{
@@ -189,7 +198,8 @@ int main(void){
 			}
 			case 4:{
 				x=read();
-				printf("%lld\n",SegmentTree::query(1,1,n,dfn[x],dfn[x]+siz[x]-1)%p);
+				reg ll ans=SegmentTree::query(1,1,n,dfn[x],dfn[x]+siz[x]-1);
+				printf("%lld\n",ans);
 				break;
 			}
 		}
