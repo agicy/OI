@@ -2,27 +2,15 @@
 using namespace std;
 #define reg register
 typedef long long ll;
-#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
-static char buf[100000],*p1=buf,*p2=buf;
+#define int ll
 inline int read(void){
-	reg bool f=false;
-	reg char ch=getchar();
-	reg int res=0;
-	while(!isdigit(ch))f|=(ch=='-'),ch=getchar();
-	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
-	return f?-res:res;
-}
-
-inline int min(reg int a,reg int b){
-	return a<b?a:b;
-}
-
-inline int max(reg int a,reg int b){
-	return a>b?a:b;
+	int t;
+	scanf("%lld",&t);
+	return t;
 }
 
 const int MAXN=1e5+5;
-const int MAXSQRTN=317+5;
+const int K=500;
 const int mod=998244353;
 const int p=19260817;
 const int invp=494863259;
@@ -43,44 +31,26 @@ struct Node{
 	inline int calc(reg int x){
 		return 1ll*(S[len]-S[len-x]+mod)*invbasep[len-x]%mod;
 	}
-	inline int del(reg int v,reg int x){
-		return calc(x)==v&&(len-=x,1);
+	inline bool del(reg int v,reg int x){
+		return calc(x)==v&&(len-=x,true);
 	}
 	inline int ins(reg int x){
-		if(x>0){
-			++len;
-			S[len]=(1ll*x*basep[len-1]+S[len-1])%mod;
-			return true;
-		}
+		if(x>0)
+			return S[len+1]=(1ll*x*basep[len]+S[len])%mod,++len;
 		else
-			if(!len)
-				return true;
-			else
-				return calc(1)==-x&&len--;
+			return !len||calc(1)==-x&&len--;
 	}
 };
 
 int top;
 Node S[MAXN];
 
-const int nex[]={1,2,3,0};
-
-inline bool getLtoR(reg int l,reg int r,reg Node& res){
-	static int p,tmp[4][MAXSQRTN];
+inline bool get(reg int l,reg int r,reg int d,reg Node& res){
+	static int p,tmp[4][K+1];
 	if(res.S==NULL)
-		res.S=tmp[p],p=nex[p];
-	for(res.len=0;l<=r;++l)
-		if(!res.ins(a[l]))
-			return false;
-	return true;
-}
-
-inline bool getRtoL(reg int l,reg int r,reg Node& res){
-	static int p,tmp[4][MAXSQRTN];
-	if(res.S==NULL)
-		res.S=tmp[p],p=nex[p];
-	for(res.len=0;l>=r;--l)
-		if(!res.ins(-a[l]))
+		res.S=tmp[p],p=p+1&3;
+	for(res.len=0;l!=r+d;l+=d)
+		if(!res.ins(a[l]*d))
 			return false;
 	return true;
 }
@@ -104,7 +74,7 @@ inline void push(const Node& a){
 struct Block{
 	int L,R;
 	bool re,tag;
-	int f[MAXSQRTN],g[MAXSQRTN];
+	int f[K+1],g[K+1];
 	Node pre,suf;
 	inline void init(reg int l,reg int r){
 		L=l,R=r,re=true,pre.S=f,suf.S=g;
@@ -112,44 +82,46 @@ struct Block{
 	}
 	inline void build(void){
 		if(re)
-			re=false,tag=getRtoL(R,L,pre)&&getLtoR(L,R,suf);
+			re=false,tag=get(R,L,-1,pre)&&get(L,R,1,suf);
 		return;
 	}
 	inline bool solve(reg int l,reg int r){
+		if(R<l||L>r)
+			return true;
 		reg bool res;
 		static Node x,y;
 		l=max(L,l),r=min(R,r);
 		if(L==l&&r==R)
 			build(),x=pre,y=suf,res=tag;
 		else
-			res=getRtoL(r,l,x)&&getLtoR(l,r,y);
-		return res&&pop(x)&&(push(y),1);
+			res=get(r,l,-1,x)&&get(l,r,1,y);
+		return res&&pop(x)&&(push(y),true);
 	}
 };
 
-Block b[MAXSQRTN];
+Block b[MAXN/K+1];
 
 inline bool query(reg int l,reg int r){
-	if((r-l+1)&1)
+	if(top=0,(r-l+1)&1)
 		return false;
 	for(reg int i=1;i<=m;++i)
-		if(l<=b[i].R&&b[i].L<=r&&!b[i].solve(l,r))
+		if(!b[i].solve(l,r))
 			return false;
 	return !top;
 }
 
-int main(void){
-	n=read(),read();
+signed main(void){
+	n=read(),m=read();
 	for(reg int i=1;i<=n;++i)
 		a[i]=read();
-	basep[0]=invbasep[0]=1,m=0;
-	reg int B=ceil(sqrt(n));
+	basep[0]=invbasep[0]=1;
 	for(reg int i=1;i<=n;++i){
 		basep[i]=1ll*basep[i-1]*p%mod;
 		invbasep[i]=1ll*invbasep[i-1]*invp%mod;
 	}
+	m=0;
 	for(reg int l=1,r;l<=n;l=r+1){
-		r=min(n,l+B-1);
+		r=min(n,l+K-1);
 		b[++m].init(l,r);
 	}
 	reg int q=read();
@@ -159,7 +131,7 @@ int main(void){
 		switch(opt){
 			case 1:{
 				a[x]=y;
-				b[(x-1)/B+1].re=true;
+				b[(x-1)/K+1].re=true;
 				break;
 			}
 			case 2:{
