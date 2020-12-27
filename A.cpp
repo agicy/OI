@@ -2,182 +2,92 @@
 using namespace std;
 #define reg register
 typedef long long ll;
-typedef unsigned long long ull;
-#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
-static char buf[100000],*p1=buf,*p2=buf;
-inline int read(void){
-	reg bool f=false;
-	reg char ch=getchar();
+
+const int MAXK=1e7+5;
+const int p=998244353;
+
+inline int add(reg int a,reg int b){
+	a+=b;
+	return a>=p?a-p:a;
+}
+
+inline int fpow(reg int x,reg int exp){
+	reg int res=1;
+	while(exp){
+		if(exp&1)
+			res=1ll*res*x%p;
+		x=1ll*x*x%p;
+		exp>>=1;
+	}
+	return res;
+}
+
+int n,k;
+int fac[MAXK],invfac[MAXK],inv[MAXK];
+// inv[i]=\frac{1}{i}
+int binom[MAXK];
+// binom[i]=\binom{n}{i}
+int tot,prime[MAXK];
+int idk[MAXK];
+
+inline void Init(reg int k){
+	fac[0]=1;
+	for(reg int i=1;i<=k+1;++i)
+		fac[i]=1ll*fac[i-1]*i%p;
+	invfac[k+1]=fpow(fac[k+1],p-2);
+	for(reg int i=k;i>=0;--i)
+		invfac[i]=1ll*invfac[i+1]*(i+1)%p;
+	for(reg int i=1;i<=k+1;++i)
+		inv[i]=1ll*invfac[i]*fac[i-1]%p;
+	binom[0]=1;
+	for(reg int i=1;i<=k+1;++i)
+		binom[i]=1ll*binom[i-1]*inv[i]%p*(n-i+1)%p;
+	idk[1]=1;
+	for(reg int i=2;i<=k+1;++i){
+		if(!idk[i]){
+			prime[++tot]=i;
+			idk[i]=fpow(i,k);
+		}
+		for(reg int j=1;j<=tot&&i*prime[j]<=k;++j){
+			idk[i*prime[j]]=1ll*idk[i]*idk[prime[j]]%p;
+			if(i%prime[j]==0)
+				break;
+		}
+	}
+	return;
+}
+
+inline int solve1(void){
 	reg int res=0;
-	while(!isdigit(ch))f|=(ch=='-'),ch=getchar();
-	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
-	return f?-res:res;
+	for(reg int i=1;i<=n;++i)
+		res=add(res,1ll*binom[i]*idk[i]%p);
+	return res;
 }
 
-const int MAXN=1e5+5;
+int f[MAXK];
 
-int n;
-int a[MAXN];
-
-namespace Subtask1{
-	const int MAXN=1e3+5;
-	struct Node{
-		ll sum,lMax,rMax,Max;
-		inline Node(reg ll sum=0,reg ll lMax=0,reg ll rMax=0,reg ll Max=0):sum(sum),lMax(lMax),rMax(rMax),Max(Max){
-			return;
-		}
-		inline Node operator+(const Node& a)const{
-			Node res;
-			res.sum=sum+a.sum,
-			res.lMax=max(lMax,sum+a.lMax),
-			res.rMax=max(a.rMax,a.sum+rMax),
-			res.Max=max(max(Max,a.Max),rMax+a.lMax);
-			return res;
-		}
-	};
-	inline void Solve(void){
-		reg ull ans=0;
-		for(reg int i=1;i<=n;++i){
-			Node tmp=Node(a[i],a[i],a[i],a[i]);
-			ans+=a[i];
-			for(reg int j=i+1;j<=n;++j){
-				tmp=tmp+Node(a[j],a[j],a[j],a[j]);
-				ans+=tmp.Max;
-			}
-		}
-		printf("%llu\n",ans);
-		return;
+inline int solve2(void){
+	reg int bas=p-fpow(2,p-2);
+	f[k]=1;
+	for(reg int i=k-1,pow=1,c=1;i>=1;--i){
+		c=1ll*c*(n-i-1)%p*inv[k-i]%p;
+		pow=1ll*pow*bas%p;
+		f[i]=add((bas+1ll)*f[i+1]%p,1ll*c*pow%p);
 	}
-}
-
-namespace Subtask2{
-	inline void Solve(void){
-		reg ull ans=0;
-		for(reg int i=1;i<=n;++i){
-			reg int lef=i,rig=n-i+1;
-			ans+=1ull*lef*rig*a[i];
-		}
-		printf("%llu\n",ans);
+	reg int res=0;
+	for(reg int i=1,pow=p-bas;i<=k;++i){
+		res=add(res,1ll*idk[i]*binom[i]%p*pow%p*f[i]%p);
+		pow=1ll*pow*(p-bas)%p;
 	}
-}
-
-namespace Subtask3{
-	namespace SegmentTree{
-		#define lson ( (k) << 1 )
-		#define rson ( (k) << 1 | 1 )
-		#define mid ( ( (l) + (r) ) >> 1 )
-		struct Node{
-			int plMax,prMax;
-			int lef,rig;
-			ll sum,lMax,rMax,Max;
-			inline Node operator+(const Node& a)const{
-				Node res;
-				res.sum=sum+a.sum;
-				if(lMax<sum+a.lMax)
-					res.lMax=sum+a.lMax,res.plMax=a.plMax;
-				else
-					res.lMax=lMax,res.plMax=plMax;
-				if(a.rMax<a.sum+rMax)
-					res.rMax=a.sum+rMax,res.prMax=prMax;
-				else
-					res.rMax=a.rMax,res.prMax=a.prMax;
-				res.Max=Max,res.lef=lef,res.rig=rig;
-				if(res.Max<a.Max)
-					res.Max=a.Max,res.lef=a.lef,res.rig=a.rig;
-				if(res.Max<rMax+a.lMax)
-					res.Max=rMax+a.lMax,res.lef=prMax,res.rig=a.plMax;
-				return res;
-			}
-			#define sum(x) unit[(x)].sum
-			#define lMax(x) unit[(x)].lMax
-			#define rMax(x) unit[(x)].rMax
-			#define Max(x) unit[(x)].Max
-			#define lef(x) unit[(x)].lef
-			#define rig(x) unit[(x)].rig
-			#define plMax(x) unit[(x)].plMax
-			#define prMax(x) unit[(x)].prMax
-		};
-		Node unit[MAXN<<2];
-		inline void pushup(reg int k){
-			unit[k]=unit[lson]+unit[rson];
-			return;
-		}
-		inline void build(reg int k,reg int l,reg int r,reg int a[]){
-			if(l==r){
-				lef(k)=rig(k)=plMax(k)=prMax(k)=l;
-				sum(k)=lMax(k)=rMax(k)=Max(k)=a[l];
-				return;
-			}
-			build(lson,l,mid,a),build(rson,mid+1,r,a);
-			pushup(k);
-			return;
-		}
-		inline void update(reg int k,reg int l,reg int r,reg int pos,reg int val){
-			if(l==r){
-				lef(k)=rig(k)=plMax(k)=prMax(k)=l;
-				sum(k)=lMax(k)=rMax(k)=Max(k)=val;
-				return;
-			}
-			if(pos<=mid)
-				update(lson,l,mid,pos,val);
-			else
-				update(rson,mid+1,r,pos,val);
-			pushup(k);
-			return;
-		}
-		inline Node query(reg int k,reg int l,reg int r,reg int L,reg int R){
-			if(L<=l&&r<=R)
-				return unit[k];
-			if(L<=mid&&mid<R)
-				return query(lson,l,mid,L,R)+query(rson,mid+1,r,L,R);
-			else if(L<=mid)
-				return query(lson,l,mid,L,R);
-			else
-				return query(rson,mid+1,r,L,R);
-		}
-		#undef lson
-		#undef rson
-		#undef mid
-		#undef sum
-		#undef lMax
-		#undef rMax
-		#undef Max
-	}
-	ull ans=0;
-	inline void solve(reg int l,reg int r){
-		if(l>r)
-			return;
-		if(l==r){
-			ans+=a[l];
-			return;
-		}
-		SegmentTree::Node tmp=SegmentTree::query(1,1,n,l,r);
-		reg int lef=tmp.lef,rig=tmp.rig;
-		ans+=1ull*(lef-l+1)*(r-rig+1)*tmp.Max;
-		solve(l,lef-1),solve(lef+1,rig-1),solve(rig+1,r);
-		return;
-	}
-	inline void Solve(void){
-		SegmentTree::build(1,1,n,a);
-		solve(1,n);
-		printf("%llu\n",ans);
-		return;
-	}
+	return 1ll*res*fpow(2,n)%p;
 }
 
 int main(void){
-	n=read();
-	reg bool f2=true;
-	for(reg int i=1;i<=n;++i){
-		a[i]=read();
-		if(a[i]<0)
-			f2=false;
-	}
-	if(n<=1000)
-		Subtask1::Solve();
-	else if(f2)
-		Subtask2::Solve();
+	scanf("%d%d",&n,&k);
+	Init(k);
+	if(n<=k+1)
+		printf("%d\n",solve1());
 	else
-		Subtask3::Solve();
+		printf("%d\n",solve2());
 	return 0;
 }
