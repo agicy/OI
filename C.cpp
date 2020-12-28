@@ -56,10 +56,16 @@ ll k;
 
 namespace SubtaskMineq1{
 	inline int Solve(void){
-		if(k<=1ll*n*m)
+		reg int pos=max(x,y),len=max(n,m);
+		reg int dis=min(pos,len-pos+1);
+		if(k<=len-dis+1)
 			return 1ll*(k+1)*k%p*inv2%p;
-		else
-			return (1ll*(1ll*n*m%p+1)*(1ll*n*m%p)%p*inv2%p+(k%p-1ll*n*m%p+p)%p*(1ll*n*m%p)%p)%p;
+		else if(k>=len+max(0,dis-2))
+			return (k%p*len%p-1ll*len*(len-1)%p*inv2%p+p)%p;
+		else{
+			reg ll v=((k-max(dis,len-dis+1)+1)/2+max(dis,len-dis+1))%p;
+			return (v*(k%p)%p-v*(v-1)%p*inv2%p+p)%p;
+		}
 	}
 }
 
