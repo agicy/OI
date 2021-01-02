@@ -2,92 +2,58 @@
 using namespace std;
 #define reg register
 typedef long long ll;
-
-const int MAXK=1e7+5;
-const int p=998244353;
-
-inline int add(reg int a,reg int b){
-	a+=b;
-	return a>=p?a-p:a;
-}
-
-inline int fpow(reg int x,reg int exp){
-	reg int res=1;
-	while(exp){
-		if(exp&1)
-			res=1ll*res*x%p;
-		x=1ll*x*x%p;
-		exp>>=1;
-	}
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
+static char buf[100000],*p1=buf,*p2=buf;
+inline int read(void){
+	reg char ch=getchar();
+	reg int res=0;
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
 	return res;
 }
 
-int n,k;
-int fac[MAXK],invfac[MAXK],inv[MAXK];
-// inv[i]=\frac{1}{i}
-int binom[MAXK];
-// binom[i]=\binom{n}{i}
-int tot,prime[MAXK];
-int idk[MAXK];
+const int MAXM=1e5+5;
+const int MAXQ=1e5+5;
 
-inline void Init(reg int k){
-	fac[0]=1;
-	for(reg int i=1;i<=k+1;++i)
-		fac[i]=1ll*fac[i-1]*i%p;
-	invfac[k+1]=fpow(fac[k+1],p-2);
-	for(reg int i=k;i>=0;--i)
-		invfac[i]=1ll*invfac[i+1]*(i+1)%p;
-	for(reg int i=1;i<=k+1;++i)
-		inv[i]=1ll*invfac[i]*fac[i-1]%p;
-	binom[0]=1;
-	for(reg int i=1;i<=k+1;++i)
-		binom[i]=1ll*binom[i-1]*inv[i]%p*(n-i+1)%p;
-	idk[1]=1;
-	for(reg int i=2;i<=k+1;++i){
-		if(!idk[i]){
-			prime[++tot]=i;
-			idk[i]=fpow(i,k);
-		}
-		for(reg int j=1;j<=tot&&i*prime[j]<=k;++j){
-			idk[i*prime[j]]=1ll*idk[i]*idk[prime[j]]%p;
-			if(i%prime[j]==0)
-				break;
-		}
+struct Node{
+	int x,y;
+	inline void Read(void){
+		x=read(),y=read();
+		return;
 	}
-	return;
-}
-
-inline int solve1(void){
-	reg int res=0;
-	for(reg int i=1;i<=n;++i)
-		res=add(res,1ll*binom[i]*idk[i]%p);
-	return res;
-}
-
-int f[MAXK];
-
-inline int solve2(void){
-	reg int bas=p-fpow(2,p-2);
-	f[k]=1;
-	for(reg int i=k-1,pow=1,c=1;i>=1;--i){
-		c=1ll*c*(n-i-1)%p*inv[k-i]%p;
-		pow=1ll*pow*bas%p;
-		f[i]=add((bas+1ll)*f[i+1]%p,1ll*c*pow%p);
+	inline bool operator<(const Node& a)const{
+		return x<a.x||(x==a.x&&y<a.y);
 	}
-	reg int res=0;
-	for(reg int i=1,pow=p-bas;i<=k;++i){
-		res=add(res,1ll*idk[i]*binom[i]%p*pow%p*f[i]%p);
-		pow=1ll*pow*(p-bas)%p;
-	}
-	return 1ll*res*fpow(2,n)%p;
-}
+};
+
+int n,m,q;
+Node p[MAXQ];
+bool vis[MAXM];
 
 int main(void){
-	scanf("%d%d",&n,&k);
-	Init(k);
-	if(n<=k+1)
-		printf("%d\n",solve1());
-	else
-		printf("%d\n",solve2());
+	//freopen("iakioi.in","r",stdin);
+	//freopen("iakioi.out","w",stdout);
+
+	reg int t=read();
+	while(t--){
+		memset(vis,false,sizeof(vis));
+		n=read(),m=read(),q=read();
+		for(reg int i=1;i<=q;++i)
+			p[i].Read();
+		sort(p+1,p+q+1);
+		reg int ans=0;
+		p[q+1].x=-1;
+		for(reg int i=1;i<=q;++i)
+			if(!vis[p[i].y]){
+				vis[p[i].y]=true;
+				++ans;
+				while(p[i+1].x==p[i].x)
+					++i;
+			}
+		printf("%d\n",ans);
+	}
+
+	fclose(stdin);
+	fclose(stdout);
 	return 0;
 }

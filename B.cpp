@@ -2,58 +2,42 @@
 using namespace std;
 #define reg register
 typedef long long ll;
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
+static char buf[100000],*p1=buf,*p2=buf;
+inline int read(void){
+	reg char ch=getchar();
+	reg int res=0;
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	return res;
+}
 
-const int MAXN=18;
+const int MAXN=1e3+5;
+const double inf=1e20;
 
 int n;
-int G[MAXN][MAXN];
-
-namespace Subtask1{
-	inline int getLg(reg int x){
-		reg int res=-1;
-		while(x)
-			++res,x>>=1;
-		return res;
-	}
-	inline int lowbit(reg int x){
-		return x&(-x);
-	}
-	inline void Solve(void){
-		int f[1<<n][n];
-		memset(f,0,sizeof(f));
-		for(reg int i=0;i<n;++i)
-			f[1<<i][i]=1;
-		reg int U=(1<<n)-1;
-		for(reg int S=1;S<=U;++S)
-			for(reg int i=S;i;i^=lowbit(i)){
-				reg int k=getLg(lowbit(i));
-				for(reg int j=0;j<n;++j)
-					if(G[k][j]&&!((S>>j)&1))
-						f[S|(1<<j)][j]+=f[S][k];
-			}
-		reg int ans=0;
-		for(reg int i=0;i<n;++i)
-			ans+=f[U][i];
-		printf("%d\n",ans);
-		return;
-	}
-}
-
-namespace Subtask2{
-	inline void Solve(void){
-		puts("0");
-		return;
-	}
-}
+double r[MAXN],f[MAXN];
 
 int main(void){
-	scanf("%d",&n);
-	for(reg int i=0;i<n;++i)
-		for(reg int j=0;j<n;++j)
-			scanf("%d",&G[i][j]);
-	if(n<=13)
-		Subtask1::Solve();
-	else
-		Subtask2::Solve();
+	freopen("column.in","r",stdin);
+	freopen("column.out","w",stdout);
+
+	n=read();
+	for(reg int i=1;i<=n;++i)
+		r[i]=read();
+	f[1]=r[1];
+	for(reg int i=2;i<=n;++i){
+		reg double Max=-inf;
+		for(reg int j=1;j<i;++j)
+			Max=max(Max,f[j]+2.0*sqrt(r[i]*r[j]));
+		f[i]=max(r[i],Max);
+	}
+	reg double ans=0;
+	for(reg int i=1;i<=n;++i)
+		ans=max(ans,f[i]+r[i]);
+	printf("%.3lf\n",ans);
+
+	fclose(stdin);
+	fclose(stdout);
 	return 0;
 }
