@@ -14,110 +14,80 @@ inline int read(void){
 }
 
 const int MAXN=500+5;
-const int MAXM=MAXN*MAXN/2+5;
-const int MAXV=MAXN*2;
-const int MAXE=(2*MAXN+MAXM)*2;
-const int inf=0x3f3f3f3f;
+const ll inf=1e18;
 
 int n,m;
-int cnt=1,head[MAXV],to[MAXE],w[MAXE],p[MAXE],Next[MAXE];
+ll G[MAXN][MAXN];
+int mat[MAXN];
+ll slack[MAXN],ex[MAXN],ey[MAXN];
+int pre[MAXN];
+bool visx[MAXN],visy[MAXN];
 
-inline void Add_Edge(reg int u,reg int v,reg int len,reg int val){
-	Next[++cnt]=head[u];
-	to[cnt]=v;
-	w[cnt]=len;
-	p[cnt]=val;
-	head[u]=cnt;
+inline void bfs(reg int u){
+	memset(pre,0,sizeof(pre));
+	for(reg int i=1;i<=n;++i)
+		slack[i]=inf;
+	reg int x,y=0;
+	mat[y]=u;
+	while(true){
+		x=mat[y],visy[y]=true;
+		reg int tmp=0;
+		reg ll delta=inf;
+		for(reg int i=1;i<=n;++i){
+			if(visy[i])
+				continue;
+			if(slack[i]>ex[x]+ey[i]-G[x][i]){
+				slack[i]=ex[x]+ey[i]-G[x][i];
+				pre[i]=y;
+			}
+			if(slack[i]<delta){
+				delta=slack[i];
+				tmp=i;
+			}
+		}
+		for(reg int i=0;i<=n;++i)
+			if(visy[i])
+				ex[mat[i]]-=delta,ey[i]+=delta;
+			else
+				slack[i]-=delta;
+		y=tmp;
+		if(!mat[y])
+			break;
+	}
+	while(y){
+		mat[y]=mat[pre[y]];
+		y=pre[y];
+	}
 	return;
 }
 
-inline void Add_Tube(reg int u,reg int v,reg int len,reg int val){
-	Add_Edge(u,v,len,val);
-	Add_Edge(v,u,0,-val);
-	return;
-}
-
-int dis[MAXV];
-bool inque[MAXV];
-queue<int> Q;
-
-inline bool spfa(int s,reg int t){
-	memset(dis,0x3f,sizeof(dis));
-	inque[s]=true,dis[s]=0,Q.push(s);
-	while(!Q.empty()){
-		reg int u=Q.front();
-		Q.pop();
-		inque[u]=false;
-		for(reg int i=head[u];i;i=Next[i]){
-			int v=to[i];
-			if(dis[v]>dis[u]+p[i]&&w[i]){
-				dis[v]=dis[u]+p[i];
-				if(!inque[v]){
-					inque[v]=true;
-					Q.push(v);
-				}
-			}
-		}
+inline ll KM(void){
+	memset(mat,0,sizeof(mat));
+	memset(ex,0,sizeof(ex));
+	memset(ey,0,sizeof(ey));
+	for(reg int i=1;i<=n;++i){
+		memset(visy,false,sizeof(visy));
+		bfs(i);
 	}
-	return dis[t]!=inf;
-}
-
-ll cost;
-bool vis[MAXV];
-int cur[MAXV];
-
-inline int dfs(reg int u,reg int t,reg int lim){
-	if(u==t){
-		cost+=1ll*dis[t]*lim;
-		return lim;
-	}
-	vis[u]=true;
-	reg int flow=0;
-	for(reg int &i=cur[u];i;i=Next[i]){
-		reg int v=to[i];
-		if(dis[v]==dis[u]+p[i]&&w[i]&&!vis[v]){
-			reg int f=dfs(v,t,min(lim-flow,w[i]));
-			if(f){
-				flow+=f;
-				w[i]-=f,w[i^1]+=f;
-				if(flow==lim)
-					break;
-			}
-		}
-	}
-	vis[u]=false;
-	return flow;
-}
-
-inline int dinic(reg int s,reg int t){
-	reg int res=0;
-	cost=0;
-	while(spfa(s,t)){
-		memcpy(cur,head,sizeof(head));
-		res+=dfs(s,t,inf);
-	}
+	reg ll res=0;
+	for(reg int i=1;i<=n;++i)
+		if(mat[i])
+			res+=G[mat[i]][i];
 	return res;
 }
 
 int main(void){
 	n=read(),m=read();
+	for(reg int i=1;i<=n;++i)
+		for(reg int j=1;j<=n;++j)
+			G[i][j]=-inf;
 	for(reg int i=1;i<=m;++i){
 		static int y,c,h;
 		y=read(),c=read(),h=read();
-		Add_Tube(y,c+n,1,-h);
+		G[y][c]=h;
 	}
-	reg int s=0,t=2*n+1;
+	printf("%lld\n",KM());
 	for(reg int i=1;i<=n;++i)
-		Add_Tube(s,i,1,0),Add_Tube(i+n,t,1,0);
-	dinic(s,t);
-	printf("%lld\n",-cost);
-	for(reg int u=1;u<=n;++u)
-		for(reg int j=head[u+n];j;j=Next[j]){
-			reg int v=to[j];
-			if(v!=t&&w[j]){
-				printf("%d%c",v,u==n?'\n':' ');
-				break;
-			}
-		}
+		printf("%d%c",mat[i],i==n?'\n':' ');
 	return 0;
 }
