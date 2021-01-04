@@ -20,14 +20,11 @@ inline void cMin(reg int &a,reg int b){
 	return;
 }
 
-inline int min(reg int a,reg int b){
-	return a<b?a:b;
-}
-
 const int MAXN=1e5+5;
 const int MAXM=1e5+5;
 const int MAXQ=1e5+5;
-const int K=2e4;
+
+int n,m,q;
 
 namespace Graph{
 	int cnt,head[MAXN],to[MAXM],Next[MAXM];
@@ -37,145 +34,114 @@ namespace Graph{
 		head[u]=cnt;
 		return;
 	}
-	/*
-	vector<int> G[MAXN];
-	inline void Add_Edge(const int& u,const int& v){
-		G[u].push_back(v);
-		return;
-	}
-	*/
-	bool vis[MAXN];
-	int tim,dfn[MAXN],low[MAXN];
-	int top,S[MAXN];
-	int scc_cnt,col[MAXN];
-	inline void tarjan(reg int u){
-		vis[u]=true;
-		dfn[u]=low[u]=++tim;
-		S[++top]=u;
-		for(reg int i=head[u];i;i=Next[i]){
-			reg int v=to[i];
-			if(!dfn[v]){
-				tarjan(v);
-				cMin(low[u],low[v]);
-			}
-			else if(vis[v])
-				cMin(low[u],dfn[v]);
-		}
-		/*
-		for(int v:G[u])
-			if(!dfn[v]){
-				tarjan(v);
-				cMin(low[u],low[v]);
-			}
-			else if(vis[v])
-				cMin(low[u],dfn[v]);
-		*/
-		if(dfn[u]==low[u]){
-			reg int v;
-			++scc_cnt;
-			do{
-				v=S[top--];
-				vis[v]=false;
-				col[v]=scc_cnt;
-			}while(v!=u);
-		}
-		return;
-	}
 }
 
 namespace DAG{
-	int indeg[MAXN];
 	int cnt,head[MAXN],to[MAXM],Next[MAXM];
 	inline void Add_Edge(reg int u,reg int v){
-		++indeg[v];
 		Next[++cnt]=head[u];
 		to[cnt]=v;
 		head[u]=cnt;
 		return;
 	}
-	/*
-	vector<int> G[MAXN];
-	inline void Add_Edge(const int& u,const int& v){
-		G[u].push_back(v);
-		++indeg[v];
-		return;
-	}
-	*/
 }
 
+int tim,dfn[MAXM],low[MAXM];
+int top,S[MAXM];
+int scc_cnt,col[MAXM];
+
+inline void tarjan(reg int u){
+	S[++top]=u;
+	low[u]=dfn[u]=++tim;
+	for(reg int i=Graph::head[u],v;i;i=Graph::Next[i]){
+		v=Graph::to[i];
+		if(!dfn[v]){
+			tarjan(v);
+			cMin(low[u],low[v]);
+		}
+		else if(!col[v])
+			cMin(low[u],dfn[v]);
+	}
+	if(dfn[u]==low[u]){
+		++scc_cnt;
+		reg int v;
+		do
+			col[v=S[top--]]=scc_cnt;
+		while(v!=u);
+	}
+	return;
+}
+
+int u[MAXM],v[MAXM];
+
 struct querys{
-	int id,u;
-	inline querys(reg int id=0,reg int u=0):id(id),u(u){
-		return;
+	int id,u,v;
+	inline bool operator<(const querys& a)const{
+		return col[u]==col[a.u]?col[v]<col[a.v]:col[u]<col[a.u];
 	}
 };
 
-int n,m,q;
-int a[MAXM],b[MAXM];
-int in[MAXN];
-bitset<K+1> f[MAXN];
-int Q[MAXN];
-vector<querys> Qu[MAXN];
+querys Q[MAXQ];
+bitset<MAXN> M,T;
+
+inline bool dfs(reg int u,reg int t){
+	reg bool f=false;
+	for(reg int i=DAG::head[u],v;i;i=DAG::Next[i]){
+		v=DAG::to[i];
+		if(T[v])
+			continue;
+		T[v]=true;
+		if(v==t){
+			f=true;
+			continue;
+		}
+		f|=dfs(v,t);
+	}
+	return f;
+}
+
 bool ans[MAXQ];
 
-inline void check(reg int l,reg int r){
-	for(reg int i=1;i<=Graph::scc_cnt;++i){
-		in[i]=DAG::indeg[i];
-		f[i].reset();
-		if(l<=i&&i<=r)
-			f[i][i-l]=true;
-	}
-	reg int h=0,t=0;
-	for(reg int i=1;i<=Graph::scc_cnt;++i)
-		if(!in[i])
-			Q[t++]=i;
-	while(h<t){
-		reg int u=Q[h++];
-		for(reg int i=DAG::head[u];i;i=DAG::Next[i]){
-			reg int v=DAG::to[i];
-			f[v]=f[v]|f[u];
-			--in[v];
-			if(!in[v])
-				Q[t++]=v;
+inline void Solve(void){
+	reg int las=0;
+	for(reg int i=1,x,y;i<=q;++i){
+		x=col[Q[i].u],y=col[Q[i].v];
+		if(x==y)
+			ans[Q[i].id]=true;
+		else{
+			if(x!=las){
+				T.reset();
+				if(dfs(x,las))
+					M|=T;
+				else
+					M=T;
+				las=x;
+			}
+			if(M[y])
+				ans[Q[i].id]=true;
 		}
-		/*
-		for(int v:DAG::G[u]){
-			f[v]=f[v]|f[u];
-			--in[v];
-			if(!in[v])
-				Q[t++]=v;
-		}*/
 	}
-	using Graph::col;
-	for(reg int i=l;i<=r;++i)
-		for(querys q:Qu[i])
-			ans[q.id]=f[q.u][i-l];
 	return;
 }
 
 int main(void){
 	n=read(),m=read(),q=read();
 	for(reg int i=1;i<=m;++i){
-		a[i]=read(),b[i]=read();
-		Graph::Add_Edge(a[i],b[i]);
+		u[i]=read(),v[i]=read();
+		Graph::Add_Edge(u[i],v[i]);
 	}
 	for(reg int i=1;i<=n;++i)
-		if(!Graph::dfn[i])
-			Graph::tarjan(i);
-	for(reg int i=1,u,v;i<=m;++i){
-		u=Graph::col[a[i]],v=Graph::col[b[i]];
-		if(u!=v)
-			DAG::Add_Edge(v,u);
+		if(!dfn[i])
+			tarjan(i);
+	for(reg int i=1,x,y;i<=m;++i){
+		x=col[u[i]],y=col[v[i]];
+		if(x!=y)
+			DAG::Add_Edge(x,y);
 	}
-	for(reg int i=1;i<=q;++i){
-		static int u,v;
-		u=read(),v=read();
-		Qu[Graph::col[v]].push_back(querys(i,Graph::col[u]));
-	}
-	for(reg int i=1,l,r;i<=Graph::scc_cnt;i+=K){
-		l=i,r=min(i+K-1,Graph::scc_cnt);
-		check(l,r);
-	}
+	for(reg int i=1;i<=q;++i)
+		Q[i].id=i,Q[i].u=read(),Q[i].v=read();
+	sort(Q+1,Q+q+1);
+	Solve();
 	for(reg int i=1;i<=q;++i)
 		putchar(ans[i]?'Y':'N');
 	putchar('\n');
