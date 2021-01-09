@@ -1,94 +1,118 @@
-#include <bits/stdc++.h>
+#include<bits/stdc++.h>
 using namespace std;
-int open[200005];
-int prime[200005];
-int yes[200005];
-int isit[200005];
-int line[700005];
-int to[700005];
-void push(int a, int b)
-{
-	to[++to[0]] = b;
-	line[++line[0]] = isit[a];
-	isit[a] = line[0];
-}
-void start(void)
-{
-	for (int i = 2; i <= 200000; ++i)
-	{
-		if (isit[i])
-			continue;
-		prime[++prime[0]] = i;
-		for (int j = 1; i * j <= 200000; ++j)
-			push(i * j, prime[0]);
-	}
-}
-int add(int k)
-{
-	if (open[k])
-		return -1;
-	int minx = 0;
-	int j = isit[k];
-	while (j)
-	{
-		if (yes[to[j]])
-			minx = max(minx, yes[to[j]]);
-		j = line[j];
-	}
-	if (minx > 0)
-		return minx;
-	j = isit[k];
-	while (j)
-	{
-		yes[to[j]] = k;
-		j = line[j];
-	}
-	open[k] = 1;
-	return 0;
-}
-int close(int k)
-{
-	if (!open[k])
-		return -2;
-	int j = isit[k];
-	while (j)
-	{
-		yes[to[j]] = 0;
-		j = line[j];
-	}
-	open[k] = 0;
-	return 0;
+#define reg register
+typedef long long ll;
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
+static char buf[100000],*p1=buf,*p2=buf;
+inline int read(void){
+	reg char ch=getchar();
+	reg int res=0;
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	return res;
 }
 
-int main()
-{
-	start();
-	int n = 0, m = 0, ans = 0;
-	scanf("%d%d", &n, &m);
-	for (int i = 1; i <= m; ++i)
-	{
-		char input = '\0';
-		int k = 0;
-		while (input = getchar())
-			if (input == '+' || input == '-')
-			{
-				scanf("%d", &k);
-				switch (input)
-				{
-				case '+':
-					ans = add(k);
-				case '-':
-					ans = close(k);
-				}
+inline void read(reg char *s){
+	*s=getchar();
+	while(!isdigit(*s))*s=getchar();
+	while(isdigit(*s))*(++s)=getchar();
+	*s='\0';
+	return;
+}
+
+const int MAXN=1e5+5;
+
+bool vis[MAXN];
+int tot,prime[MAXN];
+int from[MAXN];
+int rnk[MAXN];
+
+inline void Init(reg int n){
+	for(reg int i=2;i<=n;++i){
+		if(!vis[i]){
+			prime[++tot]=i;
+			rnk[i]=tot;
+			from[i]=i;
+		}
+		for(reg int j=1;j<=tot&&i*prime[j]<=n;++j){
+			vis[i*prime[j]]=true;
+			from[i*prime[j]]=prime[j];
+			if(!(i%prime[j]))
+				break;
+		}
+	}
+	return;
+}
+
+bool flg[MAXN];
+set<int> S[MAXN];
+
+inline void setup(int id){
+	if(flg[id]){
+		puts("Already on");
+		return;
+	}
+	reg int tmp=id;
+	while(tmp!=1){
+		reg int x=from[tmp];
+		if(!S[rnk[x]].empty()){
+			printf("Conflict with %d\n",*S[rnk[x]].begin());
+			return;
+		}
+		while(tmp%x==0)
+			tmp/=x;
+	}
+	tmp=id;
+	flg[id]=true;
+	while(tmp!=1){
+		reg int x=from[tmp];
+		S[rnk[x]].insert(id);
+		while(tmp%x==0)
+			tmp/=x;
+	}
+	puts("Success");
+	return;
+}
+
+inline void shutdown(int id){
+	if(!flg[id]){
+		puts("Already off");
+		return;
+	}
+	reg int tmp=id;
+	while(tmp!=1){
+		reg int x=from[tmp];
+		S[rnk[x]].erase(S[rnk[x]].find(id));
+		while(tmp%x==0)
+			tmp/=x;
+	}
+	flg[id]=false;
+	puts("Success");
+	return;
+}
+
+int n,m;
+
+int main(void){
+	Init(1e5);
+	n=read(),m=read();
+	for(reg int i=1;i<=m;++i){
+		static char opt;
+		static int id;
+		do
+			opt=getchar();
+		while(opt!='+'&&opt!='-');
+		id=read();
+		switch(opt){
+			case '+':{
+				setup(id);
+				break;
 			}
-		else if (ans == -2)
-			printf("Already off\n");
-		else if (ans == -1)
-			printf("Already on\n");
-		else if (ans == 0)
-			printf("Success\n");
-		else
-			printf("Conflict with %d\n", ans);
+			case '-':{
+				shutdown(id);
+				break;
+			}
+		}
 	}
 	return 0;
 }
