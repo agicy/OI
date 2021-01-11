@@ -2,6 +2,7 @@
 using namespace std;
 #define reg register
 typedef long long ll;
+typedef unsigned long long ull;
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
 inline int read(void){
@@ -13,11 +14,12 @@ inline int read(void){
 }
 
 const int MAXN=500+5;
-const int MAXV=MAXN*MAXN+MAXN;
-const int MAXE=2*(3*MAXN*MAXN+MAXN);
+const int MAXV=MAXN;
+const int MAXE=2*(MAXN*2+MAXN*MAXN);
 const int inf=0x3f3f3f3f;
 
 int n;
+int a[MAXN][MAXN];
 int cnt=1,head[MAXV],to[MAXE],w[MAXE],Next[MAXE];
 
 inline void Add_Edge(reg int u,reg int v,reg int len){
@@ -86,16 +88,22 @@ inline int dinic(reg int s,reg int t){
 
 int main(void){
 	n=read();
-	reg int s=0,t=n+n*n+1;
-	reg int sum=0;
-	for(reg int i=1,id=n+1;i<=n;++i)
-		for(reg int j=1;j<=n;++j,++id){
-			static int x;
-			x=read(),sum+=x;
-			Add_Tube(i,id,inf),Add_Tube(j,id,inf),Add_Tube(id,t,x);
+	reg int s=0,t=n+1;
+	reg int ans=0;
+	for(reg int i=1;i<=n;++i){
+		reg int sum=0;
+		for(reg int j=1;j<=n;++j){
+			a[i][j]=read();
+			sum+=a[i][j];
 		}
+		Add_Tube(s,i,sum);
+		ans+=sum;
+	}
 	for(reg int i=1;i<=n;++i)
-		Add_Tube(s,i,read());
-	printf("%d\n",sum-dinic(s,t));
+		Add_Tube(i,t,read());
+	for(reg int i=1;i<=n;++i)
+		for(reg int j=i+1;j<=n;++j)
+			Add_Edge(i,j,a[i][j]),Add_Edge(j,i,a[j][i]);
+	printf("%d\n",ans-dinic(s,t));
 	return 0;
 }
