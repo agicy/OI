@@ -2,65 +2,29 @@
 using namespace std;
 #define reg register
 typedef long long ll;
-#define MOD 998244353
-#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
-static char buf[100000],*p1=buf,*p2=buf;
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,134217728,stdin),p1==p2)?EOF:*p1++)
+static char buf[134217728],*p1=buf,*p2=buf;
 inline int read(void){
-	reg bool f=false;
 	reg char ch=getchar();
 	reg int res=0;
-	while(ch<'0'||'9'<ch)f|=(ch=='-'),ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
-	return f?-res:res;
-}
-
-const int MAXN=70000000+5;
-const int MAXP=100+5;
-
-inline ll pow(reg ll x,reg ll exp,reg ll mod){
-	reg ll res=1;
-	while(exp){
-		if(exp&1)
-			res=res*x%mod;
-		x=x*x%mod;
-		exp>>=1;
-	}
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
 	return res;
 }
 
-int n;
-int p[MAXN];
-ll inv[MAXP];
-ll dp[MAXN];
+const int inv[]={0,100,50,332748151,25,20,665496252,713031695,499122189,443664168,10,272248469,332748126,153576062,855638024,665496242,748683271,117440518,221832084,525391770,5,903173467,635246411,737832787,166374063,4,76788031,147888056,427819012,275377756,332748121,901640064,873463812,756245725,58720259,142606339,110916042,323754928,262695885,716688256,499122179,754770123,950708910,162504897,816745382,887328316,868038570,148674693,582309208,387074343,2,371894957,537516192,18834801,73944028,453747435,213909506,175130590,137688878,879808584,665496237,572763155,450820032,633805940,436731906,230364083,877245039,283084221,528482306,578692380,570425346,421793390,55458021,355539086,161877464,332748119,630470119,609317983,358344128,505440180,748683266,714792254,876507238,24054082,475354455,822083586,580374625,424540703,408372691,325270633,443664158,592364782,434019285,300546688,573459523,105078354,291154604,102911790,692659348,584830026,1};
+const int mod=998244353;
 
-inline void Init(void);
-inline void Read(void);
-inline void Work(void);
+int n;
 
 int main(void){
-	Init();
-	Read();
-	Work();
-	return 0;
-}
-
-inline void Init(void){
-	reg ll inv100=pow(100,MOD-2,MOD);
-	for(reg int i=1;i<=100;++i)
-		inv[i]=pow(inv100*i%MOD,MOD-2,MOD);
-	return;
-}
-
-inline void Read(void){
 	n=read();
-	for(reg int i=1;i<=n;++i)
-		p[i]=read();
-	return;
-}
-
-inline void Work(void){
-	for(reg int i=1;i<=n;++i)
-		dp[i]=(dp[i-1]+1)*inv[p[i]]%MOD;
-	printf("%lld\n",dp[n]);
-	return;
+	reg int las=0;
+	for(reg int i=1,p,val;i<=n;++i){
+		p=read();
+		val=1ll*(las+1)*inv[p]%mod;
+		las=val;
+	}
+	printf("%d\n",las);
+	return 0;
 }
