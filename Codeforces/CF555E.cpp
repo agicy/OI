@@ -149,15 +149,15 @@ namespace Tree{
 		}
 		return dep[u]<dep[v]?u:v;
 	}
+	bool vis[MAXV];
 	int up[MAXV],dn[MAXV];
 	inline void dfs3(reg int u,reg int father){
+		vis[u]=true;
 		for(reg int i=head[u];i;i=Next[i]){
 			reg int v=to[i];
 			if(v!=father){
 				dfs3(v,u);
 				up[u]+=up[v],dn[u]+=dn[v];
-				if(up[u]&&dn[u])
-					No();
 			}
 		}
 		return;
@@ -188,7 +188,9 @@ int main(void){
 			Tree::Add_Edge(Graph::col[u[i]],Graph::col[v[i]]);
 			Tree::Add_Edge(Graph::col[v[i]],Graph::col[u[i]]);
 		}
-	Tree::dfs1(1,0),Tree::dfs2(1,0,1);
+	for(reg int i=1;i<=eDcc_cnt;++i)
+		if(!Tree::dep[i])
+			Tree::dfs1(i,0),Tree::dfs2(i,0,i);
 	while(q--){
 		static int s,t;
 		s=read(),t=read();
@@ -200,7 +202,12 @@ int main(void){
 		reg int lca=Tree::lca(s,t);
 		++Tree::up[s],++Tree::dn[t],--Tree::up[lca],--Tree::dn[lca];
 	}
-	Tree::dfs3(1,0);
+	for(reg int i=1;i<=eDcc_cnt;++i)
+		if(!Tree::vis[i])
+			Tree::dfs3(i,0);
+	for(reg int i=1;i<=eDcc_cnt;++i)
+		if(Tree::up[i]&&Tree::dn[i])
+			No();
 	Yes();
 	return 0;
 }
