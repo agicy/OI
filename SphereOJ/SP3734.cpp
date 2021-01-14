@@ -48,7 +48,7 @@ int n,k;
 int h[MAXN];
 int fac[MAXH],invfac[MAXH];
 Node unit[MAXN];
-int f[MAXN][MAXH];
+int f[MAXN][MAXN];
 
 inline int binom(reg int n,reg int m){
 	if(n<0||m>n)
