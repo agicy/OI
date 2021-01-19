@@ -4,189 +4,121 @@ using namespace std;
 typedef long long ll;
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
+#define flush() (fwrite(wbuf,1,wp1,stdout),wp1=0)
+#define putchar(c)(wp1==wp2&&(flush(),0),wbuf[wp1++]=c)
+static char wbuf[1<<21];int wp1;const int wp2=1<<21;
 inline int read(void){
 	reg char ch=getchar();
 	reg int res=0;
-	while(ch<'0'||'9'<ch)ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
 	return res;
 }
 
 const int MAXN=1e5+5;
-const int MAXSIZE=MAXN*60+5;
+const int MAXM=2e5+5;
 
-struct SegmentTree{
+namespace SegmentTree{
+	const int MAXSIZE=MAXN*50;
 	#define mid ( ( (l) + (r) ) >> 1 )
 	struct Node{
 		int lson,rson;
-		int val;
+		int fa,dep;
 		#define lson(x) unit[(x)].lson
 		#define rson(x) unit[(x)].rson
-		#define val(x) unit[(x)].val
+		#define fa(x) unit[(x)].fa
+		#define dep(x) unit[(x)].dep
 	};
 	int tot;
-	int cnt;
-	int root[MAXN];
 	Node unit[MAXSIZE];
-	inline SegmentTree(void){
-		tot=cnt=0;
-		memset(root,0,sizeof(root));
-		return;
-	}
-	inline void build1(reg int &k,reg int l,reg int r){
-		if(!k)
-			k=++tot;
-		if(l==r){
-			val(k)=1;
-			return;
-		}
-		build1(lson(k),l,mid),build1(rson(k),mid+1,r);
-		return;
-	}
-	inline void buildi(reg int &k,reg int l,reg int r){
-		if(!k)
-			k=++tot;
-		if(l==r){
-			val(k)=l;
-			return;
-		}
-		buildi(lson(k),l,mid),buildi(rson(k),mid+1,r);
-		return;
-	}
-	inline void add(reg int &k,reg int pre,reg int l,reg int r,reg int pos,reg int Val){
-		if(!k)
-			k=++tot;
-		if(l==r){
-			val(k)=val(pre)+Val;
-			return;
-		}
-		lson(k)=lson(pre),rson(k)=rson(pre);
-		if(pos<=mid)
-			rson(k)=rson(pre),add(lson(k),lson(pre),l,mid,pos,Val);
-		else
-			lson(k)=lson(pre),add(rson(k),rson(pre),mid+1,r,pos,Val);
-		return;
-	}
-	inline void set(reg int &k,reg int pre,reg int l,reg int r,reg int pos,reg int Val){
-		if(!k)
-			k=++tot;
-		if(l==r){
-			val(k)=Val;
-			return;
-		}
-		if(pos<=mid)
-			rson(k)=rson(pre),set(lson(k),lson(pre),l,mid,pos,Val);
-		else
-			lson(k)=lson(pre),set(rson(k),rson(pre),mid+1,r,pos,Val);
-		return;
-	}
-	inline int query(reg int k,reg int l,reg int r,reg int pos){
-		if(!k)
-			return 0;
+	inline int build(reg int l,reg int r){
+		reg int p=++tot;
 		if(l==r)
-			return val(k);
-		if(pos<=mid)
-			return query(lson(k),l,mid,pos);
+			fa(p)=l;
 		else
-			return query(rson(k),mid+1,r,pos);
+			lson(p)=build(l,mid),rson(p)=build(mid+1,r);
+		return p;
 	}
-	inline void print(reg int k,reg int l,reg int r){
+	inline int query(reg int p,reg int l,reg int r,reg int pos){
+		if(l==r)
+			return p;
+		if(pos<=mid)
+			return query(lson(p),l,mid,pos);
+		else
+			return query(rson(p),mid+1,r,pos);
+	}
+	inline int getFa(reg int id,reg int l,reg int r,reg int x){
+		reg int f=query(id,l,r,x);
+		if(x==fa(f))
+			return f;
+		else
+			return getFa(id,l,r,fa(f));
+	}
+	inline int update(reg int pre,reg int l,reg int r,reg int pos,reg int f){
+		reg int p=++tot;
+		unit[p]=unit[pre];
 		if(l==r){
-			printf("%d ",val(k));
+			fa(p)=f;
+			return p;
+		}
+		if(pos<=mid)
+			lson(p)=update(lson(pre),l,mid,pos,f);
+		else
+			rson(p)=update(rson(pre),mid+1,r,pos,f);
+		return p;
+	}
+	inline void update(reg int p,reg int l,reg int r,reg int pos){
+		if(l==r){
+			++dep(p);
 			return;
 		}
-		print(lson(k),l,mid),print(rson(k),mid+1,r);
+		if(pos<=mid)
+			update(lson(p),l,mid,pos);
+		else
+			update(rson(p),mid+1,r,pos);
 		return;
 	}
 	#undef mid
-};
-
-namespace UnionFind{
-	int n;
-	int tot;
-	pair<int,int> root[MAXN];
-	SegmentTree fa,dep;
-	inline void Init(reg int S){
-		n=S;
-		tot=0;
-		fa.buildi(fa.root[0],1,n);
-		dep.build1(dep.root[0],1,n);
-		root[0]=make_pair(0,0);
-		return;
-	}
-	inline int find(reg int id,reg int x){
-		reg int tmp;
-		while(tmp=fa.query(fa.root[root[id].first],1,n,x),x!=tmp)
-			x=tmp;
-		return x;
-	}
-	inline void merge(reg int id,reg int a,reg int b){
-		int ra=fa.query(fa.root[root[id].first],1,n,a);
-		int rb=fa.query(fa.root[root[id].first],1,n,b);
-		int da=dep.query(dep.root[root[id].second],1,n,a);
-		int db=dep.query(dep.root[root[id].second],1,n,b);
-		if(ra!=rb){
-			if(da<db)
-				swap(ra,rb);
-			fa.set(fa.root[++fa.cnt],fa.root[root[id].first],1,n,rb,ra);
-			if(da==db)
-				dep.add(dep.root[++dep.cnt],dep.root[root[id].second],1,n,ra,1);
-			root[++tot]=make_pair(fa.cnt,dep.cnt);
-		}
-		return;
-	}
-	inline bool search(reg int id,reg int a,reg int b){
-		reg int ra=fa.query(fa.root[root[id].first],1,n,a);
-		reg int rb=fa.query(fa.root[root[id].second],1,n,b);
-		return ra==rb;
-	}
-	inline void print(reg int id){
-		printf("(%d,%d)\n",root[id].first,root[id].second);
-		puts("fa");
-		fa.print(fa.root[root[id].first],1,n);
-		puts("");
-		puts("dep");
-		dep.print(dep.root[root[id].second],1,n);
-		puts("");
-		return;
-	}
 }
 
-const int MAXM=2e5+5;
-
 int n,m;
-int id[MAXM];
+int rt[MAXM];
 
 int main(void){
 	n=read(),m=read();
-	UnionFind::Init(n);
-	id[0]=UnionFind::tot;
-	//UnionFind::print(UnionFind::tot);
+	rt[0]=SegmentTree::build(1,n);
 	for(reg int i=1;i<=m;++i){
-		static int op,k,a,b;
-		op=read();
-		switch(op){
+		static int opt,a,b,k,ra,rb;
+		opt=read();
+		switch(opt){
 			case 1:{
 				a=read(),b=read();
-				UnionFind::merge(UnionFind::tot,a,b);
+				ra=SegmentTree::getFa(rt[i-1],1,n,a),rb=SegmentTree::getFa(rt[i-1],1,n,b);
+				if(SegmentTree::fa(ra)!=SegmentTree::fa(rb)){
+					if(SegmentTree::dep(ra)>SegmentTree::dep(rb))
+						swap(ra,rb);
+					rt[i]=SegmentTree::update(rt[i-1],1,n,SegmentTree::fa(ra),SegmentTree::fa(rb));
+					if(SegmentTree::dep(ra)==SegmentTree::dep(rb))
+						SegmentTree::update(rt[i],1,n,SegmentTree::fa(rb));
+				}
+				else
+					rt[i]=rt[i-1];
 				break;
 			}
 			case 2:{
 				k=read();
-				UnionFind::tot=id[k];
+				rt[i]=rt[k];
 				break;
 			}
 			case 3:{
 				a=read(),b=read();
-				reg bool ans=UnionFind::search(UnionFind::tot,a,b);
-				printf("%d\n",ans);
+				ra=SegmentTree::getFa(rt[i-1],1,n,a),rb=SegmentTree::getFa(rt[i-1],1,n,b);
+				putchar('0'|(SegmentTree::fa(ra)==SegmentTree::fa(rb))),putchar('\n');
+				rt[i]=rt[i-1];
 				break;
 			}
 		}
-		id[i]=UnionFind::tot;
-		//printf("i=%d tot=%d\n",i,UnionFind::tot);
-		//UnionFind::print(UnionFind::tot);
-		//puts("");
 	}
+	flush();
 	return 0;
 }
