@@ -1,164 +1,222 @@
 #include<bits/stdc++.h>
 using namespace std;
 #define reg register
-typedef long long ll;/*
+typedef long long ll;
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
+static char buf[100000],*p1=buf,*p2=buf;
+#define flush() (fwrite(wbuf,1,wp1,stdout),wp1=0)
+#define putchar(c)(wp1==wp2&&(flush(),0),wbuf[wp1++]=c)
+static char wbuf[1<<20];int wp1;const int wp2=1<<20;
 inline int read(void){
-	reg bool f=false;
 	reg char ch=getchar();
 	reg int res=0;
-	while(ch<'0'||'9'<ch)f|=(ch=='-'),ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
-	return f?-res:res;
-}*/
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	return res;
+}
 
-const int N=2100000;
+inline void read(reg char *s,reg int n){
+	*s=getchar();
+	while(n){
+		while(*s<32||*s>126)*s=getchar();
+		while(32<=*s&&*s<=126)*(++s)=getchar(),--n;
+	}
+	*s='\0';
+	return;
+}
 
-namespace Splay{
+const int MAXS=2*1024*1024+5;
+const int MAXSIZE=5e6;
+
+int ptr;
+
+namespace FHQTreap{
 	struct Node{
-		int fa,ch[2];
-		int size;
-		char c;
-		#define fa(x) unit[(x)].fa
+		int ch[2];
+		int siz;
+		int val;
 		#define ch(x) unit[(x)].ch
-		#define size(x) unit[(x)].size
-		#define c(x) unit[(x)].c
+		#define siz(x) unit[(x)].siz
+		#define val(x) unit[(x)].val
 	};
-	int tot,root;
-	Node unit[N];
-	inline void pushup(reg int k){
-		size(k)=size(ch(k)[0])+size(ch(k)[1])+1;
+	#define lson(x) ch(x)[0]
+	#define rson(x) ch(x)[1]
+	int tot;
+	int rt;
+	int top;
+	char S[MAXSIZE];
+	Node unit[MAXSIZE];
+	inline int getId(void){
+		return ++tot;
+	}
+	inline int New(reg int x){
+		reg int p=getId();
+		lson(p)=rson(p)=0,siz(p)=1,val(p)=x;
+		return p;
+	}
+	inline int copy(reg int p){
+		reg int q=getId();
+		unit[q]=unit[p];
+		return q;
+	}
+	inline void pushup(reg int p){
+		siz(p)=siz(lson(p))+siz(rson(p))+1;
 		return;
 	}
-	inline bool check(reg int x){
-		return ch(fa(x))[1]==x;
-	}
-	inline void rootate(reg int x){
-		reg int y=fa(x),z=fa(y),k=check(x),w=ch(x)[!k];
-		ch(y)[k]=w,fa(w)=y;
-		ch(z)[check(y)]=x,fa(x)=z;
-		ch(x)[!k]=y,fa(y)=x;
-		pushup(y),pushup(x);
+	inline void split(reg int p,reg int k,reg int &x,reg int &y){
+		if(!p){
+			x=y=0;
+			return;
+		}
+		if(siz(lson(p))<k){
+			x=copy(p);
+			split(rson(x),k-siz(lson(p))-1,rson(x),y);
+			pushup(x);
+		}
+		else{
+			y=copy(p);
+			split(lson(y),k,x,lson(y));
+			pushup(y);
+		}
 		return;
 	}
-	inline void splay(reg int x,reg int goal=0){
-		for(reg int f;f=fa(x),f!=goal;rootate(x))
-			if(fa(f)!=goal)
-				rootate(check(x)==check(f)?f:x);
-		if(!goal)
-			root=x;
-		return;
+	inline int merge(reg int x,reg int y){
+		if(!x||!y)
+			return x|y;
+		if(rand()%(siz(x)+siz(y))<siz(x)){
+			x=copy(x);
+			rson(x)=merge(rson(x),y);
+			pushup(x);
+			return x;
+		}
+		else{
+			y=copy(y);
+			lson(y)=merge(x,lson(y));
+			pushup(y);
+			return y;
+		}
 	}
-	inline int kth(reg int k){
-		reg int p=root;
-		while(true)
-			if(k<size(ch(p)[0]))
-				p=ch(p)[0];
-			else{
-				if(size(ch(p)[0])+1<k){
-					k-=size(ch(p)[0])+1;
-					p=ch(p)[1];
-				}
-				else
-					return p;
-			}
+	#define mid ( ( (l) + (r) ) >> 1 )
+	inline int build(reg int l,reg int r,reg char s[]){
+		if(l>r)
+			return 0;
+		reg int p=New(s[mid]);
+		lson(p)=build(l,mid-1,s),rson(p)=build(mid+1,r,s);
+		pushup(p);
+		return p;
 	}
-	inline int build(reg int l,reg int r,reg int father,reg char str[]){
-		reg int k=++tot;
-		reg int mid=(l+r)>>1;
-		c(k)=str[mid],fa(k)=father;
-		if(l<mid)
-			ch(k)[0]=build(l,mid,k,str);
-		if(mid<r)
-			ch(k)[1]=build(mid+1,r,k,str);
-		pushup(k);
-		return k;
-	}
-	inline void print(reg int k){
-		printf("k=%d\n",k);
-		if(ch(k)[0])
-			print(ch(k)[0]);
-		putchar(c(k));
-		if(ch(k)[1])
-			print(ch(k)[1]);
-		return;
-	}
-	inline void split(reg int x,reg int y){
-		splay(x),splay(y,x);
+	#undef mid
+	inline void print(reg int p){
+		if(!p)
+			return;
+		print(lson(p)),S[++top]=val(p),print(rson(p));
 		return;
 	}
 }
 
-using namespace Splay;
+inline void opt1(reg int k){
+	using namespace FHQTreap;
+	ptr=k;
+	return;
+}
 
-char ch[]="   ";
+inline void opt2(reg int n,reg char s[]){
+	using namespace FHQTreap;
+	reg int p=build(1,n,s);
+	static int rt1,rt2;
+	split(rt,ptr,rt1,rt2);
+	rt=merge(merge(rt1,p),rt2);
+	return;
+}
+
+inline void opt3(reg int n){
+	using namespace FHQTreap;
+	static int rt1,mid,rt2;
+	split(rt,ptr,rt1,mid);
+	split(mid,n,mid,rt2);
+	rt=merge(rt1,rt2);
+	return;
+}
+
+inline void opt4(reg int n){
+	using namespace FHQTreap;
+	static int rt1,mid,rt2;
+	split(rt,ptr,rt1,mid);
+	split(mid,n,mid,rt2);
+	top=0;
+	print(mid);
+	for(reg int i=1;i<=top;++i)
+		putchar(S[i]);
+	putchar('\n');
+	rt=merge(merge(rt1,mid),rt2);
+	return;
+}
+
+inline void opt5(void){
+	using namespace FHQTreap;
+	--ptr;
+	return;
+}
+
+inline void opt6(void){
+	using namespace FHQTreap;
+	++ptr;
+	return;
+}
+
+inline void rebuild(void){
+	using namespace FHQTreap;
+	top=0;
+	print(rt);
+	tot=0;
+	rt=build(1,top,S);
+	return;
+}
 
 int main(void){
-	int t;
-	scanf("%d",&t);
-	c(0)=' ';
-	root=1;
-	ch(0)[0]=build(1,2,0,ch);
-	reg int ptr=0;
-	reg int n=0,totlen=0;
+	//printf("%.0lf\n",sizeof(FHQTreap::unit)/1048576.0);
+	srand(time(0));
+	reg int t=read();
 	while(t--){
-		static char opt[16],s[1048576];
-		scanf("%s",opt);
-		printf("t=%d\n",t);
-		printf("opt=%s\n",opt);
-		switch(opt[0]){
+		static char opt;
+		static int n,k;
+		static char s[MAXS];
+		do
+			opt=getchar();
+		while(!isalpha(opt)||opt>96);
+		switch(opt){
 			case 'M':{
-				scanf("%d",&ptr);
-				//ptr=read();
+				k=read();
+				opt1(k);
 				break;
 			}
 			case 'I':{
-				scanf("%d",&n);
-				//n=read();
-				for(reg int i=1;i<=n;++i){
-					s[i]=getchar();
-					if(s[i]=='\n'||s[i]=='\r')
-						--i;
-				}
-				reg int x=kth(ptr+1),y=kth(ptr+2);
-				split(x,y);
-				ch(y)[0]=build(1,n,y,s);
+				n=read(),read(s+1,n);
+				opt2(n,s);
 				break;
 			}
 			case 'D':{
-				scanf("%d",&n);
-				n=min(n,totlen-ptr);
-				totlen-=n;
-				printf("tot=%d ptr=%d\n",tot,ptr);
-				reg int x=kth(ptr+1),y=kth(ptr+n+2);
-				split(x,y);
-				ch(y)[0]=0;
+				n=read();
+				opt3(n);
 				break;
 			}
 			case 'G':{
-				scanf("%d",&n);
-				n=min(n,totlen-ptr);
-				printf("tot=%d ptr+1=%d ptr+n+2=%d\n",size(root),ptr+1,ptr+n+2);
-				reg int x=kth(ptr+1),y=kth(ptr+n+2);
-				split(x,y);
-				print(ch(y)[0]);
-				putchar('\n');
+				n=read();
+				opt4(n);
 				break;
 			}
 			case 'P':{
-				--ptr;
+				opt5();
 				break;
 			}
 			case 'N':{
-				++ptr;
-				break;
-			}
-			default:{
-				puts("FFFFFFFFFFFFFFFFFFFFFFFF");
-				exit(0);
+				opt6();
 				break;
 			}
 		}
-		puts("Finish");
+		if(FHQTreap::tot>MAXSIZE-2e6)
+			rebuild();
 	}
+	flush();
 	return 0;
 }

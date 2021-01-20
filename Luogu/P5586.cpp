@@ -24,9 +24,14 @@ inline void write(reg int x){
 	return;
 }
 
+inline void swap(reg int &a,reg int &b){
+	a^=b,b=a^b,a^=b;
+	return;
+}
+
 const int MAXN=3e5+5;
 const int mod=1e9+7;
-const int MAXSIZE=4e6;
+const int MAXSIZE=8e6;
 
 inline int add(reg int a,reg int b){
 	a+=b;
@@ -42,12 +47,10 @@ int rt;
 
 namespace FHQTreap{
 	struct Node{
-		int key;
 		int ch[2];
 		int siz;
 		int sum,val;
 		int tAdd,tCov;
-		#define key(x) unit[(x)].key
 		#define ch(x) unit[(x)].ch
 		#define siz(x) unit[(x)].siz
 		#define sum(x) unit[(x)].sum
@@ -63,7 +66,6 @@ namespace FHQTreap{
 	Node unit[MAXSIZE];
 	inline int New(reg int v){
 		reg int p=++tot;
-		key(p)=rand();
 		lson(p)=rson(p)=0;
 		siz(p)=1,sum(p)=val(p)=v;
 		tAdd(p)=0,tCov(p)=-1,tRev(p)=0;
@@ -82,7 +84,7 @@ namespace FHQTreap{
 	}
 	inline void Rev(reg int p){
 		swap(lson(p),rson(p));
-		tRev(p)^=1;
+		tRev(p)=!tRev(p);
 		return;
 	}
 	inline void Add(reg int p,reg int v){
@@ -148,7 +150,7 @@ namespace FHQTreap{
 	inline int merge(reg int x,reg int y){
 		if(!x||!y)
 			return x|y;
-		if(key(x)<key(y)){
+		if(rand()%(siz(x)+siz(y))<siz(x)){
 			pushdown(x);
 			x=copy(x);
 			rson(x)=merge(rson(x),y);
@@ -167,7 +169,7 @@ namespace FHQTreap{
 
 inline int opt1(reg int l,reg int r){
 	using namespace FHQTreap;
-	int rt1,mid,rt2;
+	static int rt1,mid,rt2;
 	split(rt,l-1,rt1,mid);
 	split(mid,r-l+1,mid,rt2);
 	reg int res=sum(mid);
@@ -177,7 +179,7 @@ inline int opt1(reg int l,reg int r){
 
 inline void opt2(reg int l,reg int r,reg int val){
 	using namespace FHQTreap;
-	int rt1,mid,rt2;
+	static int rt1,mid,rt2;
 	split(rt,l-1,rt1,mid);
 	split(mid,r-l+1,mid,rt2);
 	mid=copy(mid);
@@ -188,7 +190,7 @@ inline void opt2(reg int l,reg int r,reg int val){
 
 inline void opt3(reg int l,reg int r,reg int val){
 	using namespace FHQTreap;
-	int rt1,mid,rt2;
+	static int rt1,mid,rt2;
 	split(rt,l-1,rt1,mid);
 	split(mid,r-l+1,mid,rt2);
 	mid=copy(mid);
@@ -199,10 +201,10 @@ inline void opt3(reg int l,reg int r,reg int val){
 
 inline void opt4(int l1,int r1,int l2,int r2){
 	using namespace FHQTreap;
-	reg bool flag=false;
-	if(l1>l2)
-		flag=true,swap(l1,l2),swap(r1,r2);
-	int rt1,rt2,rt3,rt4,rt5;
+	reg bool flag=(l1>l2);
+	if(flag)
+		swap(l1,l2),swap(r1,r2);
+	static int rt1,rt2,rt3,rt4,rt5;
 	split(rt,l1-1,rt1,rt2);
 	split(rt2,r1-l1+1,rt2,rt3);
 	split(rt3,l2-r1-1,rt3,rt4);
@@ -219,7 +221,7 @@ inline void opt5(int l1,int r1,int l2,int r2){
 	using namespace FHQTreap;
 	if(l1>l2)
 		swap(l1,l2),swap(r1,r2);
-	int rt1,rt2,rt3,rt4,rt5;
+	static int rt1,rt2,rt3,rt4,rt5;
 	split(rt,l1-1,rt1,rt2);
 	split(rt2,r1-l1+1,rt2,rt3);
 	split(rt3,l2-r1-1,rt3,rt4);
@@ -230,7 +232,7 @@ inline void opt5(int l1,int r1,int l2,int r2){
 
 inline void opt6(reg int l,reg int r){
 	using namespace FHQTreap;
-	int rt1,mid,rt2;
+	static int rt1,mid,rt2;
 	split(rt,l-1,rt1,mid);
 	split(mid,r-l+1,mid,rt2);
 	mid=copy(mid);
@@ -252,16 +254,19 @@ inline void dfs(reg int u){
 	return;
 }
 
+#define mid ( ( (l) + (r) ) >> 1 )
+
 inline int build(reg int l,reg int r){
 	using namespace FHQTreap;
 	if(l>r)
 		return 0;
-	reg int mid=(l+r)>>1;
 	reg int p=New(S[mid]);
 	lson(p)=build(l,mid-1),rson(p)=build(mid+1,r);
 	pushup(p);
 	return p;
 }
+
+#undef mid
 
 int main(void){
 	//printf("%.0lf\n",(sizeof(FHQTreap::unit)+sizeof(FHQTreap::tRev))/1048576.0);
@@ -305,10 +310,10 @@ int main(void){
 				break;
 			}
 		}
-		if(FHQTreap::tot>3600000){
+		if(FHQTreap::tot>7.6e6){
 			top=0;
 			dfs(rt);
-			rt=FHQTreap::tot=0;
+			FHQTreap::tot=0;
 			rt=build(1,n);
 		}
 	}
