@@ -53,8 +53,9 @@ namespace SegmentTree{
 }
 
 namespace CTree{
+	const int MAXN=3*::MAXN;
 	using namespace SegmentTree;
-	int cnt=1,head[MAXN<<1],to[MAXN<<2],w[MAXN<<2],Next[MAXN<<2];
+	int cnt=1,head[MAXN],to[MAXN<<1],w[MAXN<<1],Next[MAXN<<1];
 	inline void Add_Edge(reg int u,reg int v,reg int len){
 		Next[++cnt]=head[u];
 		to[cnt]=v,w[cnt]=len;
@@ -164,9 +165,6 @@ int main(void){
 	}
 	Tree::dfs(1,0);
 	CTree::conquer(1,Tree::tot);
-	SegmentTree::unit[0]=SegmentTree::unit[tot+10];
-	for(reg int i=1;i<=tot;++i)
-		SegmentTree::lson(i)=max(SegmentTree::lson(i),0),SegmentTree::rson(i)=max(SegmentTree::rson(i),0);
 	for(reg int i=1;i<=n;++i)
 		T[i]=SegmentTree::update(T[i-1],rt[p[i]]);
 	reg ll lastans=0;
