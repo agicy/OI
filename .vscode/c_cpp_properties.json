@@ -31,14 +31,12 @@
                 "_UNICODE"
             ],
             "compilerPath": "/usr/bin/g++",
-            "cStandard": "c17",
-            "cppStandard": "c++20",
+            "cStandard": "c11",
+            "cppStandard": "c++11",
             "compilerArgs": [
-                "-m64",
-                "-Wall",
-                "-Wextra"
+                "-m64"
             ],
-            "intelliSenseMode": "gcc-x64"
+            "intelliSenseMode": "${default}"
         },
         {
             "name": "DESKTOP-42AMUUH",
