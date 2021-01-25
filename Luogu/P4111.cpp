@@ -25,7 +25,13 @@ const int MAXM=9+5;
 const int MAXNM=81+5;
 const int mod=1e9;
 
+inline int add(reg int a,reg int b){
+	a+=b;
+	return a>=mod?a-mod:a;
+}
+
 inline int sub(reg int a,reg int b){
+	a%=mod,b%=mod;
 	a-=b;
 	return a<0?a+mod:a;
 }
@@ -36,7 +42,8 @@ int tot,id[MAXN][MAXM];
 int G[MAXNM][MAXNM];
 
 inline void Add(reg int u,reg int v){
-	++G[u][u],++G[v][v],--G[u][v],--G[v][u];
+	G[u][u]=add(G[u][u],1),G[v][v]=add(G[v][v],1);
+	G[u][v]=sub(G[u][v],1),G[v][u]=sub(G[v][u],1);
 	return;
 }
 
@@ -53,7 +60,7 @@ inline int getVal(void){
 			}
 		res=1ll*res*G[i][i]%mod;
 	}
-	return (res+mod)%mod;
+	return res;
 }
 
 int main(void){
@@ -62,7 +69,8 @@ int main(void){
 		read(s[i]+1);
 	for(reg int i=1;i<=n;++i)
 		for(reg int j=1;j<=m;++j)
-			id[i][j]=++tot;
+			if(s[i][j]=='.')
+				id[i][j]=++tot;
 	for(reg int i=1;i<=n;++i)
 		for(reg int j=1;j<=m;++j)
 			if(s[i][j]=='.'){
