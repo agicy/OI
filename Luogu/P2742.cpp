@@ -52,16 +52,14 @@ int main(void){
 	sort(p+1,p+n+1,cmp);
 	reg int top=0;
 	static int S[MAXN];
-	S[++top]=1,S[++top]=2;
-	for(reg int i=3;i<=n;++i){
-		while(top>1&&cross(p[S[top]]-p[S[top-1]],p[i]-p[S[top]])<0.0)
+	for(reg int i=1;i<=n;++i){
+		while(top>1&&cross(p[S[top]]-p[S[top-1]],p[i]-p[S[top-1]])<0.0)
 			--top;
 		S[++top]=i;
 	}
 	reg int tmp=top;
-	S[++top]=n,S[++top]=n-1;
-	for(reg int i=n-2;i>=1;--i){
-		while(top>tmp+1&&cross(p[S[top]]-p[S[top-1]],p[i]-p[S[top]])<0.0)
+	for(reg int i=n-1;i>=1;--i){
+		while(top>tmp&&cross(p[S[top]]-p[S[top-1]],p[i]-p[S[top-1]])<0.0)
 			--top;
 		S[++top]=i;
 	}
