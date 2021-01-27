@@ -1,51 +1,89 @@
 #include<bits/stdc++.h>
 using namespace std;
 #define reg register
-const double pi=acos(-1);
+typedef long long ll;
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
+static char buf[100000],*p1=buf,*p2=buf;
+inline int read(void){
+	reg char ch=getchar();
+	reg int res=0;
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	return res;
+}
 
-const int MAXN=1000+50;
-const int MAXM=1000+50;
-
-int n,m;
-
-struct Point{
-	double x,y;
-	inline void Read(void){
-		scanf("%lf%lf",&x,&y);
+struct Vector{
+	int x,y;
+	inline Vector(reg int x=0,reg int y=0):x(x),y(y){
 		return;
+	}
+	inline Vector operator+(const Vector& a)const{
+		return Vector(x+a.x,y+a.y);
+	}
+	inline Vector operator-(const Vector& a)const{
+		return Vector(x-a.x,y-a.y);
 	}
 };
 
-inline double GetDis(const Point& a,const Point& b){
-	reg double dx=b.x-a.x,dy=b.y-a.y;
-	return sqrt(dx*dx+dy*dy);
+inline int dot(const Vector& a,const Vector& b){
+	return a.x*b.x+a.y*b.y;
 }
 
-inline double GetAng(const Point& a,const Point& b){
-	reg double dx=b.x-a.x,dy=b.y-a.y;
-	return atan2(dy,dx);
+inline int cross(const Vector& a,const Vector& b){
+	return a.x*b.y-a.y*b.x;
 }
 
-Point P[MAXN],M[MAXM];
-double r[MAXM];
+typedef Vector Point;
+
+struct FengHuo{
+	Point p;
+};
+
+struct Shan{
+	Point p;
+	int r;
+};
+
+inline int sqr(reg int x){
+	return x*x;
+}
+
+inline double getDis(const Point& a,const Point& b){
+	return sqrt(sqr(a.x-b.x)+sqr(a.y-b.y));
+}
+
+struct Event{
+	double angle,dis;
+	int opt,id;
+	inline Event(reg double angle=0,reg double dis=0,reg int opt=0,reg int id=0):angle(angle),dis(dis),opt(opt),id(id){
+		return;
+	}
+	inline bool operator<(const Event& a)const{
+		return angle<a.angle;
+	}
+};
+
+const int MAXN=1e3+5;
+const int MAXM=1e3+5;
+const double pi=acos(-1.0);
+const double cir=2.0*pi;
 
 namespace UnionFind{
-	int ID[MAXN];
+	int fa[MAXN];
 	inline void Init(reg int n){
 		for(reg int i=1;i<=n;++i)
-			ID[i]=i;
+			fa[i]=i;
 		return;
 	}
 	inline int find(reg int x){
-		if(x==ID[x])
+		if(x==fa[x])
 			return x;
 		else
-			return ID[x]=find(ID[x]);
+			return fa[x]=find(fa[x]);
 	}
 	inline void merge(reg int a,reg int b){
 		reg int ra=find(a),rb=find(b);
-		if(ra!=rb)
-			ID[rb]=ra;
+		fa[rb]=ra;
 		return;
 	}
 	inline bool search(reg int a,reg int b){
@@ -53,73 +91,79 @@ namespace UnionFind{
 	}
 }
 
-using namespace UnionFind;
-
-namespace Heap{
-	priority_queue<pair<double,int> ,vector<pair<double,int>>,greater<pair<double,int>> > Q,D;
-	void init(){while(!Q.empty())Q.pop();while(!D.empty())D.pop();}
-	void push(pair<double,int> x){Q.push(x);}
-	void erase(pair<double,int> x){D.push(x);}
-	void del(){while(!D.empty()&&Q.top()==D.top()) Q.pop(),D.pop();}
-	bool empty(){del();return Q.empty();}
-	pair<double,int> top(){del();return Q.top();}
-}
-
-inline bool check(reg double angle){
-	return 0<=angle&&angle<=pi;
-}
-
-double L[MAXM]; //L[i] 表示编号为 i 的山峰到当前点的距离
-pair<double,int> T[MAXM*2+MAXN]; //first 表示极角，second 表示编号（山峰的是负数或者大于 n）
-
-inline void Solve(reg int ID){
-	memset(L,0,sizeof(L));
-	reg int tot=0;
-	Heap::init();
-	for(int i=1;i<=n;++i)
-		if(i!=ID){
-			double angle=GetAng(P[ID],P[i]);
-			if(angle>=0)
-				T[++tot]=make_pair(angle,i);
-		}
-	for(reg int i=1;i<=m;++i){
-		reg double alpha=GetAng(P[ID],M[i]);
-		reg double beta=asin(r[i]/GetDis(P[ID],M[i]));
-		double angle1=alpha-beta,angle2=alpha+beta;
-		if(check(angle1)||check(angle2)){
-			T[++tot]=make_pair(max(0.0,angle1),i+n);
-			T[++tot]=make_pair(min(angle2,pi),-i);
-		}
-	}
-	sort(T+1,T+tot+1);
-	for(reg int i=1;i<=tot;++i)
-		if(1<=T[i].second&&T[i].second<=n){ //编号在 [1,n] 内，代表一个烽火台
-			if(Heap::empty()||Heap::top().first>GetDis(P[T[i].second],P[ID])) //没有遮挡 或者 到到烽火台的距离小于最近遮挡的距离
-				merge(T[i].second,ID);
-		}
-		else if(T[i].second<0) //out
-			Heap::erase(make_pair(L[-T[i].second],-T[i].second));
-		else{ //in
-			int id=T[i].second-n;
-			reg double dx=P[ID].x-M[id].x,dy=P[ID].y-M[id].y,R=r[id];
-			L[id]=sqrt(dx*dx+dy*dy-R*R);
-			Heap::push(make_pair(L[id],id));
-		}
-	return;
-}
+int n,m;
+FengHuo a[MAXN];
+Shan b[MAXM];
+bool vis[MAXN];
+Event E[(MAXN+MAXM*2)*2];
+set<pair<double,int>/**/> S;
 
 int main(void){
-	scanf("%d%d",&n,&m);
+	n=read(),m=read();
+	UnionFind::Init(n);
 	for(reg int i=1;i<=n;++i)
-		P[i].Read();
+		a[i].p.x=read(),a[i].p.y=read();
 	for(reg int i=1;i<=m;++i)
-		M[i].Read(),scanf("%lf",&r[i]);
-	Init(n); //并查集初始化
-	for(reg int i=1;i<=n;++i)
-		Solve(i); //每个点求 [0,pi] 内的结果（看见是相互的）
+		b[i].p.x=read(),b[i].p.y=read(),b[i].r=read();
+	for(reg int i=1,j,tot;i<=n;++i){
+		tot=0;
+		for(j=i+1;j<=n;++j)
+			if(!UnionFind::search(i,j)){
+				vis[j]=true;
+				E[++tot]=Event(atan2(a[j].p.y-a[i].p.y,a[j].p.x-a[i].p.x),getDis(a[i].p,a[j].p),1,j);
+			}
+			else
+				vis[j]=false;
+		double len,val_cos,delta,angle,angle_in,angle_out,dis;
+		Vector v;
+		for(j=1;j<=m;++j){
+			v=b[j].p-a[i].p;
+			len=getDis(a[i].p,b[j].p);
+			val_cos=sqrt(dot(v,v)-b[j].r*b[j].r)/len;
+			delta=acos(val_cos),angle=atan2(v.y,v.x);
+			angle_in=angle-delta,angle_out=angle+delta;
+			dis=len-b[j].r;
+			if(angle_in<-pi)
+				angle_in+=cir;
+			if(angle_out>pi)
+				angle_out-=cir;
+			E[++tot]=Event(angle_in,dis,2,j);
+			E[++tot]=Event(angle_out,dis,3,j);
+		}
+		sort(E+1,E+tot+1);
+		for(j=1;j<=tot;++j)
+			E[j+tot]=E[j];
+		S.clear();
+		for(j=1;j<=tot*2;++j)
+			switch(E[j].opt){
+				case 1:{
+					if(vis[E[j].id]){
+						for(auto x:S)
+							if(dot(a[i].p-a[E[j].id].p,b[x.second].p-a[E[j].id].p)>0){
+								vis[E[j].id]=false;
+								break;
+							}
+							else if(x.first>E[j].dis)
+								break;
+					}
+					break;
+				}
+				case 2:{
+					S.insert(make_pair(E[j].dis,E[j].id));
+					break;
+				}
+				case 3:{
+					S.erase(make_pair(E[j].dis,E[j].id));
+					break;
+				}
+			}
+		for(j=i+1;j<=n;++j)
+			if(vis[j])
+				UnionFind::merge(i,j);
+	}
 	reg int ans=0;
 	for(reg int i=1;i<=n;++i)
-		if(find(i)==i)
+		if(i==UnionFind::find(i))
 			++ans;
 	printf("%d\n",ans-1);
 	return 0;
