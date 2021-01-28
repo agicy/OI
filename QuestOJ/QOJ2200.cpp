@@ -35,8 +35,15 @@ inline int cross(const Vector& a,const Vector& b){
 
 typedef Vector Point;
 
+inline bool operator<(const Point& a,const Point& b){
+	return a.x<b.x||(a.x==b.x&&a.y<b.y);
+}
+
 struct FengHuo{
 	Point p;
+	inline bool operator<(const FengHuo& a)const{
+		return p<a.p;
+	}
 };
 
 struct Shan{
@@ -50,6 +57,10 @@ inline int sqr(reg int x){
 
 inline double getDis(const Point& a,const Point& b){
 	return sqrt(sqr(a.x-b.x)+sqr(a.y-b.y));
+}
+
+inline double getAng(const Point& a,const Point& b){
+	return atan2(b.y-a.y,b.x-a.x);
 }
 
 struct Event{
@@ -66,6 +77,7 @@ struct Event{
 const int MAXN=1e3+5;
 const int MAXM=1e3+5;
 const double pi=acos(-1.0);
+const double rt=0.5*pi;
 const double cir=2.0*pi;
 
 namespace UnionFind{
@@ -103,6 +115,7 @@ int main(void){
 	UnionFind::Init(n);
 	for(reg int i=1;i<=n;++i)
 		a[i].p.x=read(),a[i].p.y=read();
+	sort(a+1,a+n+1);
 	for(reg int i=1;i<=m;++i)
 		b[i].p.x=read(),b[i].p.y=read(),b[i].r=read();
 	for(reg int i=1,j,tot;i<=n;++i){
@@ -110,23 +123,19 @@ int main(void){
 		for(j=i+1;j<=n;++j)
 			if(!UnionFind::search(i,j)){
 				vis[j]=true;
-				E[++tot]=Event(atan2(a[j].p.y-a[i].p.y,a[j].p.x-a[i].p.x),getDis(a[i].p,a[j].p),1,j);
+				E[++tot]=Event(getAng(a[i].p,a[j].p),getDis(a[i].p,a[j].p),1,j);
 			}
 			else
 				vis[j]=false;
-		double len,val_cos,delta,angle,angle_in,angle_out,dis;
-		Vector v;
+		reg double len,delta,angle,angle_in,angle_out,dis;
 		for(j=1;j<=m;++j){
-			v=b[j].p-a[i].p;
-			len=getDis(a[i].p,b[j].p);
-			val_cos=sqrt(dot(v,v)-b[j].r*b[j].r)/len;
-			delta=acos(val_cos),angle=atan2(v.y,v.x);
+			len=getDis(a[i].p,b[j].p),angle=getAng(a[i].p,b[j].p),delta=asin(b[j].r/len);
 			angle_in=angle-delta,angle_out=angle+delta;
 			dis=len-b[j].r;
-			if(angle_in<-pi)
-				angle_in+=cir;
-			if(angle_out>pi)
-				angle_out-=cir;
+			if(angle_in>rt||angle_out<-rt)
+				continue;
+			if(angle_in<-pi) angle_in+=cir;
+			if(angle_out>pi) angle_out-=cir;
 			E[++tot]=Event(angle_in,dis,2,j);
 			E[++tot]=Event(angle_out,dis,3,j);
 		}
