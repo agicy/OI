@@ -13,7 +13,7 @@ inline int read(void){
 }
 
 const int MAXN=1e5+5;
-const int MAXM=1e5+5;
+const int MAXM=2e5+5;
 const int MAXC=MAXN+2*MAXM;
 
 struct querys{
@@ -24,7 +24,6 @@ int n,m;
 vector<int> V;
 int c[MAXN];
 querys q[MAXM];
-
 int cnt,head[MAXN],to[MAXN<<1],Next[MAXN<<1];
 
 inline void Add_Edge(reg int u,reg int v){
@@ -72,7 +71,7 @@ inline void dfs2(reg int u,reg int father,reg int topf){
 
 namespace SegmentTree{
 	#define mid ( ( (l) + (r) ) >> 1 )
-	const int MAXSIZE=3e7+5;
+	const int MAXSIZE=5e7+5;
 	struct Node{
 		int lson,rson;
 		int cnt;
@@ -95,7 +94,8 @@ namespace SegmentTree{
 		return;
 	}
 	inline int query(reg int p,reg int l,reg int r,reg int L,reg int R){
-		if(!p) return 0;
+		if(!p)
+			return 0;
 		if(L<=l&&r<=R)
 			return cnt(p);
 		if(L<=mid&&mid<R)
@@ -108,26 +108,24 @@ namespace SegmentTree{
 	#undef mid
 }
 
-int C;
-
 namespace BIT{
 	inline int lowbit(reg int x){
 		return x&(-x);
 	}
-	int n,rt[MAXC];
+	int C,rt[MAXC];
 	inline void Init(reg int s){
-		n=s;
+		C=s;
 		return;
 	}
 	inline void update(reg int id,reg int pos,reg int val){
-		for(reg int i=id;i<=n;i+=lowbit(i))
-			SegmentTree::update(rt[i],1,C,pos,val);
+		for(reg int i=id;i<=C;i+=lowbit(i))
+			SegmentTree::update(rt[i],1,n,pos,val);
 		return;
 	}
 	inline int query(reg int id,reg int l,reg int r){
 		reg int res=0;
 		for(reg int i=id;i;i^=lowbit(i))
-			res+=SegmentTree::query(rt[i],1,C,l,r);
+			res+=SegmentTree::query(rt[i],1,n,l,r);
 		return res;
 	}
 }
@@ -146,8 +144,7 @@ inline int query(int x,int y,reg int l,reg int r){
 	return res;
 }
 
-int main(void){
-	printf("%.3lf M\n",sizeof(SegmentTree::unit)/1048576.0);
+signed main(void){
 	n=read(),m=read();
 	for(reg int i=1;i<=n;++i){
 		c[i]=read();
@@ -173,15 +170,13 @@ int main(void){
 				q[i].opt=2,q[i].u=read(),q[i].v=read(),q[i].l=read(),q[i].r=read();
 				V.push_back(q[i].l),V.push_back(q[i].r);
 				break;
-				break;
 			}
 		}
 	}
 	sort(V.begin(),V.end());
 	V.erase(unique(V.begin(),V.end()),V.end());
-	for(reg int i=1;i<=n;++i){
+	for(reg int i=1;i<=n;++i)
 		c[i]=lower_bound(V.begin(),V.end(),c[i])-V.begin()+1;
-	}
 	for(reg int i=1;i<=m;++i)
 		if(q[i].opt==1)
 			q[i].l=lower_bound(V.begin(),V.end(),q[i].l)-V.begin()+1;
@@ -190,21 +185,18 @@ int main(void){
 			q[i].r=lower_bound(V.begin(),V.end(),q[i].r)-V.begin()+1;
 		}
 	dfs1(1,0),dfs2(1,0,1);
-	C=V.size();
+	reg int C=V.size();
 	BIT::Init(C);
 	for(reg int i=1;i<=n;++i)
 		BIT::update(c[i],dfn[i],1);
-	for(reg int i=1;i<=m;++i){
+	for(reg int i=1;i<=m;++i)
 		if(q[i].opt==1){
 			reg int u=q[i].u;
 			BIT::update(c[u],dfn[u],-1);
 			c[u]=q[i].l;
 			BIT::update(c[u],dfn[u],1);
 		}
-		else{
-			reg int res=query(q[i].u,q[i].v,q[i].l,q[i].r);
-			printf("%d\n",res);
-		}
-	}
+		else
+			printf("%d\n",query(q[i].u,q[i].v,q[i].l,q[i].r));
 	return 0;
 }
