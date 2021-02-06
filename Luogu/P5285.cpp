@@ -177,7 +177,7 @@ int main(void){
 
 	}
 	else if(!strcmp(task,"2g+")){
-
+		
 	}
 	else{
 		puts("Fuck");
