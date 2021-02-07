@@ -15,7 +15,6 @@ inline int read(void){
 	return res;
 }
 
-
 inline void writeln(reg int x){
 	static char buf[32];
 	reg int p=-1;
