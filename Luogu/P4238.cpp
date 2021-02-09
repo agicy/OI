@@ -2,93 +2,116 @@
 using namespace std;
 #define reg register
 typedef long long ll;
-const int p=998244353;
-const int g=3;
-const int invg=332748118;
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
 inline int read(void){
 	reg char ch=getchar();
 	reg int res=0;
-	while(ch<'0'||'9'<ch)ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
 	return res;
 }
 
-inline int pow(reg int x,reg int exp,reg int mod){
-	reg int res=1;
-	while(exp){
-		if(exp&1)
-			res=1ll*res*x%mod;
-		x=1ll*x*x%mod;
-		exp>>=1;
+namespace Poly{
+	const int p=998244353;
+	const int g=3;
+	const int invg=332748118;
+	inline int add(reg int a,reg int b){
+		a+=b;
+		return a>=p?a-p:a;
 	}
-	return res;
-}
-
-inline int inv(reg int x,reg int mod){
-	return pow(x,mod-2,mod);
-}
-
-const int MAXN=100000+5;
-
-int n;
-int a[MAXN<<2],b[MAXN<<2];
-int r[MAXN<<2];
-
-inline void NTT(reg int a[],reg int limit,reg int type){
-	for(reg int i=0;i<limit;++i)
-		if(i<r[i])
-			swap(a[i],a[r[i]]);
-	for(reg int i=1;i<limit;i<<=1){
-		reg int w=pow(type==1?g:invg,(p-1)/(i<<1),p);
-		for(reg int j=0;j<limit;j+=(i<<1)){
-			reg int e=1;
-			for(reg int k=0;k<i;++k,e=1ll*e*w%p){
-				reg int x=a[j+k],y=1ll*e*a[j+k+i]%p;
-				a[j+k]=(x+y)%p,a[j+k+i]=(x-y+p)%p;
+	inline int sub(reg int a,reg int b){
+		a-=b;
+		return a<0?a+p:a;
+	}
+	inline int fpow(reg int x,reg int exp){
+		reg int res=1;
+		while(exp){
+			if(exp&1)
+				res=1ll*res*x%p;
+			x=1ll*x*x%p;
+			exp>>=1;
+		}
+		return res;
+	}
+	typedef vector<int> poly;
+	vector<int> rev;
+	inline int getRev(reg int n){
+		reg int limit=1,l=0;
+		while(limit<n)
+			limit<<=1,++l;
+		rev.resize(limit);
+		for(reg int i=0;i<limit;++i)
+			rev[i]=(rev[i>>1]>>1)|((i&1)<<(l-1));
+		return limit;
+	}
+	inline void NTT(reg poly& a,reg int limit,reg int flag){
+		for(reg int i=0;i<limit;++i)
+			if(i<rev[i])
+				swap(a[i],a[rev[i]]);
+		for(reg int i=1;i<limit;i<<=1){
+			reg int w=fpow(flag==1?g:invg,(p-1)/(i<<1));
+			for(reg int j=0;j<limit;j+=(i<<1)){
+				reg int e=1;
+				for(reg int k=0;k<i;++k,e=1ll*e*w%p){
+					reg int x=a[j+k],y=1ll*e*a[i+j+k]%p;
+					a[j+k]=add(x,y),a[i+j+k]=sub(x,y);
+				}
 			}
 		}
-	}
-	if(type==-1){
-		reg int inv=pow(limit,p-2,p);
-		for(reg int i=0;i<limit;++i)
-			a[i]=1ll*a[i]*inv%p;
-	}
-	return;
-}
-
-inline void Work(reg int deg,reg int a[],reg int b[]){
-	if(deg==1){
-		b[0]=inv(a[0],p);
+		if(flag==-1){
+			reg int inv=fpow(limit,p-2);
+			for(reg int i=0;i<limit;++i)
+				a[i]=1ll*a[i]*inv%p;
+		}
 		return;
 	}
-	Work((deg+1)>>1,a,b);
-	reg int limit=1,l=0;
-	while(limit<=(deg<<1))
-		limit<<=1,++l;
-	for(reg int i=1;i<limit;++i)
-		r[i]=(r[i>>1]>>1)|((i&1)<<(l-1));
-	static int c[MAXN<<2];
-	for(reg int i=0;i<deg;++i)
-		c[i]=a[i];
-	for(reg int i=deg;i<limit;++i)
-		c[i]=0;
-	NTT(c,limit,1),NTT(b,limit,1);
-	for(reg int i=0;i<limit;++i)
-		b[i]=1ll*(2ll-1ll*c[i]*b[i]%p+p)%p*b[i]%p;
-	NTT(b,limit,-1);
-	for(reg int i=deg;i<limit;++i)
-		b[i]=0;
-	return;
+	inline void print(const poly& a){
+		for(reg int i=0,siz=a.size();i<siz;++i)
+			printf("%d%c",a[i],i==siz-1?'\n':' ');
+		return;
+	}
+	inline poly mul(poly a,poly b){
+		reg int limit=getRev(a.size()+b.size()-1);
+		a.resize(limit,0),b.resize(limit,0);
+		NTT(a,limit,1),NTT(b,limit,1);
+		for(reg int i=0;i<limit;++i)
+			a[i]=1ll*a[i]*b[i]%p;
+		NTT(a,limit,-1);
+		return a;
+	}
+	inline poly inv(poly a){
+		reg int deg=a.size();
+		if(deg==1){
+			poly res;
+			res.resize(1);
+			res[0]=fpow(a[0],p-2);
+			return res;
+		}
+		poly tmp=a;
+		tmp.resize((deg+1)>>1);
+		poly Inv=inv(tmp);
+		reg int limit=getRev(deg<<1);
+		Inv.resize(limit,0),a.resize(limit,0);
+		NTT(Inv,limit,1),NTT(a,limit,1);
+		for(reg int i=0;i<limit;++i)
+			Inv[i]=1ll*sub(2,1ll*a[i]*Inv[i]%p)*Inv[i]%p;
+		NTT(Inv,limit,-1);
+		Inv.resize(deg);
+		return Inv;
+	}
 }
 
+using namespace Poly;
+
 int main(void){
-	n=read();
+	reg int n=read();
+	poly a;
+	a.resize(n);
 	for(reg int i=0;i<n;++i)
 		a[i]=read();
-	Work(n,a,b);
+	poly res=inv(a);
 	for(reg int i=0;i<n;++i)
-		printf("%d%c",b[i],i==n-1?'\n':' ');
+		printf("%d%c",res[i],i==n-1?'\n':' ');
 	return 0;
 }
