@@ -48,9 +48,9 @@
                 "UNICODE",
                 "_UNICODE"
             ],
-            "compilerPath": "C:\\Program Files\\TDM-GCC-64\\bin\\gcc.exe",
+            "compilerPath": "C:\\Program Files\\TDM-GCC-64\\bin\\g++.exe",
             "cStandard": "c11",
-            "cppStandard": "gnu++14",
+            "cppStandard": "c++11",
             "compilerArgs": [
                 "-m64",
                 "-Wall",
