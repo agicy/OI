@@ -7,161 +7,168 @@ static char buf[100000],*p1=buf,*p2=buf;
 inline int read(void){
 	reg char ch=getchar();
 	reg int res=0;
-	while(ch<'0'||'9'<ch)ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
 	return res;
 }
 
-const int MAXN=(1<<20)+5;
-const int M=32767;
-
-int n,p;
-int f[MAXN];
-int a[MAXN];
-
 namespace Poly{
-	const double pi=acos(-1);
-	inline int add(reg int x,reg int y){
-		reg int sum=x+y;
-		return sum>=p?sum-p:p;
+	int p,B;
+	inline int add(reg int a,reg int b){
+		a+=b;
+		return a>=p?a-p:a;
 	}
-	inline int pow(reg int x,reg int exp,reg int mod){
+	inline int sub(reg int a,reg int b){
+		a-=b;
+		return a<0?a+p:a;
+	}
+	inline int mod(reg long double x){
+		if(x<0)
+			return (ll)(x+0.5)%p+p;
+		else
+			return (ll)(x+0.5)%p;
+	}
+	inline int fpow(reg int x,reg int exp){
 		reg int res=1;
 		while(exp){
 			if(exp&1)
-				res=1ll*res*x%mod;
-			x=1ll*x*x%mod;
+				res=1ll*res*x%p;
+			x=1ll*x*x%p;
 			exp>>=1;
 		}
 		return res;
 	}
-	int r[MAXN],len[MAXN],_inv[MAXN];
-
 	struct Complex{
-		double x,y;
-		inline Complex(reg double x=0,reg double y=0):x(x),y(y){
+		long double x,y;
+		inline Complex(reg long double x=0,reg long double y=0):x(x),y(y){
 			return;
 		}
-		inline Complex operator+(const Complex& a){
+		inline Complex operator+(const Complex& a)const{
 			return Complex(x+a.x,y+a.y);
 		}
-		inline Complex operator-(const Complex& a){
+		inline Complex operator-(const Complex& a)const{
 			return Complex(x-a.x,y-a.y);
 		}
-		inline Complex operator*(const Complex& a){
+		inline Complex operator*(const Complex& a)const{
 			return Complex(x*a.x-y*a.y,x*a.y+a.x*y);
 		}
 	};
-	Complex a[MAXN],b[MAXN],Aa[MAXN],Ab[MAXN],Ba[MAXN],Bb[MAXN];
-	inline Complex conj(const Complex& a){
-		return Complex(a.x,-a.y);
-	}
-	int qm(int x) {return x>=p?x-p:x;}
-	inline void FFT(reg Complex a[],reg int limit){
+	vector<int> rev;
+	inline int getRev(reg int n){
+		reg int limit=1,l=0;
+		while(limit<n)
+			limit<<=1,++l;
+		rev.resize(limit);
 		for(reg int i=0;i<limit;++i)
-			if(i<r[i])
-				swap(a[i],a[r[i]]);
-		for(reg int i=1;i<limit;i<<=1) {
-			Complex w(cos(pi/i),sin(pi/i));
+			rev[i]=(rev[i>>1]>>1)|((i&1)<<(l-1));
+		return limit;
+	}
+	const long double pi=acos(-1.0);
+	inline void FFT(reg vector<Complex>& a,reg int limit,reg int flag){
+		for(reg int i=0;i<limit;++i)
+			if(i<rev[i])
+				swap(a[i],a[rev[i]]);
+		for(reg int i=1;i<limit;i<<=1){
+			Complex w(cos(pi/i),flag*sin(pi/i));
 			for(reg int j=0;j<limit;j+=(i<<1)){
 				Complex e(1,0);
 				for(reg int k=0;k<i;++k,e=e*w){
-					Complex x=a[j+k],y=e*a[j+k+i];
-					a[j+k]=x+y,a[j+k+i]=x-y;
+					Complex x=a[j+k],y=a[i+j+k]*e;
+					a[j+k]=x+y,a[i+j+k]=x-y;
 				}
 			}
 		}
+		if(flag==-1)
+			for(reg int i=0;i<limit;++i)
+				a[i].x/=limit;
 		return;
 	}
-
-	inline void mul(const int ka[],const int kb[],reg int res[],reg int n){
-		for(reg int i=0;i<n;++i)
-			r[i]=(r[i>>1]>>1)|((i&1)<<(len[n]-1));
-		for(reg int i=0;i<(n>>1);++i){
-			a[i]=Complex(ka[i]&M,ka[i]>>15);
-			b[i]=Complex(kb[i]&M,kb[i]>>15);
-			a[i+(n>>1)]=b[i+(n>>1)]=Complex(0,0);
+	typedef vector<int> poly;
+	inline poly mul(poly a,poly b){
+		vector<Complex> pA,qA,pB,qB;
+		reg int s=a.size()+b.size()-1;
+		reg int limit=getRev(s);
+		pA.resize(limit),qA.resize(limit),pB.resize(limit),qB.resize(limit);
+		for(reg int i=0,siz=a.size();i<siz;++i)
+			pA[i]=Complex(a[i]/B,0),qA[i]=Complex(a[i]%B,0);
+		for(reg int i=0,siz=b.size();i<siz;++i)
+			pB[i]=Complex(b[i]/B,0),qB[i]=Complex(b[i]%B,0);
+		FFT(pA,limit,1),FFT(qA,limit,1),FFT(pB,limit,1),FFT(qB,limit,1);
+		vector<Complex> p1,p2,p3;
+		p1.resize(limit),p2.resize(limit),p3.resize(limit);
+		for(reg int i=0;i<limit;++i){
+			p1[i]=pA[i]*pB[i];
+			p2[i]=pA[i]*qB[i]+qA[i]*pB[i];
+			p3[i]=qA[i]*qB[i];
 		}
-		FFT(a,n),FFT(b,n);
-		for(reg int i=0;i<n;++i){
-			int j=(n-i)&(n-1);
-			Complex kAa=(a[i]+conj(a[j]))*Complex(0.5,0);
-			Complex kAb=(a[i]-conj(a[j]))*Complex(0,-0.5);
-			Complex kBa=(b[i]+conj(b[j]))*Complex(0.5,0);
-			Complex kBb=(b[i]-conj(b[j]))*Complex(0,-0.5);
-			Aa[j]=kAa*kBa,Ab[j]=kAa*kBb,Ba[j]=kBa*kAb,Bb[j]=kAb*kBb;
-		}
-		for(reg int i=0;i<n;++i){
-			a[i]=Aa[i]+Ab[i]*Complex(0,1);
-			b[i]=Ba[i]+Bb[i]*Complex(0,1);
-		}
-		FFT(a,n),FFT(b,n);
-		for(reg int i=0;i<n;++i) {
-			reg int kAa=(ll)(a[i].x/n+0.5)%p;
-			reg int kAb=(ll)(a[i].y/n+0.5)%p;
-			reg int kBa=(ll)(b[i].x/n+0.5)%p;
-			reg int kBb=(ll)(b[i].y/n+0.5)%p;
-			res[i]=qm(((ll)kAa+((ll)(kAb+kBa)<<15)+((ll)kBb<<30))%p+p);
-		}
+		FFT(p1,limit,-1),FFT(p2,limit,-1),FFT(p3,limit,-1);
+		poly res;
+		res.resize(s);
+		for(reg int i=0;i<s;++i)
+			res[i]=add(1ll*mod(p1[i].x)*B%p*B%p,add(1ll*mod(p2[i].x)*B%p,mod(p3[i].x)));
+		return res;
 	}
-	inline void sum(const int a[],reg int res[],reg int n){
-		for(reg int i=1;i<n;++i)
-			res[i]=1ll*a[i-1]*_inv[i]%p;
-		res[0]=0;
-		return;
-	}
-	inline void diff(const int a[],reg int res[],reg int n){
-		for(reg int i=1;i<n;++i)
-			res[i-1]=1ll*a[i]*i%p;
-		res[n-1]=0;
-		return;
-	}
-	inline void inv(const int a[],reg int res[],reg int n){
-		if(n==1){
-			res[0]=pow(a[0],p-2,p);
-			return;
+	inline poly inv(poly a){
+		reg int deg=a.size();
+		if(deg==1){
+			poly res;
+			res.resize(1);
+			res[0]=fpow(a[0],p-2);
+			return res;
 		}
-		inv(a,res,n>>1);
-		static int tmp1[MAXN],tmp2[MAXN];
-		mul(a,res,tmp1,n<<1);
-		mul(tmp1,res,tmp2,n<<1);
-		for(reg int i=0;i<n;++i)
-			res[i]=((res[i]<<1)-tmp2[i]+p)%p,res[i+n]=0;
-		return;
+		poly tmp=a;
+		tmp.resize((deg+1)>>1);
+		poly Inv=inv(tmp);
+		tmp=mul(mul(a,Inv),Inv);
+		Inv.resize(a.size());
+		for(reg int i=0,siz=a.size();i<siz;++i)
+			Inv[i]=sub(add(Inv[i],Inv[i]),tmp[i]);
+		return Inv;
 	}
-	inline void ln(const int a[],reg int b[],reg int n){
-		static int Diff[MAXN],Inv[MAXN],tmp[MAXN];
-		memset(Inv,0,sizeof(Inv));
-		diff(a,Diff,n);
-		inv(a,Inv,n);
-		mul(Diff,Inv,tmp,n<<1);
-		sum(tmp,b,n);
-		return;
+	inline poly der(poly a){
+		for(reg int i=0,siz=a.size();i<siz-1;++i)
+			a[i]=1ll*(i+1)*a[i+1]%p;
+		a.pop_back();
+		return a;
+	}
+	inline poly itg(poly a){
+		vector<int> inv;
+		inv.resize(a.size()+1);
+		inv[0]=inv[1]=1;
+		for(reg int i=2,siz=inv.size();i<siz;++i)
+			inv[i]=1ll*(p-p/i)*inv[p%i]%p;
+		a.resize(a.size()+1);
+		for(reg int i=a.size()-1;i>0;--i)
+			a[i]=1ll*a[i-1]*inv[i]%p;
+		a[0]=0;
+		return a;
+	}
+	inline poly ln(const poly& a){
+		poly res=itg(mul(der(a),inv(a)));
+		res.resize(a.size());
+		return res;
 	}
 }
 
+const int MAXN=(1<<18)+5;
+
+int n;
+
 int main(void){
+	using namespace Poly;
 	n=read(),p=read();
+	B=sqrt(p);
+	poly f;
+	f.resize(n+1);
 	for(reg int i=1;i<=n;++i)
 		f[i]=read();
 	f[0]=1;
-
-	reg int limit=1;
-	while(limit<=n)
-		limit<<=1,Poly::len[limit]=Poly::len[limit>>1]+1;
-	Poly::len[limit<<1]=Poly::len[limit]+1;
-
-	Poly::_inv[1]=1;
-	for(reg int i=2;i<(limit<<1);++i)
-		Poly::_inv[i]=1ll*(p-p/i)*Poly::_inv[p%i]%p;
-
-	Poly::ln(f,a,limit);
+	poly a=ln(f);
 	for(reg int i=1;i<=n;++i)
 		a[i]=1ll*a[i]*i%p;
 	for(reg int i=1;i<=n;++i)
 		for(reg int j=(i<<1);j<=n;j+=i)
-			a[j]=Poly::add(a[j],p-a[i]);
-
+			a[j]=sub(a[j],a[i]);
 	reg int top=0;
 	static int S[MAXN];
 	for(reg int i=1;i<=n;++i)
