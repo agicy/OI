@@ -11,8 +11,8 @@
                 "_UNICODE"
             ],
             "compilerPath": "F:/mingw64/bin/g++.exe",
-            "cStandard": "c17",
-            "cppStandard": "c++14",
+            "cStandard": "c11",
+            "cppStandard": "c++11",
             "compilerArgs": [
                 "-m64",
                 "-Wall",
