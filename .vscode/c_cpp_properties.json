@@ -36,7 +36,7 @@
             "compilerArgs": [
                 "-m64"
             ],
-            "intelliSenseMode": "${default}"
+            "intelliSenseMode": "linux-gcc-x64"
         },
         {
             "name": "DESKTOP-42AMUUH",
