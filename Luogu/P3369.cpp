@@ -8,164 +8,157 @@ inline int read(void){
 	reg bool f=false;
 	reg char ch=getchar();
 	reg int res=0;
-	while(ch<'0'||'9'<ch)f|=(ch=='-'),ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
+	while(!isdigit(ch))f|=(ch=='-'),ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
 	return f?-res:res;
 }
 
-const int MAXN=100000+500;
+const int MAXN=5e5+5;
 
-namespace Splay{
-	const int MAXSIZE=MAXN;
+namespace FHQTreap{
+	const int MAXSIZE=MAXN*70;
 	struct Node{
-		int fa,ch[2];
-		int size,cnt;
+		int ch[2];
+		int siz;
 		int val;
-		#define fa(x) unit[(x)].fa
 		#define ch(x) unit[(x)].ch
-		#define size(x) unit[(x)].size
-		#define cnt(x) unit[(x)].cnt
+		#define siz(x) unit[(x)].siz
 		#define val(x) unit[(x)].val
 	};
-	int tot,root;
+	#define lson(x) ch(x)[0]
+	#define rson(x) ch(x)[1]
+	int tot;
 	Node unit[MAXSIZE];
-	inline bool get(reg int x){
-		return ch(fa(x))[1]==x;
+	inline int New(reg int v){
+		reg int p=++tot;
+		siz(p)=1,val(p)=v;
+		return p;
 	}
 	inline void pushup(reg int p){
-		size(p)=size(ch(p)[0])+size(ch(p)[1])+cnt(p);
+		siz(p)=siz(lson(p))+siz(rson(p))+1;
 		return;
 	}
-	inline void rotate(reg int x){
-		reg int y=fa(x),z=fa(y),dir=get(x),w=ch(x)[dir^1];
-		fa(x)=z;
-		if(z)
-			ch(z)[get(y)]=x;
-		fa(y)=x;
-		ch(x)[dir^1]=y;
-		fa(w)=y,ch(y)[dir]=w;
-		pushup(y),pushup(x);
-		return;
-	}
-	inline void splay(reg int x,reg int goal){
-		if(!x)
+	inline void split(reg int p,reg int v,reg int &x,reg int &y){
+		if(!p){
+			x=y=0;
 			return;
-		for(reg int f=fa(x);f=fa(x),f!=goal;rotate(x))
-			if(fa(f)!=goal)
-				rotate(get(x)==get(f)?f:x);
-		if(!goal)
-			root=x;
-		return;
-	}
-	inline int find(reg int Val){
-		reg int p=root;
-		while(p&&Val!=val(p)&&ch(p)[Val>val(p)])
-			p=ch(p)[Val>val(p)];
-		splay(p,0);
-		return p;
-	}
-	inline void insert(reg int Val){
-		reg int p=root,pre=0;
-		while(p&&Val!=val(p))
-			pre=p,p=ch(p)[Val>val(p)];
-		if(p)
-			++cnt(p);
-		else{
-			p=++tot;
-			fa(p)=pre;
-			ch(p)[0]=ch(p)[1]=0;
-			val(p)=Val;
-			size(p)=cnt(p)=1;
-			if(pre)
-				ch(pre)[Val>val(pre)]=p;
 		}
-		splay(p,0);
+		if(val(p)<=v){
+			x=p;
+			split(rson(x),v,rson(x),y);
+			pushup(x);
+		}
+		else{
+			y=p;
+			split(lson(y),v,x,lson(y));
+			pushup(y);
+		}
 		return;
 	}
-	inline int pre(reg int Val){
-		reg int p=find(Val);
-		if(val(p)<Val)
-			return p;
-		p=ch(p)[0];
-		while(ch(p)[1])
-			p=ch(p)[1];
-		return p;
+	inline int merge(reg int x,reg int y){
+		if(!x||!y)
+			return x|y;
+		if(rand()%(siz(x)+siz(y))<siz(x)){
+			rson(x)=merge(rson(x),y);
+			pushup(x);
+			return x;
+		}
+		else{
+			lson(y)=merge(x,lson(y));
+			pushup(y);
+			return y;
+		}
 	}
-	inline int suf(reg int Val){
-		reg int p=find(Val);
-		if(val(p)>Val)
-			return p;
-		p=ch(p)[1];
-		while(ch(p)[0])
-			p=ch(p)[0];
-		return p;
-	}
-	inline void del(reg int Val){
-		reg int Pre=pre(Val),Suf=suf(Val);
-		splay(Pre,0),splay(Suf,Pre);
-		reg int p=ch(Suf)[0];
-		--cnt(p);
-		if(cnt(p)==0)
-			fa(p)=ch(Suf)[0]=0;
-		else
-			splay(p,0);
-		return;
-	}
-	inline int rnk(reg int Val){
-		reg int p=find(Val);
-		return size(ch(p)[0])+1;
-	}
-	inline int kth(reg int k){
-		reg int p=root;
-		if(k>size(p))
-			return 0;
+	inline int kth(reg int p,reg int k){
 		while(true){
-			if(k<=size(ch(p)[0]))
-				p=ch(p)[0];
-			else if(k<=size(ch(p)[0])+cnt(p))
-				return val(p);
+			if(k<=siz(lson(p)))
+				p=lson(p);
 			else{
-				k-=size(ch(p)[0])+cnt(p);
-				p=ch(p)[1];
+				k-=siz(lson(p))+1;
+				if(!k)
+					return val(p);
+				else
+					p=rson(p);
 			}
 		}
+		return -1;
+	}
+	inline int insert(reg int p,reg int v){
+		int x,y;
+		split(p,v,x,y);
+		return merge(merge(x,New(v)),y);
+	}
+	inline int del(reg int p,reg int w){
+		int x,y,z;
+		split(p,w,x,z);
+		split(x,w-1,x,y);
+		return merge(merge(x,merge(lson(y),rson(y))),z);
+	}
+	int ans;
+	inline int rnk(reg int p,reg int v){
+		int x,y;
+		split(p,v-1,x,y);
+		ans=siz(x);
+		return merge(x,y);
+	}
+	inline int pre(reg int p,reg int v){
+		int x,y;
+		split(p,v-1,x,y);
+		reg int id=x;
+		while(rson(id))
+			id=rson(id);
+		ans=val(id);
+		return merge(x,y);
+	}
+	inline int suf(reg int p,reg int v){
+		int x,y;
+		split(p,v,x,y);
+		reg int id=y;
+		while(lson(id))
+			id=lson(id);
+		ans=val(id);
+		return merge(x,y);
 	}
 }
 
-using namespace Splay;
+const int inf=(1ll<<31)-1;
 
 int main(void){
-	insert(-0X7FFFFFFF),insert(0X7FFFFFFF);
+	srand(time(0));
 	reg int n=read();
+	using namespace FHQTreap;
+	reg int rt=merge(New(-inf),New(inf));
 	while(n--){
 		static int opt,x;
 		opt=read(),x=read();
 		switch(opt){
 			case 1:{
-				insert(x);
+				rt=insert(rt,x);
 				break;
 			}
 			case 2:{
-				del(x);
+				rt=del(rt,x);
 				break;
 			}
 			case 3:{
-				printf("%d\n",rnk(x)-1);
+				rt=rnk(rt,x);
+				printf("%d\n",ans);
 				break;
 			}
 			case 4:{
-				printf("%d\n",kth(x+1));
+				printf("%d\n",kth(rt,x+1));
 				break;
 			}
 			case 5:{
-				printf("%d\n",val(pre(x)));
+				rt=pre(rt,x);
+				printf("%d\n",ans);
 				break;
 			}
 			case 6:{
-				printf("%d\n",val(suf(x)));
+				rt=suf(rt,x);
+				printf("%d\n",ans);
 				break;
 			}
-			default:break;
 		}
 	}
 	return 0;
