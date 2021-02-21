@@ -138,13 +138,14 @@ int main(void){
 		E[i].id=i,E[i].u=read(),E[i].v=read(),E[i].w=read();
 	UnionFind::Init(n);
 	sort(E+1,E+m+1);
-	for(reg int i=1;i<=m;++i)
+	for(reg int i=1;i<=m;++i){
 		if(!UnionFind::search(E[i].u,E[i].v)){
 			E[i].vis=true;
 			UnionFind::merge(E[i].u,E[i].v);
 			Add_Edge(E[i].u,E[i].v,E[i].w,E[i].id);
 			Add_Edge(E[i].v,E[i].u,E[i].w,E[i].id);
 		}
+	}
 	dfs(1,0);
 	memset(Min,0x3f,sizeof(Min));
 	for(reg int i=1;i<=m;++i)
