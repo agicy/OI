@@ -2,133 +2,123 @@
 using namespace std;
 #define reg register
 typedef long long ll;
-typedef unsigned long long ull;
-#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
-static char buf[100000],*p1=buf,*p2=buf;
-inline int read(void){
-	reg bool f=false;
-	reg char ch=getchar();
-	reg int res=0;
-	while(ch<'0'||'9'<ch)f|=(ch=='-'),ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
-	return f?-res:res;
-}
 
-const int MAXN=100000+5;
-const int MAXM=50000+5;
+const int MAXN=1e5+5;
 
-inline void Read(void);
-inline void Work(void);
+int n,m;
+int a[MAXN];
 
-int main(void){
-	Read();
-	Work();
-	return 0;
-}
-
-struct Node{
-	int type,val,pos,time;
-	inline Node(
-		reg int type=0,
-		reg int val=0,
-		reg int pos=0,
-		reg int time=0
-	):
-		type(type),
-		val(val),
-		pos(pos),
-		time(time)
-	{
-		return;
+namespace BIT1{
+	inline int lowbit(reg int x){
+		return x&(-x);
 	}
-};
-
-int n,m,cnt;
-int a[MAXN],pos[MAXN];
-Node E[MAXN+MAXM];
-
-inline void Read(void){
-	n=read(),m=read();
-	for(reg int i=1;i<=n;++i){
-		a[i]=read();
-		pos[a[i]]=i;
-		++cnt;
-		E[cnt]=Node(1,a[i],i,0);
-	}
-	for(reg int i=1;i<=m;++i){
-		static int x;
-		x=read();
-		++cnt;
-		E[cnt]=Node(-1,x,pos[x],i);
-	}
-	return;
-}
-
-struct TreeArray{
-	#define lowbit(x) ( (x) & ( - (x) ) )
 	int n,unit[MAXN];
-	inline void Init(reg int size){
-		n=size;
+	inline void Init(reg int s){
+		n=s;
 		memset(unit,0,sizeof(unit));
 		return;
 	}
-	inline void Update(reg int ID,reg int val){
-		for(reg int i=ID;i<=n;i+=lowbit(i))
+	inline void update(reg int id,reg int val){
+		for(reg int i=id;i<=n;i+=lowbit(i))
 			unit[i]+=val;
 		return;
 	}
-	inline int Query(reg int ID){
+	inline int query(reg int id){
 		reg int res=0;
-		for(reg int i=ID;i;i-=lowbit(i))
+		for(reg int i=id;i;i^=lowbit(i))
 			res+=unit[i];
 		return res;
 	}
-	#undef lowbit
-};
-
-TreeArray T;
-ll ans[MAXN];
-
-inline bool cmp(const Node& a,const Node& b){
-	return a.pos<b.pos;
 }
 
-inline void CDQ(reg int l,reg int r){
-	if(l==r)
+namespace BIT2{
+	namespace SegmentTree{
+		const int MAXSIZE=2e7+5;
+		#define mid ( ( (l) + (r) ) >> 1 )
+		struct Node{
+			int lson,rson;
+			int siz;
+			#define lson(x) unit[(x)].lson
+			#define rson(x) unit[(x)].rson
+			#define siz(x) unit[(x)].siz
+		};
+		int tot;
+		Node unit[MAXSIZE];
+		inline void update(reg int &p,reg int l,reg int r,reg int pos,reg int val){
+			if(!p)
+				p=++tot;
+			siz(p)+=val;
+			if(l!=r){
+				if(pos<=mid)
+					update(lson(p),l,mid,pos,val);
+				else
+					update(rson(p),mid+1,r,pos,val);
+			}
+			return;
+		}
+		inline int query(reg int p,reg int l,reg int r,reg int L,reg int R){
+			if(!p)
+				return 0;
+			if(L<=l&&r<=R)
+				return siz(p);
+			if(L<=mid&&mid<R)
+				return query(lson(p),l,mid,L,R)+query(rson(p),mid+1,r,L,R);
+			else if(L<=mid)
+				return query(lson(p),l,mid,L,R);
+			else
+				return query(rson(p),mid+1,r,L,R);
+		}
+		#undef mid
+	}
+	inline int lowbit(reg int x){
+		return x&(-x);
+	}
+	int n,rt[MAXN];
+	inline void Init(reg int s){
+		n=s;
+		memset(rt,0,sizeof(rt));
+		SegmentTree::tot=0;
 		return;
-	reg int mid=(l+r)>>1;
-	CDQ(l,mid),CDQ(mid+1,r);
-	sort(E+l,E+mid+1,cmp),sort(E+mid+1,E+r+1,cmp);
-	reg int j=l;
-	for(reg int i=mid+1;i<=r;++i){
-		while(j<=mid&&E[j].pos<=E[i].pos){
-			T.Update(E[j].val,E[j].type);
-			++j;
-		}
-		ans[E[i].time]+=E[i].type*(T.Query(n)-T.Query(E[i].val));
 	}
-	for(reg int i=l;i<j;++i)
-		T.Update(E[i].val,-E[i].type);
-	j=mid;
-	for(reg int i=r;i>mid;--i){
-		while(j>=l&&E[j].pos>=E[i].pos){
-			T.Update(E[j].val,E[j].type);
-			--j;
-		}
-		ans[E[i].time]+=E[i].type*T.Query(E[i].val-1);
+	inline void update(reg int id,reg int pos,reg int val){
+		for(reg int i=id;i<=n;i+=lowbit(i))
+			SegmentTree::update(rt[i],1,n,pos,val);
+		return;
 	}
-	for(reg int i=mid;i>j;--i)
-		T.Update(E[i].val,-E[i].type);
-	return;
+	inline int query(reg int id,reg int L,reg int R){
+		reg int res=0;
+		for(reg int i=id;i;i^=lowbit(i))
+			res+=SegmentTree::query(rt[i],1,n,L,R);
+		return res;
+	}
+	inline int query(reg int l,reg int r,reg int L,reg int R){
+		return query(r,L,R)-query(l-1,L,R);
+	}
 }
 
-inline void Work(void){
-	T.Init(n);
-	CDQ(1,cnt);
-	reg ll sum=0;
-	for(reg int i=1;i<=m;++i){
-		sum+=ans[i-1];
-		printf("%lld\n",sum);
+int pos[MAXN];
+
+int main(void){
+	scanf("%d%d",&n,&m);
+	BIT1::Init(n),BIT2::Init(n);
+	reg ll ans=0;
+	for(reg int i=1;i<=n;++i){
+		scanf("%d",&a[i]);
+		pos[a[i]]=i;
+		BIT1::update(a[i],1);
+		ans+=i-BIT1::query(a[i]);
+		BIT2::update(i,a[i],1);
 	}
-	return;
+	while(m--){
+		printf("%lld\n",ans);
+		static int x,y;
+		scanf("%d",&y);
+		x=pos[y];
+		if(1<x&&y<n)
+			ans-=BIT2::query(1,x-1,y+1,n);
+		if(x<n&&1<y)
+			ans-=BIT2::query(x+1,n,1,y-1);
+		BIT2::update(x,y,-1);
+	}
+	return 0;
 }
