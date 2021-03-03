@@ -184,7 +184,7 @@ inline void update(reg int x,reg int y,const Node& a){
 		return;
 	reg int len=a.r-a.l+1;
 	reg int cnt=BIT::queryCnt(a.l,a.r,a.val);
-	ans=1ll*ans*fpow(fpow(a.val,len-cnt),mod-2);
+	ans=1ll*ans*fpow(fpow(a.val,len-cnt),mod-2)%mod;
 	reg int pod=BIT::queryPod(a.l,a.r,a.val+1,y);
 	ans=1ll*ans*pod%mod;
 	reg int cntN=BIT::queryCnt(a.l,a.r,y);
