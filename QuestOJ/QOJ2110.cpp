@@ -12,27 +12,32 @@ inline int read(void){
 	return res;
 }
 
-const int p=1e9+7;
+const int mod=1e9+7;
+
+inline int sub(reg int a,reg int b){
+	a-=b;
+	return a<0?a+mod:a;
+}
 
 inline int fpow(reg int x,reg int exp){
 	reg int res=1;
 	while(exp){
 		if(exp&1)
-			res=1ll*res*x%p;
-		x=1ll*x*x%p;
+			res=1ll*res*x%mod;
+		x=1ll*x*x%mod;
 		exp>>=1;
 	}
 	return res;
 }
 
 inline int inv(reg int x){
-	return fpow(x,p-2);
+	return fpow(x,mod-2);
 }
 
-inline int frac(reg int x){
+inline int fac(reg int x){
 	reg int res=1;
 	for(reg int i=2;i<=x;++i)
-		res=1ll*res*i%p;
+		res=1ll*res*i%mod;
 	return res;
 }
 
@@ -40,10 +45,11 @@ int n,m;
 
 int main(void){
 	n=read(),m=read(),read();
-	reg int ans=inv(m+1);
+	reg int ans=1;
 	for(reg int i=n+1;i<=n+m+1;++i)
-		ans=1ll*ans*i%p;
-	ans=(ans-frac(m)+p)%p;
+		ans=1ll*ans*i%mod;
+	ans=1ll*ans*inv(m+1)%mod;
+	ans=sub(ans,fac(m));
 	printf("%d\n",ans);
 	return 0;
 }
