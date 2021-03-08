@@ -17,19 +17,19 @@ int opt[MAXQ],x[MAXQ],y[MAXQ];
 
 int main(void){
 	srand(time(0));
-	n=myrand(1,1000),q=myrand(1,1000);
+	n=myrand(1,100),q=myrand(1,100);
 	for(reg int i=1;i<=n;++i)
-		tmpa[i]=a[i]=myrand(1,1e9);
+		tmpa[i]=a[i]=myrand(1,1e5);
 	for(reg int i=1;i<=n;++i)
-		tmpb[i]=b[i]=myrand(1,1e9);
+		tmpb[i]=b[i]=myrand(1,1e5);
 	for(reg int i=1;i<=q;++i){
 		opt[i]=myrand(0,1),x[i]=myrand(1,n);
 		if(opt[i]==0){
-			y[i]=myrand(tmpa[x[i]],1e9);
+			y[i]=myrand(tmpa[x[i]],1e5);
 			tmpa[x[i]]=y[i];
 		}
 		else{
-			y[i]=myrand(tmpb[x[i]],1e9);
+			y[i]=myrand(tmpb[x[i]],1e5);
 			tmpb[x[i]]=y[i];
 		}
 	}

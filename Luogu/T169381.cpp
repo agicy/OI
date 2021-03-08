@@ -25,16 +25,18 @@ inline void writeln(reg int x){
 	return;
 }
 
-inline int min(reg int a,reg int b){
-	return a<b?a:b;
-}
-
 inline int max(reg int a,reg int b){
 	return a>b?a:b;
 }
 
+inline int min(reg int a,reg int b){
+	return a<b?a:b;
+}
+
 const int MAXN=1e5+5;
+const int A=1e9;
 const int mod=1e9+7;
+const int inf=0x3f3f3f3f;
 
 inline int fpow(reg int x,reg int exp){
 	reg int res=1;
@@ -47,155 +49,283 @@ inline int fpow(reg int x,reg int exp){
 	return res;
 }
 
+inline int inv(reg int x){
+	return fpow(x,mod-2);
+}
+
 namespace SegmentTree{
 	#define lson ( (k) << 1 )
 	#define rson ( (k) << 1 | 1 )
 	#define mid ( ( (l) + (r) ) >> 1 )
 	struct Node{
-		int C;
-		int tCov;
-		int pod;
-		int Maxb,Minb;
-		int Maxa;
-		#define C(x) unit[(x)].C
-		#define tCov(x) unit[(x)].tCov
-		#define pod(x) unit[(x)].pod
-		#define Maxb(x) unit[(x)].Maxb
-		#define Minb(x) unit[(x)].Minb
-		#define Maxa(x) unit[(x)].Maxa
+		int Max,tag;
+		#define Max(x) unit[(x)].Max
+		#define tag(x) unit[(x)].tag
 	};
 	Node unit[MAXN<<2];
-	inline void build(reg int k,reg int l,reg int r,reg int a[],reg int b[],reg int c[]){
-		tCov(k)=-1;
+	inline void pushup(reg int k){
+		Max(k)=max(Max(lson),Max(rson));
+		return;
+	}
+	inline void build(reg int k,reg int l,reg int r,reg int a[]){
+		tag(k)=-1;
 		if(l==r){
-			C(k)=c[l];
-			pod(k)=min(C(k),b[l]);
-			Maxb(k)=Minb(k)=b[l];
-			Maxa(k)=a[l];
+			Max(k)=a[l];
 			return;
 		}
-		build(lson,l,mid,a,b,c),build(rson,mid+1,r,a,b,c);
-		Maxa(k)=max(Maxa(lson),Maxa(rson));
-		Maxb(k)=max(Maxb(lson),Maxb(rson));
-		Minb(k)=min(Minb(lson),Minb(rson));
-		pod(k)=1ll*pod(lson)*pod(rson);
+		build(lson,l,mid,a),build(rson,mid+1,r,a);
+		pushup(k);
 		return;
 	}
-	inline void cov(reg int k,reg int l,reg int r,reg int val){
-		if(l==r){
-			C(k)=val;
-			pod(k)=min(C(k),Minb(k));
+	inline void cover(reg int k,reg int val){
+		Max(k)=tag(k)=val;
+		return;
+	}
+	inline void pushdown(reg int k){
+		if(tag(k)!=-1){
+			cover(lson,tag(k)),cover(rson,tag(k));
+			tag(k)=-1;
+		}
+		return;
+	}
+	inline void update(reg int k,reg int l,reg int r,reg int L,reg int R,reg int val){
+		if(L<=l&&r<=R){
+			cover(k,val);
 			return;
 		}
-		if(val<=Minb(k)){
-			C(k)=val;
-			tCov(k)=val;
-			pod(k)=fpow(val,r-l+1);
-		}
-		else if(val<=Maxb(k)){
-			cov(lson,l,mid,val),cov(rson,mid+1,r,val);
-			pod(k)=1ll*pod(lson)*pod(rson);
-		}
-		else{
-			C(k)=val;
-			tCov(k)=val;
-		}
+		pushdown(k);
+		if(L<=mid)
+			update(lson,l,mid,L,R,val);
+		if(R>mid)
+			update(rson,mid+1,r,L,R,val);
+		pushup(k);
 		return;
 	}
-	inline void pushdown(reg int k,reg int l,reg int r){
-		if(tCov(k)!=-1){
-			cov(lson,l,mid,tCov(k));
-			cov(rson,mid+1,r,tCov(k));
-			tCov(k)=-1;
-		}
-		return;
+	inline int queryVal(reg int k,reg int l,reg int r,reg int pos){
+		if(l==r)
+			return Max(k);
+		pushdown(k);
+		if(pos<=mid)
+			return queryVal(lson,l,mid,pos);
+		else
+			return queryVal(rson,mid+1,r,pos);
 	}
-	inline int queryA(reg int k,reg int l,reg int r,reg int L,reg int R,reg int val){
-		if(Maxa(k)<=val)
+	inline int queryPos(reg int k,reg int l,reg int r,reg int val){
+		if(Max(k)<=val)
 			return r+1;
 		if(l==r)
 			return l;
-		if(L<=mid&&Maxa(lson)>val)
-			return queryA(lson,l,mid,L,R,val);
+		pushdown(k);
+		if(Max(lson)<=val)
+			return queryPos(rson,mid+1,r,val);
 		else
-			return queryA(rson,mid+1,r,L,R,val);
-	}
-	inline void updateC(reg int k,reg int l,reg int r,reg int L,reg int R,reg int val){
-		if(L<=l&&r<=R){
-			cov(k,l,r,val);
-			return;
-		}
-		pushdown(k,l,r);
-		if(L<=mid)
-			updateC(lson,l,mid,L,R,val);
-		if(R>mid)
-			updateC(rson,mid+1,r,L,R,val);
-		pod(k)=1ll*pod(lson)*pod(rson)%mod;
-		return;
-	}
-	inline void updateB(reg int k,reg int l,reg int r,reg int pos,reg int val){
-		if(l==r){
-			Maxb(k)=Minb(k)=val;
-			pod(k)=min(C(k),val);
-			return;
-		}
-		pushdown(k,l,r);
-		if(pos<=mid)
-			updateB(lson,l,mid,pos,val);
-		else
-			updateB(rson,mid+1,r,pos,val);
-		Maxb(k)=max(Maxb(lson),Maxb(rson));
-		Minb(k)=min(Minb(lson),Minb(rson));
-		pod(k)=1ll*pod(lson)*pod(rson);
-		return;
-	}
-	inline void updateA(reg int k,reg int l,reg int r,reg int pos,reg int val){
-		if(l==r){
-			Maxa(k)=val;
-			return;
-		}
-		pushdown(k,l,r);
-		if(pos<=mid)
-			updateA(lson,l,mid,pos,val);
-		else
-			updateA(rson,mid+1,r,pos,val);
-		Maxa(k)=max(Maxa(lson),Maxa(rson));
-		return;
+			return queryPos(lson,l,mid,val);
 	}
 	#undef lson
 	#undef rson
 	#undef mid
 }
 
+struct Data{
+	int cnt,pod;
+	inline Data(reg int cnt=0,reg int pod=1):cnt(cnt),pod(pod){
+		return;
+	}
+};
+
+inline Data operator+(const Data& a,const Data& b){
+	Data res;
+	res.cnt=a.cnt+b.cnt;
+	res.pod=1ll*a.pod*b.pod%mod;
+	return res;
+}
+
+namespace BIT{
+	namespace SegmentTree{
+		const int MAXSIZE=MAXN*300;
+		#define mid ( ( (l) + (r) ) >> 1 )
+		struct Node{
+			int lson,rson;
+			Data dat;
+			#define lson(x) unit[(x)].lson
+			#define rson(x) unit[(x)].rson
+			#define dat(x) unit[(x)].dat
+		};
+		int tot;
+		Node unit[MAXSIZE];
+		inline void Init(void){
+			dat(0)=Data(0,1);
+			return;
+		}
+		inline int New(void){
+			reg int p=++tot;
+			dat(p)=Data(0,1);
+			return p;
+		}
+		inline void pushup(reg int p){
+			dat(p)=dat(lson(p))+dat(rson(p));
+			return;
+		}
+		inline void update(reg int &p,reg int l,reg int r,reg int pos,reg int val){
+			if(!p)
+				p=New();
+			if(l==r){
+				dat(p).cnt+=val;
+				dat(p).pod=fpow(l,dat(p).cnt);
+				return;
+			}
+			else{
+				if(pos<=mid)
+					update(lson(p),l,mid,pos,val);
+				else
+					update(rson(p),mid+1,r,pos,val);
+			}
+			pushup(p);
+			return;
+		}
+		inline int queryCnt(reg int p,reg int l,reg int r,reg int pos){
+			if(!p)
+				return 0;
+			if(l==r)
+				return dat(p).cnt;
+			if(pos<=mid)
+				return queryCnt(lson(p),l,mid,pos);
+			else
+				return dat(lson(p)).cnt+queryCnt(rson(p),mid+1,r,pos);
+		}
+		inline int queryPod(reg int p,reg int l,reg int r,reg int pos){
+			if(!p)
+				return 1;
+			if(l==r)
+				return dat(p).pod;
+			if(pos<=mid)
+				return queryPod(lson(p),l,mid,pos);
+			else
+				return 1ll*dat(lson(p)).pod*queryPod(rson(p),mid+1,r,pos)%mod;
+		}
+		#undef lson
+		#undef rson
+		#undef dat
+		#undef mid
+	}
+	inline int lowbit(reg int x){
+		return x&(-x);
+	}
+	int n,rt[MAXN];
+	inline void Init(reg int s){
+		n=s;
+		SegmentTree::Init();
+		memset(rt,0,sizeof(rt));
+		return;
+	}
+	inline void update(reg int id,reg int pos,reg int val){
+		for(reg int i=id;i<=n;i+=lowbit(i))
+			SegmentTree::update(rt[i],1,A,pos,val);
+		return;
+	}
+	inline int queryCnt(reg int id,reg int pos){
+		reg int res=0;
+		for(reg int i=id;i;i^=lowbit(i))
+			res=res+SegmentTree::queryCnt(rt[i],1,A,pos);
+		return res;
+	}
+	inline int queryPod(reg int id,reg int pos){
+		reg int res=1;
+		for(reg int i=id;i;i^=lowbit(i))
+			res=1ll*res*SegmentTree::queryPod(rt[i],1,A,pos)%mod;
+		return res;
+	}
+	inline int queryCnt(reg int l,reg int r,reg int pos){
+		return queryCnt(r,pos)-queryCnt(l-1,pos);
+	}
+	inline int queryPod(reg int l,reg int r,reg int pos){
+		return 1ll*queryPod(r,pos)*inv(queryPod(l-1,pos))%mod;
+	}
+	inline int queryPod(reg int l,reg int r,reg int L,reg int R){
+		return 1ll*queryPod(l,r,R)*inv(queryPod(l,r,L-1))%mod;
+	}
+}
+
 int n,q;
-int a[MAXN],b[MAXN];
-int c[MAXN];
+int a[MAXN],b[MAXN],c[MAXN];
+int ans=1;
+
+inline void update(reg int l,reg int r,reg int val,reg int nval){
+	if(val==nval)
+		return;
+	reg int len=r-l+1;
+	reg int cnt=BIT::queryCnt(l,r,val);
+	ans=1ll*ans*fpow(fpow(val,len-cnt),mod-2)%mod;
+	reg int pod=BIT::queryPod(l,r,val+1,nval);
+	ans=1ll*ans*pod%mod;
+	reg int cntN=BIT::queryCnt(l,r,nval);
+	ans=1ll*ans*fpow(nval,len-cntN)%mod;
+	return;
+}
+
+inline void updateA(reg int x,reg int y){
+	reg int l=x,r=0;
+	while(x<=n){
+		reg int val=SegmentTree::queryVal(1,1,n,x);
+		if(val>=y)
+			break;
+		reg int pos=SegmentTree::queryPos(1,1,n,val);
+		update(x,pos-1,val,y);
+		r=pos-1,x=pos;
+	}
+	if(l<=r)
+		SegmentTree::update(1,1,n,l,r,y);
+	return;
+}
+
+inline void updateB(reg int x,reg int y){
+	if(b[x]==y)
+		return;
+	reg int val=SegmentTree::queryVal(1,1,n,x);
+	if(val<=b[x])
+		ans=1ll*ans*inv(val)%mod;
+	else
+		ans=1ll*ans*inv(b[x])%mod;
+	BIT::update(x,b[x],-1);
+	b[x]=y;
+	if(val<=b[x])
+		ans=1ll*ans*val%mod;
+	else
+		ans=1ll*ans*b[x]%mod;
+	BIT::update(x,b[x],1);
+	return;
+}
 
 int main(void){
+	//printf("%.1lf MiB\n",sizeof(BIT::SegmentTree::unit)/1048576.0);
 	n=read(),q=read();
-	for(reg int i=1;i<=n;++i)
+	for(reg int i=1;i<=n;++i){
 		a[i]=read();
-	for(reg int i=1;i<=n;++i)
 		c[i]=max(c[i-1],a[i]);
-	for(reg int i=1;i<=n;++i)
+	}
+	SegmentTree::build(1,1,n,c);
+	BIT::Init(n);
+	for(reg int i=1;i<=n;++i){
 		b[i]=read();
-	SegmentTree::build(1,1,n,a,b,c);
-	while(q--){
+		ans=1ll*ans*min(b[i],c[i])%mod;
+		BIT::update(i,b[i],1);
+	}
+	for(reg int i=1;i<=q;++i){
 		static int opt,x,y;
-		opt=read(),x=read(),y=read();
+		opt=read();
 		switch(opt){
 			case 0:{
-				reg int pos=SegmentTree::queryA(1,1,n,x+1,n,y);
-				SegmentTree::updateC(1,1,n,x,pos-1,y);
-				SegmentTree::updateA(1,1,n,x,y);
+				x=read(),y=read();
+				updateA(x,y);
 				break;
 			}
 			case 1:{
-				SegmentTree::updateB(1,1,n,x,y);
+				x=read(),y=read();
+				updateB(x,y);
 				break;
 			}
 		}
-		writeln(SegmentTree::pod(1));
+		writeln(ans);
 	}
 	flush();
 	return 0;

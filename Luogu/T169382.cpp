@@ -26,155 +26,138 @@ inline void writeln(reg ll x){
 }
 
 const int MAXN=2e5+5;
-const int MAXLOG22N=19+1;
-const int inf=0x3f3f3f3f;
+const int MAXLOG2N=18+1;
 
-int n;
-int rt,MaxPart;
+int n,m;
+int cnt,head[MAXN],to[MAXN],w[MAXN],Next[MAXN];
 
-namespace DivTree{
-	int tot;
-	bitset<MAXN> del;
-	int siz[MAXN];
-	namespace Tree{
-		struct Edge{
-			int v,w;
-			inline Edge(reg int v=0,reg int w=0):v(v),w(w){
-				return;
-			}
-		};
-		vector<Edge> G[MAXN];
-		inline void Add_Edge(reg int u,reg int v,reg int len){
-			G[u].push_back(Edge(v,len));
-			return;
-		}
-		ll dis[MAXN];
-		int st[MAXLOG22N][MAXN<<1];
-		int tim,pos[MAXN];
-		inline void dfs(reg int u,reg int father){
-			pos[u]=++tim;
-			st[0][tim]=dis[u];
-			for(auto x:G[u]){
-				reg int v=x.v,w=x.w;
-				if(v!=father){
-					dis[v]=dis[u]+w;
-					dfs(v,u);
-					st[0][++tim]=dis[u];
-				}
-			}
-			return;
-		}
-		int Log[MAXN<<1];
-		inline ll getDis(int u,int v){
-			if(pos[u]>pos[v])
-				swap(u,v);
-			reg int k=Log[pos[v]-pos[u]+1];
-			return dis[u]+dis[v]-2*min(st[k][pos[u]],st[k][pos[v]-(1<<k)+1]);
-		}
-		inline void InitRMQ(void){
-			dfs(1,0);
-			Log[0]=-1;
-			for(reg int i=1;i<=tim;++i)
-				Log[i]=Log[i>>1]+1;
-			for(reg int i=1;(1<<i)<=tim;++i)
-				for(reg int j=1;j+(1<<i)-1<=tim;++j)
-					st[i][j]=min(st[i-1][j],st[i-1][j+(1<<(i-1))]);
-			return;
-		}
-		inline void getRt(reg int u,reg int father){
-			siz[u]=1;
-			int Max=0;
-			for(auto x:G[u]){
-				reg int v=x.v;
-				if(v!=father&&!del[v]){
-					getRt(v,u);
-					siz[u]+=siz[v];
-					Max=max(Max,siz[v]);
-				}
-			}
-			Max=max(Max,tot-siz[u]);
-			if(Max<MaxPart){
-				rt=u;
-				MaxPart=Max;
-			}
-			return;
-		}
+inline void Add_Edge(reg int u,reg int v,reg int len){
+	Next[++cnt]=head[u];
+	to[cnt]=v,w[cnt]=len;
+	head[u]=cnt;
+	return;
+}
+
+namespace BIT{
+	inline int lowbit(reg int x){
+		return x&(-x);
 	}
-	struct Edge{
-		int v,w;
-		inline Edge(reg int v=0,reg int w=0):v(v),w(w){
-			return;
-		}
-	};
-	vector<Edge> G[MAXN];
-	inline void Add_Edge(reg int u,reg int v,reg int len){
-		G[u].push_back(Edge(v,len));
+	int n;
+	int unit[MAXN];
+	inline void Init(reg int s){
+		n=s;
 		return;
 	}
-	int fa[MAXN];
-	ll dis1[MAXN],dis2[MAXN],sumv[MAXN];
-	inline void build(reg int u,reg int father){
-		del[u]=true;
-		fa[u]=father;
-		for(auto x:Tree::G[u]){
-			reg int v=x.v;
-			if(!del[v]){
-				tot=siz[v];
-				MaxPart=inf,rt=0;
-				Tree::getRt(v,0);
-				Add_Edge(u,rt,v);
-				build(rt,u);
-			}
-		}
+	inline void update(reg int id,reg int val){
+		for(reg int i=id;i<=n;i+=lowbit(i))
+			unit[i]+=val;
 		return;
 	}
-	inline void update(reg int u){
-		++sumv[u];
-		for(reg int i=u;fa[i];i=fa[i]){
-			reg int dis=Tree::getDis(fa[i],u);
-			dis1[fa[i]]+=1ll*dis;
-			dis2[i]+=1ll*dis;
-			++sumv[fa[i]];
-		}
-		return;
-	}
-	inline ll calc(reg int u){
-		reg ll res=dis1[u];
-		for(reg int i=u;fa[i];i=fa[i]){
-			reg int dis=Tree::getDis(fa[i],u);
-			res+=dis1[fa[i]]-dis2[i]+1ll*dis*(sumv[fa[i]]-sumv[i]);
-		}
+	inline int query(reg int id){
+		reg int res=0;
+		for(reg int i=id;i;i^=lowbit(i))
+			res+=unit[i];
 		return res;
 	}
-	inline ll query(reg int u){
-		reg ll res=calc(u);
-		for(auto x:G[u]){
-			reg int v=x.v,w=x.w;
-			reg ll tmp=calc(w);
-			if(tmp<res)
-				return query(v);
-		}
-		return res;
+	inline int query(reg int l,reg int r){
+		return query(r)-query(l-1);
 	}
+}
+
+int fa[MAXN][MAXLOG2N],dep[MAXN];
+ll dis[MAXN];
+int tim,lef[MAXN],rig[MAXN];
+
+inline void dfs(reg int u,reg int father){
+	fa[u][0]=father;
+	dep[u]=dep[father]+1;
+	lef[u]=++tim;
+	for(reg int i=1;i<MAXLOG2N;++i)
+		fa[u][i]=fa[fa[u][i-1]][i-1];
+	for(reg int i=head[u];i;i=Next[i]){
+		reg int v=to[i];
+		dis[v]=dis[u]+w[i];
+		dfs(v,u);
+	}
+	rig[u]=tim;
+	return;
+}
+
+inline int LCA(int x,int y){
+	if(dep[x]>dep[y])
+		swap(x,y);
+	for(reg int i=MAXLOG2N-1;i>=0;--i)
+		if(dep[fa[y][i]]>=dep[x])
+			y=fa[y][i];
+	if(x==y)
+		return y;
+	for(reg int i=MAXLOG2N-1;i>=0;--i)
+		if(fa[x][i]!=fa[y][i])
+			x=fa[x][i],y=fa[y][i];
+	return fa[x][0];
+}
+
+inline int getSon(reg int u,reg int rt){
+	for(reg int i=MAXLOG2N-1;i>=0;--i)
+		if(dep[fa[u][i]]>dep[rt])
+			u=fa[u][i];
+	return u;
+}
+
+inline int getCnt(reg int x){
+	return BIT::query(lef[x],rig[x]);
+}
+
+inline int getCnt(reg int rt,reg int dir){
+	return getCnt(getSon(dir,rt));
 }
 
 int main(void){
 	n=read();
 	for(reg int i=2;i<=n;++i){
-		static int p,c;
-		p=read(),c=read();
-		DivTree::Tree::Add_Edge(i,p,c);
-		DivTree::Tree::Add_Edge(p,i,c);
+		static int p,d;
+		p=read(),d=read();
+		Add_Edge(p,i,d);
 	}
-	DivTree::Tree::InitRMQ();
-	DivTree::tot=n;
-	MaxPart=inf,rt=0;
-	DivTree::Tree::getRt(1,0);
-	reg int Root=rt;
-	DivTree::build(rt,0);
-	for(reg int i=1;i<=n;++i){
-		DivTree::update(i);
-		writeln(DivTree::query(Root));
+	dfs(1,0);
+	reg int rt=1;
+	reg ll ans=0;
+	writeln(ans);
+	BIT::Init(n);
+	BIT::update(lef[1],1);
+	reg int cnt=1;
+	for(reg int i=2;i<=n;i++){
+		++cnt;
+		reg int add=i;
+		BIT::update(lef[add],1);
+		reg int lca=LCA(rt,add);
+		ans+=dis[add]+dis[rt]-(dis[lca]<<1);
+		if(lca==rt){
+			reg int Siz=getCnt(getSon(add,rt));
+			if(Siz>(cnt>>1)){
+				reg int x=add;
+				for(reg int j=MAXLOG2N-1;j>=0;--j)
+					if(fa[x][j]&&getCnt(fa[x][j],add)<=(cnt>>1))
+						x=fa[x][j];
+				reg ll delta=dis[x]-dis[rt];
+				ans+=delta*(cnt-(Siz<<1));
+				rt=x;
+			}
+		}
+		else{
+			reg int Siz=getCnt(rt);
+			if(cnt-Siz>(cnt>>1)){
+				reg int x=rt;
+				for(reg int j=MAXLOG2N-1;j>=0;--j)
+					if(fa[x][j]&&cnt-getCnt(fa[x][j])>(cnt>>1))
+						x=fa[x][j];
+				x=fa[x][0];
+				reg ll delta=dis[x]-dis[rt];
+				ans+=delta*(cnt-(Siz<<1));
+				rt=x;
+			}
+		}
+		writeln(ans);
 	}
 	flush();
 	return 0;
