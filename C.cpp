@@ -178,7 +178,7 @@ namespace Subtask2{
 					break;
 				}
 				case 2:{
-					writeln(SegmentTree::query(1,1,n,l[i],r[i]));
+					writeln(max(SegmentTree::query(1,1,n,l[i],r[i]),0));
 					break;
 				}
 			}
