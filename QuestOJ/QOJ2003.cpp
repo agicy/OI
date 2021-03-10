@@ -1,105 +1,117 @@
-#include<cstdio>
-#include<algorithm>
-using std::max;
-#include<iostream>
-using std::cin;
+#include<bits/stdc++.h>
+using namespace std;
 #define reg register
+typedef long long ll;
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
+static char buf[100000],*p1=buf,*p2=buf;
+#define flush() (fwrite(wbuf,1,wp1,stdout),wp1=0)
+#define putchar(c) (wp1==wp2&&(flush(),0),wbuf[wp1++]=c)
+static char wbuf[1<<21];int wp1;const int wp2=1<<21;
+inline int read(void){
+	reg char ch=getchar();
+	reg int res=0;
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	return res;
+}
 
-const int MAXN=100000+5;
+inline void write(reg int x){
+	static char buf[32];
+	reg int p=-1;
+	if(x==0) putchar('0');
+	else while(x) buf[++p]=(x%10)^'0',x/=10;
+	while(~p) putchar(buf[p--]);
+	return;
+}
+
+const int MAXN=5e5+5;
+const int MAXC=22;
 
 int n;
 int cnt,head[MAXN],to[MAXN],w[MAXN],Next[MAXN];
-int fa[MAXN],son[MAXN],size[MAXN],dep[MAXN];
-int tot,lft[MAXN],rig[MAXN],rank[MAXN];
-int T[1<<23];
-int ans[MAXN],dis[MAXN];
-
-inline void Read(void);
-inline void Work(void);
-inline void Add_Edge(reg int,reg int,reg int);
-inline void DFS1(reg int);
-inline void DFS2(reg int,reg bool);
-
-int main(void){
-	Read();
-	Work();
-	return 0;
-}
-
-inline void Read(void){
-	scanf("%d",&n);
-	for(reg int i=2;i<=n;++i){
-		static char ch;
-		scanf("%d",&fa[i]);
-		cin>>ch;
-		Add_Edge(fa[i],i,1<<(ch-'a'));
-	}
-	return;
-}
-
-inline void Work(void){
-	DFS1(1);
-	DFS2(1,true);
-	for(reg int i=1;i<=n;++i)
-		printf("%d%c",ans[i],i==n?'\n':' ');
-	return;
-}
 
 inline void Add_Edge(reg int u,reg int v,reg int len){
 	Next[++cnt]=head[u];
-	to[cnt]=v;
-	w[cnt]=len;
+	to[cnt]=v,w[cnt]=len;
 	head[u]=cnt;
 	return;
 }
 
-inline void DFS1(reg int ID){
-	lft[ID]=++tot;
-	size[ID]=1;
-	dep[ID]=dep[fa[ID]]+1;
-	rank[tot]=ID;
-	for(reg int i=head[ID];i;i=Next[i]){
-		dis[to[i]]=dis[ID]^w[i];
-		DFS1(to[i]);
-		size[ID]+=size[to[i]];
-		if(size[son[ID]]<size[to[i]])
-			son[ID]=to[i];
+int fa[MAXN],dep[MAXN],dis[MAXN];
+int son[MAXN],siz[MAXN];
+int tim,lef[MAXN],rig[MAXN],rnk[MAXN];
+
+inline void dfs1(reg int u){
+	siz[u]=1;
+	dep[u]=dep[fa[u]]+1;
+	rnk[lef[u]=++tim]=u;
+	for(reg int i=head[u];i;i=Next[i]){
+		reg int v=to[i];
+		dis[v]=dis[u]^w[i];
+		dfs1(v);
+		siz[u]+=siz[v];
+		if(siz[son[u]]<siz[v])
+			son[u]=v;
 	}
-	rig[ID]=tot;
+	rig[u]=tim;
 	return;
 }
 
-inline void DFS2(reg int ID,reg bool save){
-	for(reg int i=head[ID];i;i=Next[i])
-		if(to[i]!=son[ID]){
-			DFS2(to[i],false);
-			ans[ID]=max(ans[ID],ans[to[i]]);
+int T[1<<MAXC];
+int ans[MAXN];
+
+inline void dfs2(reg int u,reg bool flag){
+	for(reg int i=head[u];i;i=Next[i]){
+		reg int v=to[i];
+		if(v!=son[u]){
+			dfs2(v,false);
+			ans[u]=max(ans[u],ans[v]);
 		}
-	if(son[ID]){
-		DFS2(son[ID],true);
-		ans[ID]=max(ans[ID],ans[son[ID]]);
 	}
-	if(T[dis[ID]])
-		ans[ID]=max(ans[ID],T[dis[ID]]-dep[ID]);
-	for(reg int i=0;i<=21;++i)
-		if(T[dis[ID]^(1<<i)])
-			ans[ID]=max(ans[ID],T[dis[ID]^(1<<i)]-dep[ID]);
-	T[dis[ID]]=max(T[dis[ID]],dep[ID]);
-	for(reg int i=head[ID];i;i=Next[i])
-		if(to[i]!=son[ID]){
-			for(reg int id=lft[to[i]];id<=rig[to[i]];++id){
-				reg int p_id=rank[id];
+	if(son[u]){
+		dfs2(son[u],true);
+		ans[u]=max(ans[u],ans[son[u]]);
+	}
+	if(T[dis[u]])
+		ans[u]=max(ans[u],T[dis[u]]-dep[u]);
+	for(reg int i=0;i<MAXC;++i)
+		if(T[dis[u]^(1<<i)])
+			ans[u]=max(ans[u],T[dis[u]^(1<<i)]-dep[u]);
+	T[dis[u]]=max(T[dis[u]],dep[u]);
+	for(reg int i=head[u];i;i=Next[i]){
+		reg int v=to[i];
+		if(v!=son[u]){
+			for(reg int id=lef[v];id<=rig[v];++id){
+				reg int p_id=rnk[id];
 				if(T[dis[p_id]])
-					ans[ID]=max(ans[ID],dep[p_id]+T[dis[p_id]]-(dep[ID]<<1));
-				for(reg int k=0;k<=21;++k)
+					ans[u]=max(ans[u],dep[p_id]+T[dis[p_id]]-(dep[u]<<1));
+				for(reg int k=0;k<MAXC;++k)
 					if(T[dis[p_id]^(1<<k)])
-						ans[ID]=max(ans[ID],T[dis[p_id]^(1<<k)]+dep[p_id]-(dep[ID]<<1));
+						ans[u]=max(ans[u],T[dis[p_id]^(1<<k)]+dep[p_id]-(dep[u]<<1));
 			}
-			for(reg int id=lft[to[i]];id<=rig[to[i]];++id)
-				T[dis[rank[id]]]=max(T[dis[rank[id]]],dep[rank[id]]);
+			for(reg int id=lef[v];id<=rig[v];++id)
+				T[dis[rnk[id]]]=max(T[dis[rnk[id]]],dep[rnk[id]]);
 		}
-	if(save==false)
-		for(reg int id=lft[ID];id<=rig[ID];++id)
-			T[dis[rank[id]]]=0;
+	}
+	if(flag==false)
+		for(reg int id=lef[u];id<=rig[u];++id)
+			T[dis[rnk[id]]]=0;
 	return;
+}
+
+int main(void){
+	n=read();
+	for(reg int i=2;i<=n;++i){
+		fa[i]=read();
+		static char ch;
+		do
+			ch=getchar();
+		while(!isalpha(ch));
+		Add_Edge(fa[i],i,1<<(ch-'a'));
+	}
+	dfs1(1),dfs2(1,true);
+	for(reg int i=1;i<=n;++i)
+		write(ans[i]),putchar(i==n?'\n':' ');
+	flush();
+	return 0;
 }
