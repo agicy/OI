@@ -2,40 +2,70 @@
 using namespace std;
 #define reg register
 typedef long long ll;
-
-const int MAXN=5e4+5;
-const int MAXQ=5e4+5;
-
-int n,q;
-int a[MAXN],b[MAXN];
-int opt[MAXQ],x[MAXQ],y[MAXQ];
-
-const int mod=1e9+7;
-
-inline int getVal(void){
-	static int c[MAXN];
-	c[0]=0;
-	for(reg int i=1;i<=n;++i)
-		c[i]=max(c[i-1],a[i]);
-	reg int ans=1;
-	for(reg int i=1;i<=n;++i)
-		ans=1ll*ans*min(b[i],c[i])%mod;
-	return ans;
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
+static char buf[100000],*p1=buf,*p2=buf;
+inline int read(void){
+	reg char ch=getchar();
+	reg int res=0;
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	return res;
 }
 
+inline void read(reg char *s){
+	*s=getchar();
+	while(!isdigit(*s))*s=getchar();
+	while(isdigit(*s))*(++s)=getchar();
+	*s='\0';
+	return;
+}
+
+const int MAXN=1e6+5;
+
+int n;
+char s[MAXN];
+int val[MAXN];
+bool inque[MAXN];
+queue<int> Q;
+
 int main(void){
-	scanf("%d%d",&n,&q);
+	n=read();
+	read(s+1);
 	for(reg int i=1;i<=n;++i)
-		scanf("%d",&a[i]);
-	for(reg int i=1;i<=n;++i)
-		scanf("%d",&b[i]);
-	for(reg int i=1;i<=q;++i){
-		scanf("%d%d%d",&opt[i],&x[i],&y[i]);
-		if(opt[i]==0)
-			a[x[i]]=y[i];
-		else
-			b[x[i]]=y[i];
-		printf("%d\n",getVal());
+		if(s[i]=='1')
+			++val[i-1],--val[i];
+	for(reg int i=0;i<=n;++i)
+		if(val[i]){
+			inque[i]=true;
+			Q.push(i);
+		}
+	while(!Q.empty()){
+		reg int u=Q.front();
+		Q.pop();
+		inque[u]=false;
+		if(!val[u])
+			continue;
+		if(1<=u&&val[u-1]*val[u]<0){
+			val[u]=val[u-1];
+			val[u-1]=0;
+			if(!inque[u]){
+				inque[u]=true;
+				Q.push(u);
+			}
+		}
+		if(u<n&&val[u]*val[u+1]<0){
+			val[u+1]=val[u];
+			val[u]=0;
+			if(!inque[u+1]){
+				inque[u+1]=true;
+				Q.push(u+1);
+			}
+		}
 	}
+	reg int cnt=0;
+	for(reg int i=0;i<=n;++i)
+		if(val[i])
+			++cnt;
+	printf("%d\n",cnt);
 	return 0;
 }
