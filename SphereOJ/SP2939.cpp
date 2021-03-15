@@ -2,7 +2,6 @@
 using namespace std;
 #define reg register
 typedef long long ll;
-#define int ll
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
 inline int read(void){
@@ -27,18 +26,7 @@ inline void Add_Edge(reg int u,reg int v){
 	return;
 }
 
-int fa[MAXN],dep[MAXN];
-
-inline void dfs(reg int u,reg int father){
-	fa[u]=father;
-	dep[u]=dep[father]+1;
-	for(reg int i=head[u];i;i=Next[i]){
-		reg int v=to[i];
-		if(v!=father)
-			dfs(v,u);
-	}
-	return;
-}
+int dep[MAXN];
 
 struct Heap{
 	priority_queue<ll,vector<ll>,greater<ll>/**/> p,q;
@@ -59,16 +47,14 @@ namespace LCT{
 	const int MAXSIZE=MAXN;
 	struct Node{
 		int fa,ch[2];
-		ll Min,pp,h;
+		ll Min,val,h;
 		Heap Q;
-		bool tRev;
 		#define fa(x) unit[(x)].fa
 		#define ch(x) unit[(x)].ch
 		#define Min(x) unit[(x)].Min
-		#define pp(x) unit[(x)].pp
+		#define val(x) unit[(x)].val
 		#define h(x) unit[(x)].h
 		#define Q(x) unit[(x)].Q
-		#define tRev(x) unit[(x)].tRev
 	};
 	#define lson(x) ch(x)[0]
 	#define rson(x) ch(x)[1]
@@ -81,7 +67,7 @@ namespace LCT{
 	}
 	inline void pushup(reg int p){
 		Min(p)=min(h(p),min(Min(lson(p)),Min(rson(p))));
-		pp(p)=min(Q(p).top(),min(pp(lson(p)),pp(rson(p))));
+		val(p)=min(Q(p).top(),min(val(lson(p)),val(rson(p))));
 		return;
 	}
 	inline void rotate(reg int x){
@@ -94,24 +80,7 @@ namespace LCT{
 		pushup(y),pushup(x);
 		return;
 	}
-	inline void pushdown(reg int p){
-		if(tRev(p)){
-			swap(lson(p),rson(p));
-			if(lson(p))
-				tRev(lson(p))=!tRev(lson(p));
-			if(rson(p))
-				tRev(rson(p))=!tRev(rson(p));
-			tRev(p)=false;
-		}
-		return;
-	}
-	inline void update(reg int p){
-		if(!isRoot(p)) update(fa(p));
-		pushdown(p);
-		return;
-	}
 	inline void splay(reg int p){
-		update(p);
 		for(reg int f=fa(p);f=fa(p),!isRoot(p);rotate(p))
 			if(!isRoot(f))
 				rotate(get(p)==get(f)?f:p);
@@ -121,11 +90,11 @@ namespace LCT{
 	inline void access(reg int p){
 		for(reg int pre=0;p;pre=p,p=fa(p)){
 			splay(p);
-			if(min(Q(rson(p)).top(),pp(rson(p)))<inf/10)
-				Q(p).push(min(Q(rson(p)).top(),pp(rson(p))));
+			if(min(Q(rson(p)).top(),val(rson(p)))<inf/10)
+				Q(p).push(min(Q(rson(p)).top(),val(rson(p))));
 			rson(p)=pre;
-			if(min(Q(rson(p)).top(),pp(rson(p)))<inf/10)
-				Q(p).push(min(Q(rson(p)).top(),pp(rson(p))));
+			if(min(Q(rson(p)).top(),val(rson(p)))<inf/10)
+				Q(p).pop(min(Q(rson(p)).top(),val(rson(p))));
 			h(p)=Q(p).top()-(dep[p]<<1);
 			pushup(p);
 		}
@@ -133,9 +102,20 @@ namespace LCT{
 	}
 }
 
+inline void dfs(reg int u,reg int father){
+    LCT::fa(u)=father;
+	dep[u]=dep[father]+1;
+	for(reg int i=head[u];i;i=Next[i]){
+		reg int v=to[i];
+		if(v!=father)
+			dfs(v,u);
+	}
+	return;
+}
+
 bool col[MAXN];
 
-signed main(void){
+int main(void){
 	n=read();
 	for(reg int i=1;i<n;++i){
 		static int u,v;
@@ -143,35 +123,33 @@ signed main(void){
 		Add_Edge(u,v),Add_Edge(v,u);
 	}
 	dfs(1,0);
-	for(reg int i=1;i<=n;++i)
-		LCT::fa(i)=fa[i];
 	for(reg int i=0;i<=n;++i){
-		LCT::pp(i)=LCT::Min(i)=inf;
-		LCT::Q(i).push(inf),LCT::h(i)=inf;
+		LCT::val(i)=LCT::Min(i)=LCT::h(i)=inf;
+		LCT::Q(i).push(inf);
 	}
 	reg int q=read();
 	while(q--){
-		static int opt,v;
-		opt=read(),v=read();
+		static int opt,x;
+		opt=read(),x=read();
 		switch(opt){
 			case 0:{
-				if(col[v]){
-					LCT::access(v),LCT::splay(v);
-					LCT::Q(v).pop(LCT::Q(v).top());
-					LCT::h(v)=LCT::Q(v).top()-(dep[v]<<1);
-					LCT::pushup(v);
+				if(col[x]){
+					LCT::access(x),LCT::splay(x);
+					LCT::Q(x).pop(LCT::Q(x).top());
+					LCT::h(x)=LCT::Q(x).top()-(dep[x]<<1);
+					LCT::pushup(x);
 				}
 				else{
-					LCT::access(v),LCT::splay(v);
-					LCT::Q(v).push(dep[v]),LCT::h(v)=-dep[v];
-					LCT::pushup(v);
+					LCT::access(x),LCT::splay(x);
+					LCT::Q(x).push(dep[x]),LCT::h(x)=-dep[x];
+					LCT::pushup(x);
 				}
-				col[v]=!col[v];
+				col[x]=!col[x];
 				break;
 			}
 			case 1:{
-				LCT::access(v),LCT::splay(v);
-				printf("%lld\n",LCT::Min(v)>inf/10?-1:dep[v]+LCT::Min(v));
+				LCT::access(x),LCT::splay(x);
+				printf("%lld\n",LCT::Min(x)>inf/10?-1:dep[x]+LCT::Min(x));
 				break;
 			}
 		}
