@@ -80,7 +80,9 @@
 		"ranges": "cpp",
 		"span": "cpp",
 		"stop_token": "cpp",
-		"stdio.h": "c"
+		"stdio.h": "c",
+		"stdlib.h": "c",
+		"string.h": "c"
 	},
 	"[cpp]":{
 		"editor.wordBasedSuggestions": true,
