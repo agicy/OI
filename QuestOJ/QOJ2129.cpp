@@ -1,54 +1,36 @@
 #include<bits/stdc++.h>
 using namespace std;
 #define reg register
-#define INF 0X3F3F3F3F
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
 inline int read(void){
-	reg bool f=false;
 	reg char ch=getchar();
 	reg int res=0;
-	while(ch<'0'||'9'<ch)f|=(ch=='-'),ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
-	return f?-res:res;
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	return res;
+}
+
+inline int min(reg int a,reg int b){
+	return a<b?a:b;
 }
 
 const int MAXN=700+5;
-const int MAXM=(MAXN*(MAXN-1))>>1;
-
-inline void Read(void);
-inline void Work(void);
-
-int main(void){
-	Read();
-	Work();
-	return 0;
-}
+const int inf=0x3f3f3f3f;
 
 int n,m;
 bool G[MAXN][MAXN];
-
-inline void Read(void){
-	n=read(),m=read();
-	for(reg int i=1;i<=m;++i){
-		static int u,v;
-		u=read(),v=read();
-		G[u][v]=G[v][u]=true;
-	}
-	return;
-}
-
 int cnt[2];
-int color[MAXN];
+int col[MAXN];
 
-inline void DFS(reg int ID,reg int col){
-	color[ID]=col;
-	++cnt[col==1];
+inline void dfs(reg int u,reg int c){
+	col[u]=c;
+	++cnt[c==1];
 	for(reg int i=1;i<=n;++i)
-		if(!G[ID][i]){
-			if(!color[i])
-				DFS(i,-col);
-			else if(color[i]==col){
+		if(!G[u][i]){
+			if(!col[i])
+				dfs(i,-c);
+			else if(col[i]==c){
 				puts("-1");
 				exit(0);
 			}
@@ -56,29 +38,29 @@ inline void DFS(reg int ID,reg int col){
 	return;
 }
 
-bool S[MAXN];
+bitset<MAXN> S;
 
-inline void Work(void){
+int main(void){
+	n=read(),m=read();
+	for(reg int i=1;i<=m;++i){
+		static int u,v;
+		u=read(),v=read();
+		G[u][v]=G[v][u]=true;
+	}
 	for(reg int i=1;i<=n;++i)
 		G[i][i]=true;
 	S[0]=true;
 	for(reg int i=1;i<=n;++i){
-		if(color[i])
+		if(col[i])
 			continue;
 		cnt[0]=cnt[1]=0;
-		DFS(i,1);
-		static bool temp[MAXN];
-		memset(temp,false,sizeof(temp));
-		for(reg int j=0;j<=n;++j){
-			temp[j+cnt[0]]|=S[j];
-			temp[j+cnt[1]]|=S[j];
-		}
-		memcpy(S,temp,sizeof(temp));
+		dfs(i,1);
+		S=(S<<cnt[0])|(S<<cnt[1]);
 	}
-	int ans=INF;
+	reg int ans=inf;
 	for(reg int i=0;i<=n;++i)
 		if(S[i])
 			ans=min(ans,((i*(i-1))>>1)+(((n-i)*(n-i-1))>>1));
 	printf("%d\n",ans);
-	return;
+	return 0;
 }
