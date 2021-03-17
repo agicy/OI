@@ -7,18 +7,18 @@ static char buf[100000],*p1=buf,*p2=buf;
 inline int read(void){
 	reg char ch=getchar();
 	reg int res=0;
-	while(ch<'0'||'9'<ch)ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
 	return res;
 }
 
-const int MAXN=100000+5;
+const int MAXN=1e5+5;
 const int MAXD=100+5;
 
 int n,d,k;
 int x[MAXN][MAXD];
 int nx[MAXN][MAXD];
-int id[MAXN],rnk[MAXN];
+int id[MAXN];
 
 inline void Solve2(void){
 	int sum[MAXD];
@@ -89,6 +89,7 @@ inline void Solve3(void){
 }
 
 int main(void){
+	srand(time(0));
 	n=read(),d=read(),k=read();
 	for(reg int i=1;i<=n;++i)
 		for(reg int j=1;j<=d;++j)
@@ -96,8 +97,6 @@ int main(void){
 	for(reg int i=1;i<=n;++i)
 		id[i]=i;
 	random_shuffle(id+1,id+n+1);
-	for(reg int i=1;i<=n;++i)
-		rnk[id[i]]=i;
 	for(reg int i=1;i<=n;++i)
 		for(reg int j=1;j<=d;++j)
 			nx[i][j]=x[id[i]][j];
