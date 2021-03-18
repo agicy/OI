@@ -15,14 +15,6 @@ inline int read(void){
 	return res;
 }
 
-inline ll readll(void){
-	reg char ch=getchar();
-	reg ll res=0;
-	while(!isdigit(ch))ch=getchar();
-	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
-	return res;
-}
-
 inline void writeln(reg int x){
 	static char buf[32];
 	reg int p=-1;
@@ -33,34 +25,105 @@ inline void writeln(reg int x){
 	return;
 }
 
-const long double eps=1e-6;
+const int MAXN=4e5+5;
+const int MAXQ=4e5+5;
+const int MAXA=4e5+5;
 
-inline int sgn(reg long double x){
-	if(fabs(x)<eps)
-		return 0;
-	else
-		return x<0?-1:1;
+struct querys{
+	int id,l,r;
+	inline bool operator<(const querys& a)const{
+		return r<a.r;
+	}
+};
+
+namespace BIT1{
+	inline int lowbit(reg int x){
+		return x&(-x);
+	}
+	int n;
+	int unit[MAXN];
+	inline void Init(reg int s){
+		n=s;
+		return;
+	}
+	inline void update(reg int id,reg int val){
+		for(reg int i=id;i<=n;i+=lowbit(i))
+			unit[i]+=val;
+		return;
+	}
+	inline int query(reg int id){
+		reg int res=0;
+		for(reg int i=id;i;i^=lowbit(i))
+			res+=unit[i];
+		return res;
+	}
+	inline int query(reg int l,reg int r){
+		return query(r)-query(l-1);
+	}
 }
 
-int main(void){
-	reg int T=read();
-	while(T--){
-		reg int n=read();
-		reg int cnt=0;
-		reg long double sum=0;
-		for(reg int i=1;i<=n;++i){
-			static long double x,y,z;
-			x=readll(),y=readll(),z=readll();
-			if(y) ++cnt;
-			sum+=x-z;
-		}
-		reg int ans=0;
-		if(cnt&1)
-			ans=(sgn(sum)>=0)?40:60;
-		else
-			ans=(sgn(sum)>0)?40:60;
-		writeln(ans);
+namespace BIT2{
+	inline int lowbit(reg int x){
+		return x&(-x);
 	}
+	int n;
+	int unit[MAXN];
+	inline void Init(reg int s){
+		n=s;
+		return;
+	}
+	inline void update(reg int id,reg int val){
+		for(reg int i=id;i<=n;i+=lowbit(i))
+			unit[i]+=val;
+		return;
+	}
+	inline int query(reg int id){
+		reg int res=0;
+		for(reg int i=id;i;i^=lowbit(i))
+			res+=unit[i];
+		return res;
+	}
+	inline int query(reg int l,reg int r){
+		return query(r)-query(l-1);
+	}
+}
+
+int n,Q;
+int a[MAXN];
+int pos[MAXN],pre[MAXN],lef[MAXA];
+querys q[MAXQ];
+int ans[MAXQ];
+
+int main(void){
+	n=read();
+	for(reg int i=1;i<=n;++i)
+		a[i]=read();
+	Q=read();
+	for(reg int i=1;i<=Q;++i)
+		q[i].id=i,q[i].l=read(),q[i].r=read();
+	sort(q+1,q+Q+1);
+	BIT1::Init(n),BIT2::Init(n);
+	reg int ptr=1;
+	for(reg int i=1;i<=n;++i){
+		pre[i]=pos[a[i]];
+		pos[a[i]]=i;
+		if(pre[i])
+			BIT1::update(pre[i],-1);
+		BIT1::update(i,1);
+		if(pre[i]&&pre[pre[i]]&&i+pre[pre[i]]!=(pre[i]<<1)){
+			if(lef[a[i]])
+				BIT2::update(lef[a[i]],-1);
+			lef[a[i]]=pre[pre[i]];
+			BIT2::update(lef[a[i]],1);
+		}
+		while(ptr<=Q&&q[ptr].r==i){
+			reg int col=BIT1::query(q[ptr].l,i),cnt=BIT2::query(q[ptr].l,i);
+			ans[q[ptr].id]=col+!(col-cnt);
+			++ptr;
+		}
+	}
+	for(reg int i=1;i<=n;++i)
+		writeln(ans[i]);
 	flush();
 	return 0;
 }
