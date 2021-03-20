@@ -34,98 +34,88 @@ inline void writeln(reg int x){
 }
 
 const int MAXN=2e3+5;
+const int MAXM=2e3+5;
 
 int n,m,q;
-char M[MAXN][MAXN];
-int sumCntE[2][MAXN][MAXN],sumF[MAXN][MAXN];
-int id[MAXN][MAXN],tot;
-pair<int,int> pos[MAXN*MAXN];
-int vis[MAXN*MAXN];
+char M[MAXN][MAXM];
+int id,col[MAXN][MAXM],sum[MAXN][MAXM];
+bool tag[MAXN][MAXM];
+bool vis[MAXN*MAXM];
+vector<int> V;
+pair<int,int> pos[MAXN*MAXM];
 
-inline bool check(reg int x1,reg int y1,reg int x2,reg int y2){
-	if(x1==x2)
-		return M[x1][max(y1,y2)]!=M[x1+1][max(y1,y2)];
-	else
-		return M[max(x1,x2)][y1]!=M[max(x1,x2)][y1+1];
+inline bool check(reg int x,reg int l,reg int r){
+	return l<=x&&x<=r;
 }
 
-inline void bfs(reg int sx,reg int sy){
-	queue<pair<int,int>/**/> Q;
-	id[sx][sy]=++tot,++sumF[sx][sy],pos[tot]=make_pair(sx,sy),Q.push(make_pair(sx,sy));
-	reg bool flag=false;
-	while(!Q.empty()){
-		reg int x=Q.front().first,y=Q.front().second;
-		Q.pop();
-		const int dx[4]={-1,0,0,1};
-		const int dy[4]={0,-1,1,0};
-		for(reg int i=0;i<4;++i){
-			reg int fx=x+dx[i],fy=y+dy[i];
-			if(check(x,y,fx,fy)){
-				if(fx<1||fx>n||fy<1||fy>m)
-					flag=true;
-				else if(!id[fx][fy])
-					id[fx][fy]=tot,Q.push(make_pair(fx,fy));
-			}
-		}
+inline bool check(reg int x,reg int y,reg int x1,reg int y1,reg int x2,reg int y2){
+	return check(x,x1,x2)&&check(y,y1,y2);
+}
+
+inline void dfs(reg int x,reg int y){
+	col[x][y]=id;
+	const int dx[]={-1,0,0,1};
+	const int dy[]={0,-1,1,0};
+	for(reg int i=0;i<4;++i){
+		reg int fx=x+dx[i],fy=y+dy[i];
+		if(check(fx,fy,1,1,n,m)&&!col[fx][fy]&&M[x][y]==M[fx][fy])
+			dfs(fx,fy);
 	}
-	if(flag)
-		--sumF[sx][sy],pos[tot]=make_pair(0,0);
 	return;
-}
-
-inline bool in(reg int p,reg int x1,reg int y1,reg int x2,reg int y2){
-	return x1<=pos[p].first&&pos[p].first<=x2&&y1<=pos[p].second&&pos[p].second<=y2;
-}
-
-inline int getSum(reg int sum[][MAXN],reg int x1,reg int y1,reg int x2,reg int y2){
-	return sum[x2][y2]-sum[x1-1][y2]-sum[x2][y1-1]+sum[x1-1][y1-1];
 }
 
 int main(void){
 	n=read(),m=read();
-	for(int i=1;i<=n;++i)
+	for(reg int i=1;i<=n;++i)
 		read(M[i]+1);
-	q=read();
-	for(int i=1;i<=n;++i)
-		for(int j=1;j<=m;++j){
-			if(i<n&&M[i][j]==M[i+1][j])
-				sumCntE[0][i][j]=1;
-			if(j<m&&M[i][j]==M[i][j+1])
-				sumCntE[1][i][j]=1;
+	for(reg int i=1;i<=n;++i)
+		for(reg int j=1;j<=m;++j)
+		if(!col[i][j]){
+			++id;
+			dfs(i,j);
+			pos[id]=make_pair(i,j);
+			tag[i][j]=1;
 		}
 	for(reg int i=1;i<=n;++i)
 		for(reg int j=1;j<=m;++j)
-			for(reg int k=0;k<2;++k)
-				sumCntE[k][i][j]+=sumCntE[k][i-1][j]+sumCntE[k][i][j-1]-sumCntE[k][i-1][j-1];
-	for(reg int i=1;i<=n;++i)
-		for(reg int j=1;j<=m;++j)
-			if(!id[i][j])
-				bfs(i,j);
-	for(reg int i=1;i<=n;++i)
-		for(reg int j=1;j<=m;++j)
-			sumF[i][j]+=sumF[i-1][j]+sumF[i][j-1]-sumF[i-1][j-1];
+			sum[i][j]=sum[i-1][j]+sum[i][j-1]-sum[i-1][j-1]+tag[i][j];
+	q=read();
 	while(q--){
-		int x1=read(),y1=read(),x2=read(),y2=read();
-		reg int V=(x2-x1+1)*(y2-y1+1);
-		reg int E=getSum(sumCntE[0],x1,y1,x2-1,y2)+getSum(sumCntE[1],x1,y1,x2,y2-1);
-		reg int F=getSum(sumF,x1,y1,x2-1,y2-1);
-		for(reg int i=x1;i<=x2;++i)
-			if(!vis[id[i][y1-1]]&&in(id[i][y1-1],x1,y1,x2-1,y2-1))
-				vis[id[i][y1-1]]=true,--F;
-		for(reg int i=x1;i<=x2;++i)
-			if(!vis[id[i][y2]]&&in(id[i][y2],x1,y1,x2-1,y2-1))
-				vis[id[i][y2]]=true,--F;
-		for(reg int i=y1;i<=y2;++i)
-			if(!vis[id[x1-1][i]]&&in(id[x1-1][i],x1,y1,x2-1,y2-1))
-				vis[id[x1-1][i]]=true,--F;
-		for(reg int i=y1;i<= y2;++i)
-			if(!vis[id[x2][i]]&&in(id[x2][i],x1,y1,x2-1,y2-1))
-				vis[id[x2][i]]=true,--F;
-		writeln(V-E+F);
-		for(reg int i=x1;i<=x2;++i)
-			vis[id[i][y1-1]]=vis[id[i][y2]]=false;
-		for(reg int i=y1;i<=y2;++i)
-			vis[id[x1-1][i]]=vis[id[x2][i]]=false;
+		static int x1,y1,x2,y2;
+		x1=read(),y1=read(),x2=read(),y2=read();
+		vector<int> V;
+		reg int ans=sum[x2][y2]-sum[x1-1][y2]-sum[x2][y1-1]+sum[x1-1][y1-1];
+		for(reg int i=y1,c;i<=y2;++i){
+			c=col[x1][i];
+			if(!vis[c]&&!check(pos[c].first,pos[c].second,x1,y1,x2,y2)){
+				vis[c]=true;
+				++ans;
+				V.push_back(c);
+			}
+			c=col[x2][i];
+			if(!vis[c]&&!check(pos[c].first,pos[c].second,x1,y1,x2,y2)){
+				vis[c]=true;
+				++ans;
+				V.push_back(c);
+			}
+		}
+		for(reg int i=x1,c;i<=x2;++i){
+			c=col[i][y1];
+			if(!vis[c]&&!check(pos[c].first,pos[c].second,x1,y1,x2,y2)){
+				vis[c]=true;
+				++ans;
+				V.push_back(c);
+			}
+			c=col[i][y2];
+			if(!vis[c]&&!check(pos[c].first,pos[c].second,x1,y1,x2,y2)){
+				vis[c]=true;
+				++ans;
+				V.push_back(c);
+			}
+		}
+		writeln(ans);
+		for(int id:V)
+			vis[id]=false;
 	}
 	flush();
 	return 0;
