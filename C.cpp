@@ -2,129 +2,178 @@
 using namespace std;
 #define reg register
 typedef long long ll;
-
-const int mod=2003;
-
-inline int add(reg int a,reg int b){
-	a+=b;
-	return a>=mod?a-mod:a;
-}
-
-inline int sub(reg int a,reg int b){
-	a-=b;
-	return a<0?a+mod:a;
-}
-
-inline int fpow(reg int x,reg int exp){
-	reg int res=1;
-	while(exp){
-		if(exp&1)
-			res=1ll*res*x%mod;
-		x=1ll*x*x%mod;
-		exp>>=1;
-	}
+#define getchar()(p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
+static char buf[100000],*p1=buf,*p2=buf;
+inline int read(void){
+	reg char ch=getchar();
+	reg int res=0;
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
 	return res;
 }
 
-namespace Poly{
-	vector<int> rev;
-	inline int getRev(reg int n){
-		reg int limit=1,l=0;
-		while(limit<n)
-			limit<<=1,++l;
-		rev.resize(limit);
-		for(reg int i=0;i<limit;++i)
-			rev[i]=(rev[i>>1]>>1)|((i&1)<<(l-1));
-		return limit;
-	}
-	struct Complex{
-		double x,y;
-		inline Complex(reg double x=0,reg double y=0):x(x),y(y){
+inline void read(reg char *s){
+	*s=getchar();
+	while(!isalpha(*s))*s=getchar();
+	while(isalpha(*s))*(++s)=getchar();
+	*s='\0';
+	return;
+}
+
+inline int max(reg int a,reg int b){
+	return a>b?a:b;
+}
+
+const int MAXN=200+5;
+const int MAXS=200+5;
+const int inf=0x3f3f3f3f;
+
+int n;
+char s[MAXN][MAXS];
+int len[MAXN];
+
+namespace Subtask1{
+	const int MAXN=4+5;
+	bool vis[MAXN];
+	int p[MAXN];
+	int ans=inf;
+	struct Node{
+		int ch[26];
+		inline void Init(void){
+			memset(ch,0,sizeof(ch));
 			return;
 		}
-		inline Complex operator+(const Complex& a)const{
-			return Complex(x+a.x,y+a.y);
-		}
-		inline Complex operator-(const Complex& a)const{
-			return Complex(x-a.x,y-a.y);
-		}
-		inline Complex operator*(const Complex& a)const{
-			return Complex(x*a.x-y*a.y,y*a.x+x*a.y);
-		}
 	};
-	const double pi=acos(-1.0);
-	inline void FFT(reg vector<Complex>& a,reg int limit,reg int flag){
-		for(reg int i=0;i<limit;++i)
-			if(i<rev[i])
-				swap(a[i],a[rev[i]]);
-		for(reg int i=1;i<limit;i<<=1){
-			Complex w(cos(pi/i),flag*sin(pi/i));
-			for(reg int j=0;j<limit;j+=(i<<1)){
-				Complex e(1,0);
-				for(reg int k=0;k<i;++k,e=e*w){
-					Complex x=a[j+k],y=e*a[i+j+k];
-					a[j+k]=x+y,a[i+j+k]=x-y;
+	int tot;
+	Node unit[MAXN*MAXS];
+	inline int New(void){
+		reg int p=++tot;
+		unit[p].Init();
+		return p;
+	}
+	inline int check(void){
+		tot=0;
+		New();
+		for(reg int i=1;i<=n;++i){
+			reg int Max=-1,pos=-1;
+			for(reg int l=1;l<=tot;++l){
+				reg int k=l,cnt=0;
+				for(reg int j=1;j<=len[p[i]];++j){
+					reg int c=s[p[i]][j]-'a';
+					if(!unit[k].ch[c])
+						break;
+					++cnt,k=unit[k].ch[c];
 				}
+				if(cnt>Max)
+					Max=cnt,pos=l;
+			}
+			reg int k=pos;
+			for(reg int j=1;j<=len[p[i]];++j){
+				reg int c=s[p[i]][j]-'a';
+					if(!unit[k].ch[c])
+					unit[k].ch[c]=New();
+				k=unit[k].ch[c];
 			}
 		}
-		if(flag==-1)
-			for(reg int i=0;i<limit;++i)
-				a[i].x/=limit;
+		return tot;
+	}
+	inline void dfs(reg int dep){
+		if(dep==n+1){
+			reg int res=check();
+			if(res<ans)
+				ans=res;
+			return;
+		}
+		for(reg int i=1;i<=n;++i)
+			if(!vis[i]){
+				vis[i]=true;
+				p[dep]=i;
+				dfs(dep+1);
+				vis[i]=false;
+			}
 		return;
 	}
-	typedef vector<int> poly;
-	inline poly mul(poly a,poly b){
-		reg int s=a.size()+b.size()-1;
-		reg int limit=getRev(s);
-		vector<Complex> ta,tb;
-		ta.resize(limit),tb.resize(limit);
-		for(reg int i=0,siz=a.size();i<siz;++i)
-			ta[i]=Complex(a[i],0);
-		for(reg int i=0,siz=b.size();i<siz;++i)
-			tb[i]=Complex(b[i],0);
-		FFT(ta,limit,1),FFT(tb,limit,1);
-		for(reg int i=0;i<limit;++i)
-			ta[i]=ta[i]*tb[i];
-		FFT(ta,limit,-1);
-		a.resize(s);
-		for(reg int i=0;i<s;++i)
-			a[i]=((int)(ta[i].x+0.5))%mod;
-		return a;
-	}
-	inline poly getStrling2(reg int n){
-		poly a,b;
-		a.resize(n+1),b.resize(n+1);
-		for(reg int i=0,fac=1;i<=n;++i,fac=1ll*fac*i%mod){
-			reg int invfac=fpow(fac,mod-2);
-			a[i]=((i&1)?(mod-1ll):1ll)*invfac%mod;
-			b[i]=1ll*fpow(i,n)*invfac%mod;
-		}
-		poly res=mul(a,b);
-		res.resize(n+1);
-		return res;
+	inline void Solve(void){
+		dfs(1);
+		printf("%d\n",ans);
+		return;
 	}
 }
 
-using namespace Poly;
-
-int n,K,L,F;
+namespace Subtask2{
+	int p[MAXN];
+	int ans=inf;
+	struct Node{
+		int ch[26];
+		inline void Init(void){
+			memset(ch,0,sizeof(ch));
+			return;
+		}
+	};
+	int tot;
+	Node unit[MAXN*MAXS];
+	inline int New(void){
+		reg int p=++tot;
+		unit[p].Init();
+		return p;
+	}
+	inline int check(void){
+		tot=0;
+		New();
+		for(reg int i=1;i<=n;++i){
+			reg int Max=-1,pos=-1;
+			for(reg int l=1;l<=tot;++l){
+				reg int k=l,cnt=0;
+				for(reg int j=1;j<=len[p[i]];++j){
+					reg int c=s[p[i]][j]-'a';
+					if(!unit[k].ch[c])
+						break;
+					++cnt,k=unit[k].ch[c];
+				}
+				if(cnt>Max)
+					Max=cnt,pos=l;
+			}
+			reg int k=pos;
+			for(reg int j=1;j<=len[p[i]];++j){
+				reg int c=s[p[i]][j]-'a';
+					if(!unit[k].ch[c])
+					unit[k].ch[c]=New();
+				k=unit[k].ch[c];
+			}
+		}
+		return tot;
+	}
+	inline void Solve(void){
+		for(reg int i=1;i<=n;++i)
+			p[i]=i;
+		reg clock_t st=clock();
+		reg int cnt=0;
+		while(true){
+			++cnt;
+			random_shuffle(p+1,p+n+1);
+			reg int res=check();
+			if(res<ans)
+				ans=res;
+			if(clock()-st>0.8*CLOCKS_PER_SEC)
+				break;
+		}
+		printf("%d\n",ans);
+		return;
+	}
+}
 
 int main(void){
-	scanf("%d%d%d%d",&n,&K,&L,&F);
-	poly f=getStrling2(F);
-	poly res=f,x=f;
-	reg int exp=L-1;
-	while(exp){
-		if(exp&1)
-			res=mul(res,x);
-		x=mul(x,x);
-		res.resize(min((int)res.size(),mod)),x.resize(min((int)x.size(),mod));
-		exp>>=1;
+	n=read();
+	reg int S=0;
+	for(reg int i=1;i<=n;++i){
+		read(s[i]+1);
+		len[i]=strlen(s[i]+1);
+		for(reg int j=1;j<=len[i];++j)
+			S=max(S,s[i][j]-'a'+1);
 	}
-	reg int invk=fpow(K%mod,mod-2);
-	reg int ans=0;
-	for(reg int i=0,bas=1;i<=min(L*F,mod-1);++i,bas=1ll*bas*((n-i+1)%mod)%mod*invk%mod)
-		ans=add(ans,1ll*bas*res[i]%mod);
-	printf("%d\n",ans);
+	if(n<=4)
+		Subtask1::Solve();
+	else
+		Subtask2::Solve();
 	return 0;
 }
