@@ -82,7 +82,11 @@
 		"stop_token": "cpp",
 		"stdio.h": "c",
 		"stdlib.h": "c",
-		"string.h": "c"
+		"string.h": "c",
+		"queue": "cpp",
+		"stack": "cpp",
+		"climits": "cpp",
+		"cassert": "cpp"
 	},
 	"[cpp]":{
 		"editor.wordBasedSuggestions": true,
