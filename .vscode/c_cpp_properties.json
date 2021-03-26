@@ -31,8 +31,8 @@
                 "_UNICODE"
             ],
             "compilerPath": "/usr/bin/g++",
-            "cStandard": "c11",
-            "cppStandard": "c++11",
+            "cStandard": "c17",
+            "cppStandard": "c++14",
             "compilerArgs": [
                 "-m64"
             ],
