@@ -2,7 +2,8 @@
 using namespace std;
 #define reg register
 typedef long long ll;
-#define getchar()(p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
+typedef unsigned long long ull;
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
 inline int read(void){
 	reg char ch=getchar();
@@ -12,58 +13,101 @@ inline int read(void){
 	return res;
 }
 
-const int mod=998244353;
-
-inline int add(reg int a,reg int b){
-	a+=b;
-	return a>=mod?a-mod:a;
+inline void read(reg char *s){
+	*s=getchar();
+	while(!isalpha(*s))*s=getchar();
+	while(isalpha(*s))*(++s)=getchar();
+	*s='\0';
+	return;
 }
 
-inline int sub(reg int a,reg int b){
-	a-=b;
-	return a<0?a+mod:a;
-}
+const int MAXN=3e3+5;
 
-inline int fpow(reg int x,reg int exp){
-	reg int res=1;
-	while(exp){
-		if(exp&1)
-			res=1ll*res*x%mod;
-		x=1ll*x*x%mod;
-		exp>>=1;
-	}
-	return res;
-}
-
-inline int gcd(reg int a,reg int b){
-	return b?gcd(b,a%b):a;
-}
-
-int n,m;
+int n;
+char s[MAXN],t[MAXN];
 
 namespace Subtask1{
 	inline void Solve(void){
-		reg int cnt=0,sum=0;
-		for(reg int x1=0;x1<n;++x1)
-			for(reg int y1=0;y1<m;++y1)
-		for(reg int x2=0;x2<n;++x2)
-			for(reg int y2=0;y2<m;++y2)
-		for(reg int x3=0;x3<n;++x3)
-			for(reg int y3=0;y3<m;++y3){
-				reg int S=(x1*y2+x2*y3+x3*y1)-(x1*y3+x2*y1+x3*y2);
-				if(S>0){
-					++cnt;
-					sum+=gcd(abs(x1-x2),abs(y1-y2))+gcd(abs(x2-x3),abs(y2-y3))+gcd(abs(x3-x1),abs(y3-y1));
+		printf("%d\n",n);
+		return;
+	}
+}
+
+namespace Subtask2{
+	const int MAXN=100+5;
+	const ull base=1331;
+	ull basep[MAXN];
+	ull Hash[MAXN];
+	inline ull getHash(reg int l,reg int r){
+		return Hash[r]-Hash[l-1]*basep[r-l+1];
+	}
+	set<ull> M;
+	inline void Solve(void){
+		basep[0]=1;
+		for(reg int i=1;i<=n;++i){
+			basep[i]=basep[i-1]*base;
+			Hash[i]=Hash[i-1]*base+(t[i]-'a'+1);
+		}
+		reg int ans=0;
+		for(reg int l=1;l<=n;++l)
+			for(reg int r=l;r<=n;++r){
+				if(M.find(getHash(l,r))==M.end()){
+					M.insert(getHash(l,r));
+					reg int ptr=l;
+					for(reg int i=1;i<=n;++i)
+						if(ptr<=r&&s[i]==t[ptr])
+							++ptr;
+					if(ptr==r+1)
+						++ans;
 				}
 			}
-		reg int ans=1ll*sum*fpow(cnt,mod-2)%mod;
+		printf("%d\n",ans);
+		return;
+	}
+}
+
+namespace Subtask4{
+	const int MAXN=3e3+5;
+	const ull base=1331;
+	ull basep[MAXN];
+	ull Hash[MAXN];
+	inline ull getHash(reg int l,reg int r){
+		return Hash[r]-Hash[l-1]*basep[r-l+1];
+	}
+	set<ull> M;
+	inline void Solve(void){
+		basep[0]=1;
+		for(reg int i=1;i<=n;++i){
+			basep[i]=basep[i-1]*base;
+			Hash[i]=Hash[i-1]*base+(t[i]-'a'+1);
+		}
+		reg int ans=0;
+		for(reg int l=1;l<=n;++l){
+			reg int ptr=l-1;
+			for(reg int i=1;i<=n;++i){
+				if(ptr<n&&s[i]==t[ptr+1]){
+					++ptr;
+					if(M.find(getHash(l,ptr))==M.end()){
+						M.insert(getHash(l,ptr));
+						++ans;
+					}
+					if(ptr==n)
+						break;
+				}
+			}
+		}
 		printf("%d\n",ans);
 		return;
 	}
 }
 
 int main(void){
-	n=read(),m=read();
-	Subtask1::Solve();
+	freopen("block.in","r",stdin);
+	freopen("block.out","w",stdout);
+	n=read();
+	read(s+1),read(t+1);
+	Subtask4::Solve();
+	fclose(stdin);
+	fclose(stdout);
 	return 0;
 }
