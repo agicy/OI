@@ -2,89 +2,124 @@
 using namespace std;
 #define reg register
 typedef long long ll;
-typedef unsigned long long ull;
-#define INF 0X3F3F3F3F
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
+#define flush() (fwrite(wbuf,1,wp1,stdout),wp1=0)
+#define putchar(c) (wp1==wp2&&(flush(),0),wbuf[wp1++]=c)
+static char wbuf[1<<21];int wp1;const int wp2=1<<21;
 inline int read(void){
-	reg bool f=false;
 	reg char ch=getchar();
 	reg int res=0;
-	while(ch<'0'||'9'<ch)f|=(ch=='-'),ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
-	return f?-res:res;
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	return res;
 }
 
-const int MAXN=300000+5;
-
-inline void Read(void);
-inline void Work(void);
-
-int main(void){
-	Read();
-	Work();
-	return 0;
+inline void writeln(reg int x){
+	static char buf[32];
+	reg int p=-1;
+	if(x==0) putchar('0');
+	else while(x) buf[++p]=(x%10)^'0',x/=10;
+	while(~p) putchar(buf[p--]);
+	putchar('\n');
+	return;
 }
 
-struct UnionFind{
-	int ID[MAXN];
+inline int max(reg int a,reg int b){
+	return a>b?a:b;
+}
+
+const int MAXN=3e5+5;
+
+int n,m,q;
+int cnt,head[MAXN],to[MAXN<<1],Next[MAXN<<1];
+
+inline void Add_Edge(reg int u,reg int v){
+	Next[++cnt]=head[u];
+	to[cnt]=v;
+	head[u]=cnt;
+	return;
+}
+
+namespace UnionFind{
+	int fa[MAXN];
 	inline void Init(reg int n){
 		for(reg int i=1;i<=n;++i)
-			ID[i]=i;//,dis[i]=0;
+			fa[i]=i;
 		return;
 	}
 	inline int find(reg int x){
-		if(x==ID[x])
+		if(x==fa[x])
 			return x;
 		else
-			return ID[x]=find(ID[x]);
+			return fa[x]=find(fa[x]);
 	}
 	inline void merge(reg int a,reg int b){
-		reg int ra=find(a),rb=find(b);
-		if(ra!=rb){
-			ID[rb]=ra;/*
-			int temp=((dis[ra]+1)>>1)+((dis[rb]+1)>>1)+1;
-			temp=max(temp,max(dis[ra],dis[rb]));
-			dis[ra]=temp;*/
-		}
+		fa[find(b)]=find(a);
 		return;
 	}
 	inline bool search(reg int a,reg int b){
 		return find(a)==find(b);
 	}
-};
+}
 
-int n,m,q;
-UnionFind U;
+bool vis[MAXN];
+int f[MAXN][2];
+int len[MAXN],tmp;
 
-inline void Read(void){
-	n=read(),m=read(),q=read();
-	U.Init(n);
-	for(reg int i=1;i<=m;++i){
-		static int x,y;
-		x=read(),y=read();
-		Add_Edge(x,y);
-		Add_Edge(y,x);
-		U.merge(x,y);
+inline void dfs(reg int u,reg int father){
+	f[u][0]=f[u][1]=0;
+	for(reg int i=head[u];i;i=Next[i]){
+		reg int v=to[i];
+		if(v!=father){
+			dfs(v,u);
+			if(f[u][0]<f[v][0]+1)
+				f[u][1]=f[u][0],f[u][0]=f[v][0]+1;
+			else if(f[u][1]<f[v][0]+1)
+				f[u][1]=f[v][0]+1;
+		}
 	}
+	tmp=max(tmp,f[u][0]+f[u][1]);
 	return;
 }
 
-inline void Work(void){
+int main(void){
+	n=read(),m=read(),q=read();
+	UnionFind::Init(n);
+	for(reg int i=1;i<=m;++i){
+		static int x,y;
+		x=read(),y=read();
+		Add_Edge(x,y),Add_Edge(y,x);
+		UnionFind::merge(x,y);
+	}
 	for(reg int i=1;i<=n;++i)
-	while(q--){
-		static int opt;
-		opt=read();
-		if(opt==1){
-			static int x;
-			x=read();
-			printf("%d\n",U.dis[U.find(x)]);
+		if(!vis[UnionFind::find(i)]){
+			vis[UnionFind::find(i)]=true;
+			tmp=0;
+			dfs(UnionFind::find(i),0);
+			len[UnionFind::find(i)]=tmp;
 		}
-		else if(opt==2){
-			static int x,y;
-			x=read(),y=read();
-			U.merge(x,y);
+	while(q--){
+		static int opt,x,y;
+		opt=read();
+		switch(opt){
+			case 1:{
+				x=read();
+				writeln(len[UnionFind::find(x)]);
+				break;
+			}
+			case 2:{
+				x=read(),y=read();
+				if(!UnionFind::search(x,y)){
+					reg int rx=UnionFind::find(x),ry=UnionFind::find(y);
+					reg int Max=max(max(len[rx],len[ry]),((len[rx]+1)>>1)+((len[ry]+1)>>1)+1);
+					UnionFind::fa[ry]=rx;
+					len[rx]=Max;
+				}
+				break;
+			}
 		}
 	}
-	return;
+	flush();
+	return 0;
 }
