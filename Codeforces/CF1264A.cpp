@@ -15,54 +15,36 @@ inline int read(void){
 const int MAXN=4e5+5;
 
 int n;
-int p[MAXN];
-int a[MAXN];
-int cnt;
-int sum[MAXN];
+int siz[MAXN];
 
 int main(void){
 	reg int t=read();
 	while(t--){
 		n=read();
-		for(reg int i=1;i<=n;++i)
-			p[i]=read();
-		cnt=0;
-		for(reg int i=1,l,r;i<=n;i=r+1){
-			l=i,r=i;
-			while(r+1<=n&&p[l]==p[r+1])
-				++r;
-			a[++cnt]=r-l+1;
+		reg int las=-1;
+		reg int tot=0;
+		for(reg int i=1;i<=n;++i){
+			reg int p=read();
+			if(p!=las)
+				siz[++tot]=1;
+			else
+				++siz[tot];
+			las=p;
 		}
-		for(reg int i=1;i<=cnt;++i)
-			sum[i]=sum[i-1]+a[i];
-		reg int gpos=1,spos=1,bpos=1;
-		reg int g,s,b;
-		reg int ans=0,ansg=0,anss=0,ansb=0;
-		for(reg int i=cnt;i>=1;--i){
-			gpos=i;
-			g=sum[gpos];
-			if(g+g+1+g+1>n/2)
-				continue;
-			reg int ls=lower_bound(sum+1,sum+cnt+1,g+g+1)-sum;
-			for(reg int j=ls;j<=cnt;++j){
-				spos=j;
-				s=sum[spos]-sum[gpos];
-				if(g+s+g+1>n/2)
-					break;
-				reg int lb=lower_bound(sum+1,sum+cnt+1,g+s+g+1)-sum;
-				for(reg int k=lb;k<=cnt;++k){
-					bpos=k;
-					b=sum[bpos]-sum[spos];
-					if(g+s+b>n/2)
-						break;
-					else if(g+s+b>ans){
-						ans=g+s+b;
-						ansg=g,anss=s,ansb=b;
-					}
-				}
-			}
+		reg int sum=0,ptr=0;
+		while(ptr<tot&&sum+siz[ptr+1]<=(n>>1))
+			++ptr,sum+=siz[ptr];
+		reg int g=siz[1],s=0;
+		for(reg int i=2;i<=ptr;++i){
+			s+=siz[i];
+			if(s>g)
+				break;
 		}
-		printf("%d %d %d\n",ansg,anss,ansb);
+		reg int b=sum-g-s;
+		if(!g||!s||!b||g>=s||g>=b||g+s+b>(n>>1))
+			puts("0 0 0");
+		else
+			printf("%d %d %d\n",g,s,b);
 	}
 	return 0;
 }
