@@ -80,14 +80,6 @@ namespace SegmentTree{
 
 int n,m,k;
 
-inline int getCnt(reg int x){
-	reg int res=0;
-	for(reg int i=0;i<k;++i)
-		if((x>>i)&1)
-			++res;
-	return res;
-}
-
 int main(void){
 	n=read(),m=read(),k=read();
 	SegmentTree::build(1,1,n);
@@ -105,7 +97,7 @@ int main(void){
 			}
 			case 'P':{
 				l=read(),r=read();
-				printf("%d\n",getCnt(SegmentTree::query(1,1,n,l,r)));
+				printf("%d\n",__builtin_popcount(SegmentTree::query(1,1,n,l,r)));
 				break;
 			}
 		}
