@@ -4,327 +4,155 @@ using namespace std;
 typedef long long ll;
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
-#define flush() (fwrite(wbuf,1,wp1,stdout),wp1=0)
-#define putchar(c) (wp1==wp2&&(flush(),0),wbuf[wp1++]=c)
-static char wbuf[1<<21];int wp1;const int wp2=1<<21;
 inline int read(void){
-	reg bool f=false;
 	reg char ch=getchar();
 	reg int res=0;
-	while(!isdigit(ch))f|=(ch=='-'),ch=getchar();
+	while(!isdigit(ch))ch=getchar();
 	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
-	return f?-res:res;
-}
-
-inline void writeln(reg int x){
-	static char buf[32];
-	reg int p=-1;
-	if(x==0) putchar('0');
-	else while(x) buf[++p]=(x%10)^'0',x/=10;
-	while(~p) putchar(buf[p--]);
-	putchar('\n');
-	return;
-}
-
-const int mod=998244353;
-
-inline int add(reg int a,reg int b){
-	a+=b;
-	return a>=mod?a-mod:a;
-}
-
-inline int sub(reg int a,reg int b){
-	a-=b;
-	return a<0?a+mod:a;
-}
-
-inline int fpow(reg int x,reg int exp){
-	reg int res=1;
-	while(exp){
-		if(exp&1)
-			res=1ll*res*x%mod;
-		x=1ll*x*x%mod;
-		exp>>=1;
-	}
 	return res;
 }
 
-const int MAXN=500+5;
-const int MAXM=(MAXN*MAXN);
-
-int n,m;
-int cnt,head[MAXN],to[MAXM<<1],w[MAXM<<1],Next[MAXM<<1];
-
-inline void Add_Edge(reg int u,reg int v){
-	Next[++cnt]=head[u];
-	to[cnt]=v;
-	head[u]=cnt;
-	return;
+inline ll min(reg ll a,reg ll b){
+	return a<b?a:b;
 }
 
-namespace Subtask1{
-	const int MAXN=10+5;
+const int MAXN=2e5+5;
+const int MAXM=4e5+5;
+const ll inf=0x3f3f3f3f3f3f3f3f;
+
+struct Graph{
+	int cnt,head[MAXN],to[MAXM],w[MAXM],Next[MAXM];
+	inline void Add_Edge(reg int u,reg int v,reg int len){
+		Next[++cnt]=head[u];
+		to[cnt]=v,w[cnt]=len;
+		head[u]=cnt;
+		return;
+	}
+	struct Node{
+		int id;
+		ll val;
+		inline Node(reg int id=0,reg ll val=0):id(id),val(val){
+			return;
+		}
+		inline bool operator<(const Node& a)const{
+			return val<a.val;
+		}
+		inline bool operator>(const Node& a)const{
+			return val>a.val;
+		}
+	};
 	bool vis[MAXN];
-	int ptr,tot,Q[MAXN];
-	bool flag;
-	inline void dfs(reg int u,reg int S){
-		vis[u]=true;
-		if(Q[ptr+1]==u)
-			++ptr;
-		else if((S>>(u-1))&1){
-			vis[u]=false;
-			if(Q[ptr]==u)
-				--ptr;
+	ll dis[MAXN];
+	priority_queue<Node,vector<Node>,greater<Node>/**/> Q;
+	inline void dijkstra(reg int s){
+		memset(vis,false,sizeof(vis));
+		memset(dis,0x3f,sizeof(dis));
+		dis[s]=0,Q.push(Node(s,dis[s]));
+		while(!Q.empty()){
+			static Node s;
+			s=Q.top();
+			Q.pop();
+			reg int u=s.id;
+			if(vis[u])
+				continue;
+			vis[u]=true;
+			for(reg int i=head[u];i;i=Next[i]){
+				reg int v=to[i];
+				if(dis[v]>dis[u]+w[i]){
+					dis[v]=dis[u]+w[i];
+					Q.push(Node(v,dis[v]));
+				}
+			}
+		}
+		return;
+	}
+};
+
+namespace SegmentTree{
+	#define lson ( (k) << 1 )
+	#define rson ( (k) << 1 | 1 )
+	#define mid ( ( (l) + (r) ) >> 1 )
+	struct Line{
+		ll k,b;
+		inline Line(reg ll k=0,reg ll b=0):k(k),b(b){
 			return;
 		}
-		if(ptr==tot){
-			flag=true;
-			vis[u]=false;
-			if(Q[ptr]==u)
-				--ptr;
+	};
+	inline ll getVal(const Line& a,reg int x){
+		return a.k*x+a.b;
+	}
+	struct Node{
+		Line val;
+		bool tag;
+		#define val(x) unit[(x)].val
+		#define tag(x) unit[(x)].tag
+	};
+	Node unit[MAXN<<2];
+	inline void update(reg int k,reg int l,reg int r,Line Val){
+		if(!tag(k)){
+			tag(k)=true;
+			val(k)=Val;
 			return;
 		}
-		for(reg int i=head[u];i;i=Next[i]){
-			reg int v=to[i];
-			if(!vis[v]){
-				dfs(v,S);
-				if(flag){
-					vis[u]=false;
-					if(Q[ptr]==u)
-						--ptr;
-					return;
-				}
-			}
-		}
-		if(Q[ptr]==u)
-			--ptr;
-		vis[u]=false;
-		return;
-	}
-	inline void Solve(void){
-		reg int ans=0;
-		for(reg int S=1;S<(1<<n);++S){
-			tot=0;
-			for(reg int i=1;i<=n;++i)
-				if((S>>(i-1))&1)
-					Q[++tot]=i;
-			flag=false;
-			dfs(Q[1],S);
-			if(flag)
-				++ans;
-		}
-		printf("%d\n",ans);
-		return;
-	}
-}
-
-namespace Subtask2{
-	//const int MAXN=20+5;
-	bool vis[MAXN];
-	int ptr,tot,Q[MAXN];
-	bool flag;
-	inline void dfs(reg int u,reg int S){
-		vis[u]=true;
-		if(Q[ptr+1]==u)
-			++ptr;
-		else if((S>>(u-1))&1){
-			vis[u]=false;
-			if(Q[ptr]==u)
-				--ptr;
+		reg ll lef=getVal(val(k),l),rig=getVal(val(k),r);
+		reg ll tmpl=getVal(Val,l),tmpr=getVal(Val,r);
+		if(lef<=tmpl&&rig<=tmpr)
+			return;
+		if(tmpl<lef&&tmpr<rig){
+			swap(val(k),Val);
 			return;
 		}
-		if(ptr==tot){
-			flag=true;
-			vis[u]=false;
-			if(Q[ptr]==u)
-				--ptr;
-			return;
+		reg ll midv=getVal(val(k),mid),tmpv=getVal(Val,mid);
+		if(midv<=tmpv){
+			if(tmpl<lef)
+				update(lson,l,mid,Val);
+			else
+				update(rson,mid+1,r,Val);
 		}
-		for(reg int i=head[u];i;i=Next[i]){
-			reg int v=to[i];
-			if(!vis[v]){
-				dfs(v,S);
-				if(flag){
-					vis[u]=false;
-					if(Q[ptr]==u)
-						--ptr;
-					return;
-				}
-			}
+		else{
+			swap(val(k),Val);
+			if(lef<=tmpl)
+				update(lson,l,mid,Val);
+			else
+				update(rson,mid+1,r,Val);
 		}
-		if(Q[ptr]==u)
-			--ptr;
-		vis[u]=false;
 		return;
 	}
-	inline void Solve(void){
-		reg int ans=0;
-		for(reg int S=1;S<(1<<n);++S){
-			tot=0;
-			for(reg int i=1;i<=n;++i)
-				if((S>>(i-1))&1)
-					Q[++tot]=i;
-			flag=false;
-			dfs(Q[1],S);
-			if(flag)
-				++ans;
-		}
-		printf("%d\n",ans);
-		return;
+	inline ll query(reg int k,reg int l,reg int r,reg int x){
+		reg ll res=inf;
+		if(tag(k))
+			res=min(res,getVal(val(k),x));
+		if(l==r)
+			return res;
+		if(x<=mid)
+			res=min(res,query(lson,l,mid,x));
+		else
+			res=min(res,query(rson,mid+1,r,x));
+		return res;
 	}
+	#undef lson
+	#undef rson
+	#undef mid
 }
 
-namespace Subtask3{
-	inline void Solve(void){
-		printf("%d\n",sub(fpow(2,n),1));
-		return;
-	}
-}
-
-namespace Subtask4{
-	inline void Solve(void){
-		reg int inv2=fpow(2,mod-2);
-		reg int ans=add(1ll*n*(n-1)%mod*inv2%mod,n);
-		printf("%d\n",ans);
-		return;
-	}
-}
-
-namespace Subtask5{
-	int f[MAXN];
-	inline vector<int> dfs(int u,reg int father){
-		f[u]=1;
-		vector<int> son;
-		for(reg int i=head[u];i;i=Next[i]){
-			reg int v=to[i];
-			if(v!=father){
-				vector<int> tmp=dfs(v,u);
-				son.insert(son.end(),tmp.begin(),tmp.end());
-				for(reg int j=0,siz=tmp.size();j<siz;++j)
-					if(tmp[j]<u)
-						f[u]=add(f[u],f[tmp[j]]);
-			}
-		}
-		son.push_back(u);
-		return son;
-	}
-	inline void Solve(void){
-		reg int ans=0;
-		for(reg int i=1;i<=n;++i){
-			dfs(i,0);
-			ans=add(ans,f[i]);
-		}
-		printf("%d\n",ans);
-		return;
-	}
-}
-/*
-namespace Subtask6{
-	bool vis[MAXN];
-	int top,S[MAXN];
-	int tot,cir[MAXN];
-	inline bool getCir(reg int u,reg int father){
-		vis[u]=true;
-		S[++top]=u;
-		for(reg int i=head[u];i;i=Next[i]){
-			reg int v=to[i];
-			if(v!=father){
-				if(!vis[v]){
-					reg bool res=getCir(v,u);
-					if(res)
-						return true;
-				}
-				else if(v!=father){
-					reg int x;
-					do{
-						x=S[top--];
-						cir[++tot]=x;
-					}while(x!=v);
-					return true;
-				}
-			}
-		}
-		vis[u]=false;
-		--top;
-		return false;
-	}
-	bool oncir[MAXN];
-	inline int getPo(reg int u,reg int father){
-		if(oncir[u])
-			return u;
-		for(reg int i=head[u];i;i=Next[i]){
-			reg int v=to[i];
-			if(v!=father){
-				reg int res=getPo(v,u);
-				if(res!=-1)
-					return res;
-			}
-		}
-		return -1;
-	}
-	inline set<pair<int,int> > dfs(int u,reg int father,reg int x){
-		set<pair<int,int> > son;
-		reg int sum=0;
-		for(reg int i=head[u];i;i=Next[i]){
-			reg int v=to[i];
-			if(v!=father){
-				if((!oncir[u])||(v!=x)){
-					set<pair<int,int> > tmp=dfs(v,u,x);
-					son.insert(tmp.begin(),tmp.end());
-					for(set<pair<int,int> >::iterator it=tmp.begin();it!=tmp.end();++it)
-						if(it->first<u)
-							sum=add(sum,it->second);
-				}
-			}
-		}
-		son.insert(make_pair(u,sum));
-		return son;
-	}
-	inline void Solve(void){
-		getCir(1,0);
-		printf("tot=%d\n",tot);
-		for(reg int i=1;i<=tot;++i){
-			printf("%d%c",cir[i],i==tot?'\n':' ');
-		}
-		for(reg int i=1;i<=tot;++i)
-			oncir[cir[i]]=true;
-		for(reg int i=1;i<=n;++i){
-			reg int x=getPo(i,0);
-			dfs(i,0,x);
-		}
-		return;
-	}
-}*/
+int n,m,s,t;
+Graph Gs,Gt;
 
 int main(void){
-	n=read(),m=read();
-	reg bool subtask3flag=(m==n-1);
-	reg bool subtask4flag=(m==n-1);
+	n=read(),m=read(),s=read(),t=read();
 	for(reg int i=1;i<=m;++i){
-		static int a,b;
-		a=read(),b=read();
-		if(a!=i||b!=i+1)
-			subtask3flag=false;
-		if(a!=1||b!=i+1)
-			subtask4flag=false;
-		Add_Edge(a,b),Add_Edge(b,a);
+		static int u,v,w;
+		u=read(),v=read(),w=read();
+		Gs.Add_Edge(u,v,w),Gt.Add_Edge(v,u,w);
 	}
-	if(n<=10)
-		//puts("S1"),
-		Subtask1::Solve();
-	else if(subtask3flag)
-		//puts("S3"),
-		Subtask3::Solve();
-	else if(subtask4flag)
-		//puts("S4"),
-		Subtask4::Solve();
-	else if(m==n-1)
-		//puts("S5"),
-		Subtask5::Solve();
-	else if(n<=20)
-		//puts("S2"),
-		Subtask2::Solve();
-	else
-		Subtask2::Solve();
+	Gs.dijkstra(s),Gt.dijkstra(t);
+	reg ll ans=min(Gs.dis[t],Gt.dis[s]);
+	for(reg int i=1;i<=n;++i)
+		if(Gt.dis[i]!=inf)
+			SegmentTree::update(1,1,n,SegmentTree::Line(-2ll*i,Gt.dis[i]+1ll*i*i));
+	for(reg int i=1;i<=n;++i)
+		if(Gs.dis[i]!=inf)
+			ans=min(ans,Gs.dis[i]+1ll*i*i+SegmentTree::query(1,1,n,i));
+	printf("%lld\n",ans);
 	return 0;
 }
