@@ -2,102 +2,119 @@
 using namespace std;
 #define reg register
 typedef long long ll;
-typedef unsigned long long ull;
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
+#define flush() (fwrite(wbuf,1,wp1,stdout),wp1=0)
+#define putchar(c) (wp1==wp2&&(flush(),0),wbuf[wp1++]=c)
+static char wbuf[1<<21];int wp1;const int wp2=1<<21;
 inline int read(void){
 	reg bool f=false;
 	reg char ch=getchar();
 	reg int res=0;
-	while(ch<'0'||'9'<ch)f|=(ch=='-'),ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
+	while(!isdigit(ch))f|=(ch=='-'),ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
 	return f?-res:res;
 }
 
-const int MAXN=100000+5;
+inline void writeln(reg int x){
+	static char buf[32];
+	reg int p=-1;
+	if(x<0) x=-x,putchar('-');
+	if(x==0) putchar('0');
+	else while(x) buf[++p]=(x%10)^'0',x/=10;
+	while(~p) putchar(buf[p--]);
+	putchar('\n');
+	return;
+}
 
-inline void Read(void);
-inline void Work(void);
+const int MAXN=1e5+5;
 
-int main(void){
-	Read();
-	Work();
-	return 0;
+namespace Heap{
+	struct Node{
+		int fa,lson,rson,dis;
+		int val;
+		bool del;
+		#define fa(x) unit[(x)].fa
+		#define lson(x) unit[(x)].lson
+		#define rson(x) unit[(x)].rson
+		#define dis(x) unit[(x)].dis
+		#define val(x) unit[(x)].val
+		#define del(x) unit[(x)].del
+	};
+	int tot;
+	Node unit[MAXN];
+	inline int New(reg int v){
+		reg int p=++tot;
+		fa(p)=p,val(p)=v,del(p)=false;
+		return p;
+	}
+	inline void pushup(reg int p){
+		dis(p)=dis(rson(p))+1;
+		return;
+	}
+	inline int merge(reg int x,reg int y){
+		if(!x||!y)
+			return x|y;
+		if(val(x)>val(y)||(val(x)==val(y)&&x>y))
+			swap(x,y);
+		rson(x)=merge(rson(x),y);
+		if(dis(lson(x))<dis(rson(x)))
+			swap(lson(x),rson(x));
+		fa(lson(x))=fa(rson(x))=fa(x)=x;
+		pushup(x);
+		return x;
+	}
+	inline int top(reg int p){
+		assert(!del(p));
+		return val(p);
+	}
+	inline void pop(reg int p){
+		del(p)=true;
+		fa(lson(p))=lson(p),fa(rson(p))=rson(p);
+		fa(p)=merge(lson(p),rson(p));
+		return;
+	}
+	inline int find(reg int p){
+		if(p==fa(p))
+			return p;
+		else
+			return fa(p)=find(fa(p));
+	}
 }
 
 int n,m;
-int a[MAXN];
+int rt[MAXN];
 
-inline void Read(void){
+int main(void){
 	n=read(),m=read();
 	for(reg int i=1;i<=n;++i)
-		a[i]=read();
-	return;
-}
-
-struct LeftistTree{
-	int dist[MAXN];
-	int val[MAXN],root[MAXN];
-	int lson[MAXN],rson[MAXN];
-	inline void Init(reg int size,reg int a[]){
-		dist[0]=-1;
-		for(reg int i=1;i<=size;++i){
-			val[i]=a[i];
-			root[i]=i;
-		}
-		return;
-	}
-	inline void pop(reg int x){
-		val[x]=-1;
-		root[lson[x]]=lson[x];
-		root[rson[x]]=rson[x];
-		root[x]=merge(lson[x],rson[x]);
-		return;
-	}
-	inline int merge(int x,int y){
-		if(!x||!y)
-			return x|y;
-		if(val[x]>val[y]||(val[x]==val[y]&&x>y))
-			swap(x,y);
-		rson[x]=merge(rson[x],y);
-		if(dist[lson[x]]<dist[rson[x]])
-			swap(lson[x],rson[x]);
-		root[lson[x]]=root[rson[x]]=root[x]=x;
-		dist[x]=dist[rson[x]]+1;
-		return x;
-	}
-	inline int find(reg int x){
-		if(x==root[x])
-			return x;
-		else
-			return root[x]=find(root[x]);
-	}
-};
-
-LeftistTree T;
-
-inline void Work(void){
-	T.Init(n,a);
+		rt[i]=Heap::New(read());
 	while(m--){
-		static int opt;
+		static int opt,x,y;
 		opt=read();
-		if(opt==1){
-			static int x,y;
-			x=read(),y=read();
-			if(T.val[x]==-1||T.val[y]==-1)
-				continue;
-			reg int rx=T.find(x),ry=T.find(y);
-			if(rx!=ry)
-				T.root[rx]=T.root[ry]=T.merge(rx,ry);
-		}
-		else if(opt==2){
-			static int x;
-			x=read();
-			if(T.val[x]==-1)
-				puts("-1");
-			else
-				printf("%d\n",T.val[T.find(x)]),T.pop(T.find(x));
+		switch(opt){
+			case 1:{
+				x=read(),y=read();
+				if(!Heap::del(x)&&!Heap::del(y)){
+					reg int rx=Heap::find(x),ry=Heap::find(y);
+					if(rx!=ry)
+						Heap::fa(rx)=Heap::fa(ry)=Heap::merge(rx,ry);
+				}
+				break;
+			}
+			case 2:{
+				x=read();
+				if(!Heap::del(x)){
+					reg int rx=Heap::find(x);
+					writeln(Heap::top(rx));
+					Heap::pop(rx);
+				}
+				else
+					writeln(-1);
+				break;
+			}
 		}
 	}
-	return;
+	flush();
+	return 0;
 }
