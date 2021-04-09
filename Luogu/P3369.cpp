@@ -4,6 +4,9 @@ using namespace std;
 typedef long long ll;
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
+#define flush() (fwrite(wbuf,1,wp1,stdout),wp1=0)
+#define putchar(c) (wp1==wp2&&(flush(),0),wbuf[wp1++]=c)
+static char wbuf[1<<21];int wp1;const int wp2=1<<21;
 inline int read(void){
 	reg bool f=false;
 	reg char ch=getchar();
@@ -13,25 +16,50 @@ inline int read(void){
 	return f?-res:res;
 }
 
-const int MAXN=5e5+5;
+inline void writeln(reg int x){
+	static char buf[32];
+	reg int p=-1;
+	if(x<0) x=-x,putchar('-');
+	if(x==0) putchar('0');
+	else while(x) buf[++p]=(x%10)^'0',x/=10;
+	while(~p) putchar(buf[p--]);
+	putchar('\n');
+	return;
+}
+
+namespace MY_RAND{
+	typedef unsigned int uint;
+	static uint x=123456789,y=362436069,z=521288629;
+	inline uint get(void){
+		x^=x<<16;
+		x^=x>>5;
+		x^=x<<1;
+		reg uint t=x;
+		x=y;
+		y=z;
+		z=t^x^y;
+		return z;
+	}
+}
+
+const int MAXN=1e5+5;
 
 namespace FHQTreap{
-	const int MAXSIZE=MAXN*70;
+	const int MAXSIZE=MAXN;
 	struct Node{
-		int ch[2];
-		int siz;
+		int lson,rson,siz;
 		int val;
-		#define ch(x) unit[(x)].ch
+		#define lson(x) unit[(x)].lson
+		#define rson(x) unit[(x)].rson
 		#define siz(x) unit[(x)].siz
 		#define val(x) unit[(x)].val
 	};
-	#define lson(x) ch(x)[0]
-	#define rson(x) ch(x)[1]
 	int tot;
 	Node unit[MAXSIZE];
 	inline int New(reg int v){
 		reg int p=++tot;
-		siz(p)=1,val(p)=v;
+		lson(p)=rson(p)=0,siz(p)=1;
+		val(p)=v;
 		return p;
 	}
 	inline void pushup(reg int p){
@@ -58,7 +86,7 @@ namespace FHQTreap{
 	inline int merge(reg int x,reg int y){
 		if(!x||!y)
 			return x|y;
-		if(rand()%(siz(x)+siz(y))<siz(x)){
+		if(MY_RAND::get()%(siz(x)+siz(y))<siz(x)){
 			rson(x)=merge(rson(x),y);
 			pushup(x);
 			return x;
@@ -84,25 +112,25 @@ namespace FHQTreap{
 		return -1;
 	}
 	inline int insert(reg int p,reg int v){
-		int x,y;
+		static int x,y;
 		split(p,v,x,y);
 		return merge(merge(x,New(v)),y);
 	}
 	inline int del(reg int p,reg int w){
-		int x,y,z;
+		static int x,y,z;
 		split(p,w,x,z);
 		split(x,w-1,x,y);
 		return merge(merge(x,merge(lson(y),rson(y))),z);
 	}
 	int ans;
 	inline int rnk(reg int p,reg int v){
-		int x,y;
+		static int x,y;
 		split(p,v-1,x,y);
 		ans=siz(x);
 		return merge(x,y);
 	}
 	inline int pre(reg int p,reg int v){
-		int x,y;
+		static int x,y;
 		split(p,v-1,x,y);
 		reg int id=x;
 		while(rson(id))
@@ -111,7 +139,7 @@ namespace FHQTreap{
 		return merge(x,y);
 	}
 	inline int suf(reg int p,reg int v){
-		int x,y;
+		static int x,y;
 		split(p,v,x,y);
 		reg int id=y;
 		while(lson(id))
@@ -121,13 +149,11 @@ namespace FHQTreap{
 	}
 }
 
-const int inf=(1ll<<31)-1;
-
 int main(void){
 	srand(time(0));
 	reg int n=read();
 	using namespace FHQTreap;
-	reg int rt=merge(New(-inf),New(inf));
+	reg int rt=0;
 	while(n--){
 		static int opt,x;
 		opt=read(),x=read();
@@ -142,24 +168,25 @@ int main(void){
 			}
 			case 3:{
 				rt=rnk(rt,x);
-				printf("%d\n",ans);
+				writeln(ans+1);
 				break;
 			}
 			case 4:{
-				printf("%d\n",kth(rt,x+1));
+				writeln(kth(rt,x));
 				break;
 			}
 			case 5:{
 				rt=pre(rt,x);
-				printf("%d\n",ans);
+				writeln(ans);
 				break;
 			}
 			case 6:{
 				rt=suf(rt,x);
-				printf("%d\n",ans);
+				writeln(ans);
 				break;
 			}
 		}
 	}
+	flush();
 	return 0;
 }

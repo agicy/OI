@@ -1,31 +1,33 @@
 #include<bits/stdc++.h>
 using namespace std;
 #define reg register
+typedef long long ll;
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
+#define flush() (fwrite(wbuf,1,wp1,stdout),wp1=0)
+#define putchar(c) (wp1==wp2&&(flush(),0),wbuf[wp1++]=c)
+static char wbuf[1<<21];int wp1;const int wp2=1<<21;
 inline int read(void){
-	reg bool f=false;
 	reg char ch=getchar();
 	reg int res=0;
-	while(ch<'0'||'9'<ch)f|=(ch=='-'),ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
-	return f?-res:res;
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	return res;
 }
 
-const int MAXN=1000000+5;
-const int MAXM=1000000+5;
-
-inline void Read(void);
-inline void Work(void);
-
-int main(void){
-	Read();
-	Work();
-	return 0;
+inline void writeln(const char *s){
+	while(*s) putchar(*(s++));
+	putchar('\n');
+	return;
 }
+
+const int MAXN=1e6+5;
+const int MAXM=1e6+5;
+const int MAXV=MAXN*2;
+const int MAXE=MAXM*2;
 
 int n,m;
-int cnt,head[MAXN<<1],to[MAXM<<1],Next[MAXM<<1];
+int cnt,head[MAXV],to[MAXE],Next[MAXE];
 
 inline void Add_Edge(reg int u,reg int v){
 	Next[++cnt]=head[u];
@@ -34,60 +36,69 @@ inline void Add_Edge(reg int u,reg int v){
 	return;
 }
 
-inline int GetID(reg int x,reg int v){
-	return v?x:x+n;
-}
+bool vis[MAXV];
+int tim,dfn[MAXV],low[MAXV];
+int top,S[MAXV];
+int scc_cnt,col[MAXV];
 
-inline void Read(void){
-	n=read(),m=read();
-	for(reg int i=1;i<=m;++i){
-		static int xi,a,xj,b;
-		xi=read(),a=read(),xj=read(),b=read();
-		Add_Edge(GetID(xi,!a),GetID(xj,b));
-		Add_Edge(GetID(xj,!b),GetID(xi,a));
-	}
-	return;
-}
-
-int tim,dfn[MAXN<<1],low[MAXN<<1];
-bool vis[MAXN<<1];
-int top,S[MAXN<<1];
-int Tarjan_cnt,color[MAXN<<1];
-
-inline void Tarjan(reg int ID){
-	dfn[ID]=low[ID]=++tim;
-	vis[ID]=true;
-	S[++top]=ID;
-	for(reg int i=head[ID];i;i=Next[i])
-		if(!dfn[to[i]]){
-			Tarjan(to[i]);
-			low[ID]=min(low[ID],low[to[i]]);
+inline void tarjan(reg int u){
+	dfn[u]=low[u]=++tim;
+	vis[u]=true;
+	S[++top]=u;
+	for(reg int i=head[u];i;i=Next[i]){
+		reg int v=to[i];
+		if(!dfn[v]){
+			tarjan(v);
+			low[u]=min(low[u],low[v]);
 		}
-		else if(vis[to[i]])
-			low[ID]=min(low[ID],dfn[to[i]]);
-	if(dfn[ID]==low[ID]){
-		reg int To;
-		++Tarjan_cnt;
+		else if(vis[v])
+			low[u]=min(low[u],dfn[v]);
+	}
+	if(dfn[u]==low[u]){
+		++scc_cnt;
+		reg int v;
 		do{
-			To=S[top--];
-			vis[To]=false;
-			color[To]=Tarjan_cnt;
-		}while(To!=ID);
+			v=S[top--];
+			vis[v]=false;
+			col[v]=scc_cnt;
+		}while(u!=v);
 	}
 	return;
 }
 
-inline void Work(void){
-	for(reg int i=1;i<=2*n;++i)
+inline int getId(reg int i,reg int c){
+	return i+c*n;
+}
+
+int main(void){
+	n=read(),m=read();
+	while(m--){
+		static int i,a,j,b;
+		i=read(),a=read(),j=read(),b=read();
+		Add_Edge(getId(i,!a),getId(j,b));
+		Add_Edge(getId(j,!b),getId(i,a));
+	}
+	for(reg int i=1;i<=(n<<1);++i)
 		if(!dfn[i])
-			Tarjan(i);
+			tarjan(i);
+	reg bool flag=true;
 	for(reg int i=1;i<=n;++i)
-		if(color[GetID(i,0)]==color[GetID(i,1)]){
-			puts("IMPOSSIBLE");
-			return;
+		if(col[getId(i,0)]==col[getId(i,1)]){
+			flag=false;
+			break;
 		}
-	puts("POSSIBLE");
-	for(reg int i=1;i<=n;++i)
-		printf("%d%c",color[GetID(i,0)]<color[GetID(i,1)]?0:1,i==n?'\n':' ');
-	return;
+	if(flag){
+		writeln("POSSIBLE");
+		for(reg int i=1;i<=n;++i){
+			if(col[getId(i,0)]<col[getId(i,1)])
+				putchar('0');
+			else
+				putchar('1');
+			putchar(i==n?'\n':' ');
+		}
+	}
+	else
+		writeln("IMPOSSIBLE");
+	flush();
+	return 0;
 }

@@ -1,121 +1,96 @@
-#include <algorithm>
-#include <cstdio>
-#include <cstring>
-#include <queue>
-using std::queue;
-#define INF 0X3F3F3F3F
-#define min(a, b) ((a) < (b) ? (a) : (b))
-
-#define getchar() (p1 == p2 && (p2 = (p1 = buf) + fread(buf, 1, 100000, stdin), p1 == p2) ? EOF : *p1++)
-static char buf[100000], *p1 = buf, *p2 = buf;
-
-inline int read(void)
-{
-	register char ch = getchar();
-	register int sum = 0;
-	while (!(ch >= '0' && ch <= '9'))
-		ch = getchar();
-	while (ch >= '0' && ch <= '9')
-		sum = sum * 10 + ch - 48, ch = getchar();
-	return sum;
+#include<bits/stdc++.h>
+using namespace std;
+#define reg register
+typedef long long ll;
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
+static char buf[100000],*p1=buf,*p2=buf;
+inline int read(void){
+	reg char ch=getchar();
+	reg int res=0;
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	return res;
 }
 
-const int MAXN = 10000 + 5;
-const int MAXM = 100000 + 5;
+const int MAXN=200+5;
+const int MAXM=5e3+5;
+const int MAXV=MAXN;
+const int MAXE=(MAXM)*2;
+const ll inf=0x3f3f3f3f3f3f3f3f;
 
-struct Edge
-{
-	int Next, to, w;
-};
+int n,m,s,t;
+int cnt=1,head[MAXV],to[MAXE],w[MAXE],Next[MAXE];
 
-int n, m, s, t, Maxflow, dep[MAXN];
-int cnt = -1, head[MAXN], cur[MAXN];
-Edge E[MAXM << 1];
-queue<int> Q;
-
-void Add_Edge(int f, int t, int w, bool flag);
-bool bfs(int s, int t);
-int dfs(int now, int t, int limit);
-void Dinic(int s, int t);
-
-int main(void)
-{
-	register int i, u, v, w;
-	memset(head, -1, sizeof(head));
-	n = read(), m = read(), s = read(), t = read();
-	for (i = 1; i <= m; ++i)
-	{
-		u = read(), v = read(), w = read();
-		Add_Edge(u, v, w, true);
-		Add_Edge(v, u, w, false);
-	}
-	Dinic(s, t);
-	printf("%d\n", Maxflow);
-	return 0;
-}
-
-void Add_Edge(int f, int t, int w, bool flag)
-{
-	E[++cnt].Next = head[f];
-	E[cnt].to = t;
-	if (flag)
-		E[cnt].w = w;
-	head[f] = cnt;
+inline void Add_Edge(reg int u,reg int v,reg int len){
+	Next[++cnt]=head[u];
+	to[cnt]=v,w[cnt]=len;
+	head[u]=cnt;
 	return;
 }
 
-bool bfs(int s, int t)
-{
-	register int i, now;
-	memset(dep, 0X7F, sizeof(dep));
-	memcpy(cur, head, sizeof(cur));
-	dep[s] = 0;
-	while (!Q.empty())
-		Q.pop();
-	Q.push(s);
-	while (!Q.empty())
-	{
-		now = Q.front();
-		Q.pop();
-		for (i = head[now]; i != -1; i = E[i].Next)
-		{
-			if (dep[E[i].to] > INF && E[i].w)
-			{
-				dep[E[i].to] = dep[now] + 1;
-				Q.push(E[i].to);
+inline void Add_Tube(reg int u,reg int v,reg int len){
+	Add_Edge(u,v,len);
+	Add_Edge(v,u,0);
+	return;
+}
+
+int dep[MAXV];
+int Q[MAXV];
+
+inline bool bfs(reg int s,reg int t){
+	reg int _head=0,_tail=0;
+	memset(dep,-1,sizeof(dep));
+	dep[s]=1,Q[_tail++]=s;
+	while(_head<_tail){
+		reg int u=Q[_head++];
+		for(reg int i=head[u];i;i=Next[i]){
+			reg int v=to[i];
+			if(dep[v]==-1&&w[i]){
+				dep[v]=dep[u]+1;
+				Q[_tail++]=v;
 			}
 		}
 	}
-	if (dep[t] < INF)
-		return true;
-	else
-		return false;
+	return dep[t]!=-1;
 }
 
-int dfs(int now, int t, int limit)
-{
-	if (!limit || now == t)
-		return limit;
-	register int i, flow = 0, f;
-	for (i = cur[now]; i != -1; i = E[i].Next)
-	{
-		cur[now] = i;
-		if (dep[E[i].to] == dep[now] + 1 && (f = dfs(E[i].to, t, min(limit, E[i].w))))
-		{
-			flow += f;
-			limit -= f;
-			E[i].w -= f;
-			E[i ^ 1].w += f;
-			if (!limit)
-				break;
+int cur[MAXV];
+
+inline ll dfs(reg int u,reg int t,reg ll lim){
+	if(u==t)
+		return lim;
+	reg ll flow=0;
+	for(reg int &i=cur[u];i;i=Next[i]){
+		reg int v=to[i];
+		if(dep[v]==dep[u]+1&&w[i]){
+			reg ll f=dfs(v,t,min(lim-flow,0ll+w[i]));
+			if(f){
+				flow+=f;
+				w[i]-=f,w[i^1]+=f;
+				if(flow==lim)
+					break;
+			}
 		}
 	}
 	return flow;
 }
 
-void Dinic(int s, int t)
-{
-	while (bfs(s, t))
-		Maxflow += dfs(s, t, INF);
-	return;
+inline ll dinic(reg int s,reg int t){
+	reg ll res=0;
+	while(bfs(s,t)){
+		memcpy(cur,head,sizeof(head));
+		res+=dfs(s,t,inf);
+	}
+	return res;
+}
+
+int main(void){
+	n=read(),m=read(),s=read(),t=read();
+	for(reg int i=1;i<=m;++i){
+		static int u,v,c;
+		u=read(),v=read(),c=read();
+		Add_Tube(u,v,c);
+	}
+	printf("%lld\n",dinic(s,t));
+	return 0;
 }

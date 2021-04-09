@@ -2,119 +2,107 @@
 using namespace std;
 #define reg register
 typedef long long ll;
-typedef unsigned long long ull;
-#define INF 0X3F3F3F3F
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
 inline int read(void){
-	reg bool f=false;
 	reg char ch=getchar();
 	reg int res=0;
-	while(ch<'0'||'9'<ch)f|=(ch=='-'),ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
-	return f?-res:res;
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	return res;
 }
 
-const int MAXN=5000+5;
-const int MAXM=50000+5;
-
-inline void Read(void);
-inline void Work(void);
-
-int main(void){
-	Read();
-	Work();
-	return 0;
-}
+const int MAXN=5e3+5;
+const int MAXM=5e4+5;
+const int MAXV=MAXN;
+const int MAXE=(MAXM)*2;
+const int inf=0x7fffffff;
 
 int n,m,s,t;
-int cnt=1,head[MAXN],to[MAXM<<1],w[MAXM<<1],Next[MAXM<<1],p[MAXM<<1];
+int cnt=1,head[MAXV],to[MAXE],w[MAXE],p[MAXE],Next[MAXE];
 
 inline void Add_Edge(reg int u,reg int v,reg int len,reg int val){
 	Next[++cnt]=head[u];
-	to[cnt]=v;
-	w[cnt]=len;
-	p[cnt]=val;
+	to[cnt]=v,w[cnt]=len,p[cnt]=val;
 	head[u]=cnt;
 	return;
 }
 
-inline void Read(void){
-	n=read(),m=read(),s=read(),t=read();
-	for(reg int i=1;i<=m;++i){
-		static int u,v,w,f;
-		u=read(),v=read(),w=read(),f=read();
-		Add_Edge(u,v,w,f);
-		Add_Edge(v,u,0,-f);
-	}
+inline void Add_Tube(reg int u,reg int v,reg int len,reg int val){
+	Add_Edge(u,v,len,val);
+	Add_Edge(v,u,0,-val);
 	return;
 }
 
-bool inque[MAXN];
-int dis[MAXN];
+bool inque[MAXV];
+int dis[MAXV];
 queue<int> Q;
 
-inline bool SPFA(int s,reg int t){
-	memset(inque,false,sizeof(inque));
-	memset(dis,0X3F,sizeof(dis));
-	while(!Q.empty())Q.pop();
+inline bool spfa(int s,reg int t){
+	memset(dis,0x3f,sizeof(dis));
 	inque[s]=true,dis[s]=0,Q.push(s);
 	while(!Q.empty()){
-		reg int ID=Q.front();
+		reg int u=Q.front();
 		Q.pop();
-		inque[ID]=false;
-		for(reg int i=head[ID];i;i=Next[i]){
-			if(w[i]&&dis[to[i]]>dis[ID]+p[i]){
-				dis[to[i]]=dis[ID]+p[i];
-				if(!inque[to[i]]){
-					inque[to[i]]=true;
-					Q.push(to[i]);
+		inque[u]=false;
+		for(reg int i=head[u];i;i=Next[i]){
+			int v=to[i];
+			if(dis[v]>dis[u]+p[i]&&w[i]){
+				dis[v]=dis[u]+p[i];
+				if(!inque[v]){
+					inque[v]=true;
+					Q.push(v);
 				}
 			}
 		}
 	}
-	return dis[t]!=INF;
+	return dis[t]!=0x3f3f3f3f;
 }
 
-bool vis[MAXN];
-int Cost=0;
-int cur[MAXN];
+bool vis[MAXV];
+int cost;
+int cur[MAXV];
 
-inline int DFS(reg int ID,reg int t,reg int flow){
-	if(ID==t){
-		Cost+=flow*dis[t];
-		return flow;
+inline int dfs(reg int u,reg int t,reg int lim){
+	if(u==t){
+		cost+=dis[t]*lim;
+		return lim;
 	}
-	vis[ID]=true;
-	reg int res=0;
-	for(reg int &i=cur[ID];i;i=Next[i]){
-		if(w[i]&&dis[to[i]]==dis[ID]+p[i]&&!vis[to[i]]){
-			reg int f=DFS(to[i],t,min(flow-res,w[i]));
+	vis[u]=true;
+	reg int flow=0;
+	for(reg int &i=cur[u];i;i=Next[i]){
+		reg int v=to[i];
+		if(dis[v]==dis[u]+p[i]&&w[i]&&!vis[v]){
+			reg int f=dfs(v,t,min(lim-flow,w[i]));
 			if(f){
-				res+=f;
-				w[i]-=f;
-				w[i^1]+=f;
-				if(flow-res==0)
+				flow+=f;
+				w[i]-=f,w[i^1]+=f;
+				if(flow==lim)
 					break;
 			}
 		}
 	}
-	vis[ID]=false;
+	vis[u]=false;
+	return flow;
+}
+
+inline int dinic(reg int s,reg int t){
+	reg int res=0;
+	while(spfa(s,t)){
+		memcpy(cur,head,sizeof(head));
+		res+=dfs(s,t,inf);
+	}
 	return res;
 }
 
-inline int Dinic(reg int s,reg int t){
-	reg int MaxFlow=0;
-	while(SPFA(s,t)){
-		memset(vis,false,sizeof(vis));
-		memcpy(cur,head,sizeof(head));
-		MaxFlow+=DFS(s,t,INF);
+int main(void){
+	n=read(),m=read(),s=read(),t=read();
+	for(reg int i=1;i<=m;++i){
+		static int u,v,c,w;
+		u=read(),v=read(),c=read(),w=read();
+		Add_Tube(u,v,c,w);
 	}
-	return MaxFlow;
-}
-
-inline void Work(void){
-	reg int ans=Dinic(s,t);
-	printf("%d %d\n",ans,Cost);
-	return;
+	reg int flow=dinic(s,t);
+	printf("%d %d\n",flow,cost);
+	return 0;
 }
