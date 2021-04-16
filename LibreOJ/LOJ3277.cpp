@@ -7,16 +7,17 @@ static char buf[100000],*p1=buf,*p2=buf;
 inline int read(void){
 	reg char ch=getchar();
 	reg int res=0;
-	while(ch<'0'||'9'<ch)ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
 	return res;
 }
 
-const int MAXN=200000+5;
-const int MAXM=200000+5;
+const int MAXN=2e5+5;
+const int MAXM=2e5+5;
 
 int n,m;
 int a[MAXN];
+int rt[MAXN];
 
 namespace SegmentTree{
 	const int MAXSIZE=MAXN*80;
@@ -30,80 +31,78 @@ namespace SegmentTree{
 		#define tag(x) unit[(x)].tag
 	};
 	int tot;
-	int root[MAXN];
 	Node unit[MAXSIZE];
 	inline int New(void){
 		return ++tot;
 	}
-	inline void pushup(reg int k){
-		Max(k)=max(Max(lson(k)),Max(rson(k)));
+	inline void pushup(reg int p){
+		Max(p)=max(Max(lson(p)),Max(rson(p)));
 		return;
 	}
-	inline void Add(reg int k,reg ll Val){
-		Max(k)+=Val;
-		tag(k)+=Val;
+	inline void add(reg int p,reg ll Val){
+		Max(p)+=Val,tag(p)+=Val;
 		return;
 	}
-	inline void pushdown(reg int k){
-		if(tag(k)){
-			if(lson(k))
-				Add(lson(k),tag(k));
-			if(rson(k))
-				Add(rson(k),tag(k));
-			tag(k)=0;
+	inline void pushdown(reg int p){
+		if(tag(p)){
+			if(lson(p))
+				add(lson(p),tag(p));
+			if(rson(p))
+				add(rson(p),tag(p));
+			tag(p)=0;
 		}
 		return;
 	}
-	inline void Update(reg int &k,reg int l,reg int r,reg int pos,ll Val){
-		if(!k)
-			k=New();
-		Max(k)=max(Max(k),Val);
-		if(l==r)
-			return;
-		pushdown(k);
-		if(pos<=mid)
-			Update(lson(k),l,mid,pos,Val);
-		else
-			Update(rson(k),mid+1,r,pos,Val);
-		pushup(k);
+	inline void update(reg int &p,reg int l,reg int r,reg int pos,ll Val){
+		if(!p)
+			p=New();
+		Max(p)=max(Max(p),Val);
+		if(l!=r){
+			pushdown(p);
+			if(pos<=mid)
+				update(lson(p),l,mid,pos,Val);
+			else
+				update(rson(p),mid+1,r,pos,Val);
+			pushup(p);
+		}
 		return;
 	}
-	inline void Update(reg int k,reg int l,reg int r,reg int L,reg int R,reg ll Val){
-		if(!k)
+	inline void update(reg int p,reg int l,reg int r,reg int L,reg int R,reg ll Val){
+		if(!p)
 			return;
 		if(L<=l&&r<=R){
-			Add(k,Val);
+			add(p,Val);
 			return;
 		}
-		pushdown(k);
+		pushdown(p);
 		if(L<=mid)
-			Update(lson(k),l,mid,L,R,Val);
+			update(lson(p),l,mid,L,R,Val);
 		if(R>mid)
-			Update(rson(k),mid+1,r,L,R,Val);
-		pushup(k);
+			update(rson(p),mid+1,r,L,R,Val);
+		pushup(p);
 		return;
 	}
-	inline ll Query(reg int k,reg int l,reg int r,reg int L,reg int R){
-		if(!k)
+	inline ll query(reg int p,reg int l,reg int r,reg int L,reg int R){
+		if(!p)
 			return 0;
 		if(L<=l&&r<=R)
-			return Max(k);
-		pushdown(k);
+			return Max(p);
+		pushdown(p);
 		if(L<=mid&&mid<R)
-			return max(Query(lson(k),l,mid,L,R),Query(rson(k),mid+1,r,L,R));
+			return max(query(lson(p),l,mid,L,R),query(rson(p),mid+1,r,L,R));
 		else if(L<=mid)
-			return Query(lson(k),l,mid,L,R);
+			return query(lson(p),l,mid,L,R);
 		else
-			return Query(rson(k),mid+1,r,L,R);
+			return query(rson(p),mid+1,r,L,R);
 	}
-	inline int merge(int x,int y){
+	inline int merge(reg int x,reg int y){
 		if(!x||!y)
-			return x+y;
+			return x|y;
 		pushdown(x),pushdown(y);
-		reg int k=New();
-		Max(k)=max(Max(x),Max(y));
-		lson(k)=merge(lson(x),lson(y)),rson(k)=merge(rson(x),rson(y));
-		return k;
+		reg int p=New();
+		Max(p)=max(Max(x),Max(y));
+		lson(p)=merge(lson(x),lson(y)),rson(p)=merge(rson(x),rson(y));
+		return p;
 	}
 	#undef mid
 }
@@ -111,35 +110,31 @@ namespace SegmentTree{
 using namespace SegmentTree;
 
 inline void merge(reg int x,reg int y,reg int h){
-	reg ll a=Query(root[x],0,n,0,h),b=Query(root[y],0,n,0,h);
-	Update(root[x],0,n,h,n,b),Update(root[y],0,n,h,n,a);
-	reg ll sum=Query(root[x],0,n,0,h-1)+Query(root[y],0,n,0,h-1);
-	Update(root[x],0,n,h-1,sum);
-	root[y]=merge(root[x],root[y]);
+	reg ll a=query(rt[x],0,n,0,h),b=query(rt[y],0,n,0,h);
+	update(rt[x],0,n,h,n,b),update(rt[y],0,n,h,n,a);
+	reg ll sum=query(rt[x],0,n,0,h-1)+query(rt[y],0,n,0,h-1);
+	update(rt[x],0,n,h-1,sum);
+	rt[y]=merge(rt[x],rt[y]);
 	return;
 }
 
-struct Star{
+struct star{
 	int y,c;
-	inline Star(reg int y=0,reg int c=0):y(y),c(c){
+	inline star(reg int y=0,reg int c=0):y(y),c(c){
 		return;
 	}
 };
 
-int ch[MAXN][2];
-vector<Star> V[MAXN];
+int lson[MAXN],rson[MAXN];
+vector<star> V[MAXN];
 
-inline void Solve(reg int ID){
-	for(reg int i=0,size=V[ID].size();i<size;++i)
-		SegmentTree::Update(root[ID],0,n,V[ID][i].y,V[ID][i].c);
-	if(ch[ID][0]){
-		Solve(ch[ID][0]);
-		merge(ch[ID][0],ID,a[ID]);
-	}
-	if(ch[ID][1]){
-		Solve(ch[ID][1]);
-		merge(ch[ID][1],ID,a[ID]);
-	}
+inline void solve(reg int u){
+	for(reg int i=0,size=V[u].size();i<size;++i)
+		SegmentTree::update(rt[u],0,n,V[u][i].y,V[u][i].c);
+	if(lson[u])
+		solve(lson[u]),merge(lson[u],u,a[u]);
+	if(rson[u])
+		solve(rson[u]),merge(rson[u],u,a[u]);
 	return;
 }
 
@@ -147,25 +142,25 @@ int main(void){
 	n=read();
 	for(reg int i=1;i<=n;++i)
 		a[i]=read();
-	static int S[MAXN];
 	reg int top=0;
+	static int S[MAXN];
 	for(reg int i=1;i<=n;++i){
 		while(top&&a[i]>=a[S[top]])
-			ch[i][0]=S[top--];
+			lson[i]=S[top--];
 		if(top)
-			ch[S[top]][1]=i;
+			rson[S[top]]=i;
 		S[++top]=i;
 	}
-	int Root=S[1];
+	reg int Rt=S[1];
 	m=read();
 	reg ll sum=0;
 	for(reg int i=1;i<=m;++i){
 		static int x,y,c;
 		x=read(),y=read(),c=read();
-		V[x].push_back(Star(y,c));
+		V[x].push_back(star(y,c));
 		sum+=c;
 	}
-	Solve(Root);
-	printf("%lld\n",sum-Query(root[Root],0,n,0,n));
+	solve(Rt);
+	printf("%lld\n",sum-query(rt[Rt],0,n,0,n));
 	return 0;
 }
