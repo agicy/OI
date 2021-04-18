@@ -2,350 +2,179 @@
 using namespace std;
 #define reg register
 typedef long long ll;
-
-const int MAXS=1e3+5;
-
-char f[MAXS],g[MAXS];
-int lenf,leng;
-
-namespace Subtask3{
-	inline ll gcd(reg ll a,reg ll b){
-		return b?gcd(b,a%b):a;
-	}
-	pair<ll,int> num[MAXS];
-	char opt[MAXS];
-	inline pair<ll,int> solve(reg char str[],reg int len){
-		reg int topN=0,topO=0;
-		for(reg int i=1;i<=len;++i){
-			if(str[i]=='x'){
-				num[++topN]=make_pair(1ll,1);
-			}
-			else{
-				if(str[i]=='*'){
-					opt[++topO]='*';
-				}
-				else{
-					while(topO&&opt[topO]=='*'){
-						pair<ll,int> p1=num[topN--];
-						pair<ll,int> p2=num[topN--];
-						num[++topN]=make_pair(p1.first*p2.first,p1.second+p2.second);
-						--topO;
-					}
-					opt[++topO]='+';
-				}
-			}
-		}
-		while(topO){
-			if(opt[topO]=='*'){
-				pair<ll,int> p1=num[topN--];
-				pair<ll,int> p2=num[topN--];
-				num[++topN]=make_pair(p1.first*p2.first,p1.second+p2.second);
-			}
-			else{
-				pair<ll,int> p1=num[topN--];
-				pair<ll,int> p2=num[topN--];
-				if(p1.second<p2.second)
-					swap(p1,p2);
-				if(p1.second==p2.second)
-					num[++topN]=make_pair(p1.first+p2.first,p1.second);
-				else
-					num[++topN]=make_pair(p1.first,p1.second);
-			}
-			--topO;
-		}
-		assert(topN==1);
-		return num[topN];
-	}
-	inline void Solve(void){
-		pair<ll,int> F=solve(f,lenf),G=solve(g,leng);
-		if(F.second==G.second){
-			reg ll d=gcd(F.first,G.first);
-			printf("%lld/%lld\n",F.first/d,G.first/d);
-		}
-		else if(F.second>G.second)
-			puts("1/0");
-		else
-			puts("0/1");
-		return;
-	}
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
+static char buf[100000],*p1=buf,*p2=buf;
+inline int read(void){
+	reg char ch=getchar();
+	reg int res=0;
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	return res;
 }
 
-namespace Subtask4{
-	namespace BigNumberNAME{
-		const int BASE=10;
-		struct BigNumber{
-			vector<int> unit;
-			inline int size(void)const{
-				return unit.size();
-			}
-			inline BigNumber(reg int x=0){
-				if(!x){
-					unit.resize(1);
-					unit[0]=0;
-				}
-				else{
-					reg int cnt=0,tmp=x;
-					while(tmp){
-						++cnt;
-						tmp/=BASE;
-					}
-					unit.resize(cnt);
-					reg int bas=1;
-					for(reg int i=0;i<cnt;++i){
-						unit[i]=(x/bas)%BASE;
-						bas*=BASE;
-					}
-				}
-				return;
-			}
-		};
-		inline void print(const BigNumber& a){
-			for(reg int i=a.size()-1;i>=0;--i)
-				putchar('0'+a.unit[i]);
-			return;
-		}
-		inline BigNumber operator+(BigNumber a,BigNumber b){
-			a.unit.resize(max(a.size(),b.size())+1);
-			for(reg int i=0,siz=b.size();i<siz;++i)
-				a.unit[i]+=b.unit[i];
-			for(reg int i=0,siz=a.size();i<siz-1;++i)
-				if(a.unit[i]>=BASE){
-					a.unit[i+1]+=a.unit[i]/BASE;
-					a.unit[i]%=BASE;
-				}
-			while(a.size()>1&&a.unit.back()==0)
-				a.unit.pop_back();
-			return a;
-		}
-		inline bool operator>=(const BigNumber& a,const BigNumber& b){
-			if(a.size()>b.size())
-				return true;
-			if(a.size()<b.size())
-				return false;
-			for(reg int i=a.size()-1;i>=0;--i){
-				if(a.unit[i]>b.unit[i])
-					return true;
-				if(a.unit[i]<b.unit[i])
-					return false;
-			}
-			return true;
-		}
-		inline BigNumber operator-(BigNumber a,BigNumber b){
-			assert(a>=b);
-			for(reg int i=0,siz=b.size();i<siz;++i)
-				a.unit[i]-=b.unit[i];
-			for(reg int i=0,siz=a.size();i<siz-1;++i)
-				if(a.unit[i]<0){
-					reg int cnt=(-a.unit[i]+BASE-1)/BASE;
-					a.unit[i]+=cnt*BASE;
-					a.unit[i+1]-=cnt;
-				}
-			while(a.size()>1&&a.unit.back()==0)
-				a.unit.pop_back();
-			return a;
-		}
-		inline bool iszero(const BigNumber& a){
-			return a.size()==1&&a.unit[0]==0;
-		}
-		inline bool isEven(const BigNumber& a){
-			return !(a.unit[0]&1);
-		}
-		inline BigNumber div2(BigNumber a){
-			reg int res=0;
-			for(reg int i=a.size()-1;i>=0;--i){
-				reg int q=(res+a.unit[i])>>1;
-				reg int r=(res+a.unit[i])-(q<<1);
+const int MAXN=3e5+5;
+const int mod=998244353;
+const int inv1e4=796898467;
 
-				a.unit[i]=q;
-				res=r*BASE;
-			}
-			while(a.size()>1&&a.unit.back()==0)
-				a.unit.pop_back();
-			return a;
-		}
-		inline BigNumber operator*(const BigNumber& a,const BigNumber& b){
-			BigNumber res(0);
-			res.unit.resize(a.size()+b.size());
-			for(reg int i=0,siza=a.size();i<siza;++i)
-				for(reg int j=0,sizb=b.size();j<sizb;++j)
-					res.unit[i+j]+=a.unit[i]*b.unit[j];
-			for(reg int i=0,siz=res.size();i<siz;++i)
-				if(res.unit[i]>=BASE){
-					res.unit[i+1]+=res.unit[i]/BASE;
-					res.unit[i]%=BASE;
-				}
-			while(res.size()>1&&res.unit.back()==0)
-				res.unit.pop_back();
-			return res;
-		}
-		inline bool greater_eq(BigNumber a,BigNumber b,reg int last_dg,reg int len){
-			if(last_dg+len<a.size()&&a.unit[last_dg+len]!=0)
-				return true;
-			for(reg int i=len-1;i>=0;--i){
-				if(a.unit[last_dg+i]>b.unit[i])
-					return true;
-				if(a.unit[last_dg+i]<b.unit[i])
-					return false;
-			}
-			return true;
-		}
-		inline BigNumber operator/(const BigNumber& a,const BigNumber& b){
-			assert(!iszero(b));
-			BigNumber c(0);
-			c.unit.resize(a.size()-b.size()+1);
-			BigNumber tmp=a;
-			tmp.unit.resize(tmp.size()+1);
-			for(reg int i=a.size()-b.size();i>=0;--i){
-				while(greater_eq(tmp,b,i,b.size())){
-					for(reg int j=0,siz=b.size();j<siz;++j){
-						tmp.unit[i+j]-=b.unit[j];
-						if(tmp.unit[i+j]<0){
-							tmp.unit[i+j+1]-=1;
-							tmp.unit[i+j]+=BASE;
-						}
-					}
-					c.unit[i]+=1;
-				}
-			}
-			while(c.size()>1&&c.unit.back()==0)
-				c.unit.pop_back();
-			return c;
-		}
-		inline BigNumber gcd(BigNumber a,BigNumber b){
-			if(iszero(a))
-				return b;
-			if(iszero(b))
-				return a;
-			BigNumber res(1);
-			reg int cnt=0;
-			while(isEven(a)&&isEven(b))
-				a=div2(a),b=div2(b),++cnt;
-			if(!isEven(a)&&isEven(b))
-				res=gcd(a,div2(b));
-			else if(isEven(a)&&!isEven(b))
-				res=gcd(div2(a),b);
-			else{
-				if(a>=b)
-					res=gcd(b,a-b);
-				else
-					res=gcd(a,b-a);
-			}
-			if(!cnt)
-				return res;
-			else{
-				BigNumber tim(1),x(2);
-				while(cnt){
-					if(cnt&1)
-						tim=tim*x;
-					x=x*x;
-					cnt>>=1;
-				}
-				return res*tim;
-			}
-		}
-	}
-	using namespace BigNumberNAME;
-	pair<BigNumber,int> num[MAXS];
-	char opt[MAXS];
-	inline pair<BigNumber,int> solve(reg char str[],reg int len){
-		reg int topN=0,topO=0;
-		for(reg int i=1;i<=len;++i){
-			if(str[i]=='x')
-				num[++topN]=make_pair(BigNumber(1),1);
-			else{
-				if(str[i]=='('){
-					opt[++topO]='(';
-				}
-				else if(str[i]==')'){
-					while(topO&&opt[topO]!='('){
-						if(opt[topO]=='*'){
-							pair<BigNumber,int> p1=num[topN--];
-							pair<BigNumber,int> p2=num[topN--];
-							num[++topN]=make_pair(p1.first*p2.first,p1.second+p2.second);
-						}
-						else{
-							pair<BigNumber,int> p1=num[topN--];
-							pair<BigNumber,int> p2=num[topN--];
-							if(p1.second<p2.second)
-								swap(p1,p2);
-							if(p1.second==p2.second)
-								num[++topN]=make_pair(p1.first+p2.first,p1.second);
-							else
-								num[++topN]=make_pair(p1.first,p1.second);
-						}
-						--topO;
-					}
-					--topO;
-				}
-				else if(str[i]=='*'){
-					opt[++topO]='*';
-				}
-				else{
-					while(topO&&opt[topO]=='*'){
-						pair<BigNumber,int> p1=num[topN--];
-						pair<BigNumber,int> p2=num[topN--];
-						num[++topN]=make_pair(p1.first*p2.first,p1.second+p2.second);
-						--topO;
-					}
-					opt[++topO]='+';
-				}
-			}
-		}
-		while(topO){
-			if(opt[topO]=='*'){
-				pair<BigNumber,int> p1=num[topN--];
-				pair<BigNumber,int> p2=num[topN--];
-				num[++topN]=make_pair(p1.first*p2.first,p1.second+p2.second);
-			}
-			else{
-				pair<BigNumber,int> p1=num[topN--];
-				pair<BigNumber,int> p2=num[topN--];
-				if(p1.second<p2.second)
-					swap(p1,p2);
-				if(p1.second==p2.second)
-					num[++topN]=make_pair(p1.first+p2.first,p1.second);
-				else
-					num[++topN]=make_pair(p1.first,p1.second);
-			}
-			--topO;
-		}
-		assert(topN==1);
-		return num[topN];
-	}
-	inline void Solve(void){
-		BigNumber tmp(1);
-		pair<BigNumber,int> F=solve(f,lenf),G=solve(g,leng);
-		if(F.second==G.second){
-			BigNumber d=gcd(F.first,G.first);
-			print(F.first/d),putchar('/'),print(G.first/d),putchar('\n');
-		}
-		else if(F.second>G.second)
-			puts("1/0");
+inline int add(reg int a,reg int b){
+	a+=b;
+	return a>=mod?a-mod:a;
+}
+
+namespace SegmentTree{
+	#define mid ( ( (l) + (r) ) >> 1 )
+	struct Node{
+		int lson,rson;
+		int sum,tMul;
+		#define lson(x) unit[(x)].lson
+		#define rson(x) unit[(x)].rson
+		#define sum(x) unit[(x)].sum
+		#define tMul(x) unit[(x)].tMul
+	};
+	const int MAXSIZE=40*MAXN;
+	int tot;
+	Node unit[MAXSIZE];
+	int top,S[MAXSIZE];
+	inline int getId(void){
+		if(top)
+			return S[top--];
 		else
-			puts("0/1");
+			return ++tot;
+	}
+	inline int New(void){
+		reg int p=getId();
+		lson(p)=rson(p)=sum(p)=0,tMul(p)=1;
+		return p;
+	}
+	inline void del(reg int p){
+		lson(p)=rson(p)=sum(p)=0;
+		tMul(p)=1;
+		S[++top]=p;
 		return;
 	}
+	inline void pushup(reg int p){
+		sum(p)=add(sum(lson(p)),sum(rson(p)));
+		return;
+	}
+	inline void mul(reg int p,reg int val){
+		sum(p)=1ll*sum(p)*val%mod,tMul(p)=1ll*tMul(p)*val%mod;
+		return;
+	}
+	inline void pushdown(reg int p){
+		if(tMul(p)!=1){
+			if(lson(p))
+				mul(lson(p),tMul(p));
+			if(rson(p))
+				mul(rson(p),tMul(p));
+			tMul(p)=1;
+		}
+		return;
+	}
+	inline void update(reg int &p,reg int l,reg int r,reg int pos,reg int val){
+		if(!p)
+			p=New();
+		if(l==r){
+			sum(p)=add(sum(p),val);
+			return;
+		}
+		pushdown(p);
+		if(pos<=mid)
+			update(lson(p),l,mid,pos,val);
+		else
+			update(rson(p),mid+1,r,pos,val);
+		pushup(p);
+		return;
+	}
+	inline int merge(reg int x,reg int y,reg int l,reg int r,reg int xmul,reg int ymul,reg int val){
+		if(!x&&!y)
+			return 0;
+		else if(!x){
+			mul(y,ymul);
+			return y;
+		}
+		else if(!y){
+			mul(x,xmul);
+			return x;
+		}
+		else{
+			pushdown(x),pushdown(y);
+			reg int p=New();
+			reg int lsumx=sum(lson(x)),lsumy=sum(lson(y)),rsumx=sum(rson(x)),rsumy=sum(rson(y));
+			lson(p)=merge(lson(x),lson(y),l,mid,add(xmul,1ll*rsumy*add(1,mod-val)%mod),add(ymul,1ll*rsumx*add(1,mod-val)%mod),val);
+			rson(p)=merge(rson(x),rson(y),mid+1,r,add(xmul,1ll*lsumy*val%mod),add(ymul,1ll*lsumx*val%mod),val);
+			pushup(p);
+			del(x),del(y);
+			return p;
+		}
+	}
+	int cnt,T[MAXN];
+	inline void query(reg int p,reg int l,reg int r){
+		if(l==r){
+			T[++cnt]=1ll*sum(p)*sum(p)%mod;
+			return;
+		}
+		pushdown(p);
+		if(lson(p)) query(lson(p),l,mid);
+		if(rson(p)) query(rson(p),mid+1,r);
+		return;
+	}
+	#undef mid
+	#undef lson
+	#undef rson
+	#undef sum
+	#undef tMul
+}
+
+int n,m;
+int deg[MAXN],ch[MAXN][2];
+int p[MAXN];
+vector<int> V;
+int rt[MAXN];
+
+inline void dfs(reg int u){
+	switch(deg[u]){
+		case 0:{
+			SegmentTree::update(rt[u],1,m,p[u],1);
+			break;
+		}
+		case 1:{
+			dfs(ch[u][0]);
+			rt[u]=rt[ch[u][0]];
+			break;
+		}
+		case 2:{
+			dfs(ch[u][0]),dfs(ch[u][1]);
+			rt[u]=SegmentTree::merge(rt[ch[u][0]],rt[ch[u][1]],1,m,0,0,p[u]);
+			break;
+		}
+	}
+	return;
 }
 
 int main(void){
-	scanf("%s%s",f+1,g+1);
-	lenf=strlen(f+1),leng=strlen(g+1);
-	reg bool subtask3flag=true;
-	for(reg int i=1;i<=lenf;++i)
-		if(f[i]=='('||f[i]==')'){
-			subtask3flag=false;
-			break;
-		}
-	for(reg int i=1;i<=leng;++i)
-		if(g[i]=='('||g[i]==')'){
-			subtask3flag=false;
-			break;
-		}
-	if(subtask3flag)
-		//puts("S3"),
-		Subtask3::Solve();
-	else
-		//puts("S4"),
-		Subtask4::Solve();
+	n=read(),read();
+	for(reg int i=2;i<=n;++i){
+		static int fa;
+		fa=read();
+		ch[fa][deg[fa]++]=i;
+	}
+	for(reg int i=1;i<=n;++i){
+		p[i]=read();
+		if(deg[i])
+			p[i]=1ll*p[i]*inv1e4%mod;
+		else
+			V.push_back(p[i]);
+	}
+	sort(V.begin(),V.end()),V.erase(unique(V.begin(),V.end()),V.end());
+	m=V.size();
+	for(reg int i=1;i<=n;++i)
+		if(!deg[i])
+			p[i]=lower_bound(V.begin(),V.end(),p[i])-V.begin()+1;
+	dfs(1);
+	SegmentTree::query(rt[1],1,m);
+	reg int ans=0;
+	for(reg int i=1;i<=SegmentTree::cnt;++i)
+		ans=add(ans,1ll*i*V[i-1]%mod*SegmentTree::T[i]%mod);
+	printf("%d\n",ans);
 	return 0;
 }

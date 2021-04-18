@@ -4,155 +4,124 @@ using namespace std;
 typedef long long ll;
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
+#define flush() (fwrite(wbuf,1,wp1,stdout),wp1=0)
+#define putchar(c) (wp1==wp2&&(flush(),0),wbuf[wp1++]=c)
+static char wbuf[1<<21];int wp1;const int wp2=1<<21;
 inline int read(void){
+	reg bool f=false;
 	reg char ch=getchar();
 	reg int res=0;
-	while(!isdigit(ch))ch=getchar();
+	while(!isdigit(ch))f|=(ch=='-'),ch=getchar();
 	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	return f?-res:res;
+}
+
+inline void writeln(reg int x){
+	static char buf[32];
+	reg int p=-1;
+	if(x==0) putchar('0');
+	else while(x) buf[++p]=(x%10)^'0',x/=10;
+	while(~p) putchar(buf[p--]);
+	putchar('\n');
+	return;
+}
+
+const int MAXN=1.5e3+5;
+const int mod=998244353;
+
+int n,m,k;
+int qh[MAXN],gj[MAXN];
+
+inline int add(reg int a,reg int b){
+	a+=b;
+	return a>=mod?a-mod:a;
+}
+
+inline int sub(reg int a,reg int b){
+	a-=b;
+	return a<0?a+mod:a;
+}
+
+inline int fpow(reg int x,reg int exp){
+	reg int res=1;
+	while(exp){
+		if(exp&1)
+			res=1ll*res*x%mod;
+		x=1ll*x*x%mod;
+		exp>>=1;
+	}
 	return res;
 }
 
-inline ll min(reg ll a,reg ll b){
-	return a<b?a:b;
-}
-
-const int MAXN=2e5+5;
-const int MAXM=4e5+5;
-const ll inf=0x3f3f3f3f3f3f3f3f;
-
-struct Graph{
-	int cnt,head[MAXN],to[MAXM],w[MAXM],Next[MAXM];
-	inline void Add_Edge(reg int u,reg int v,reg int len){
-		Next[++cnt]=head[u];
-		to[cnt]=v,w[cnt]=len;
-		head[u]=cnt;
-		return;
+namespace Subtask{
+	int f[MAXN][MAXN<<1],g[MAXN][MAXN<<1];
+	int fac[MAXN<<1],invfac[MAXN<<1];
+	int sum[MAXN<<1];
+	inline int binom(reg int n,reg int m){
+		if(m<0||n<m)
+			return 0;
+		else
+			return 1ll*fac[n]*invfac[m]%mod*invfac[n-m]%mod;
 	}
-	struct Node{
-		int id;
-		ll val;
-		inline Node(reg int id=0,reg ll val=0):id(id),val(val){
-			return;
-		}
-		inline bool operator<(const Node& a)const{
-			return val<a.val;
-		}
-		inline bool operator>(const Node& a)const{
-			return val>a.val;
-		}
-	};
-	bool vis[MAXN];
-	ll dis[MAXN];
-	priority_queue<Node,vector<Node>,greater<Node>/**/> Q;
-	inline void dijkstra(reg int s){
-		memset(vis,false,sizeof(vis));
-		memset(dis,0x3f,sizeof(dis));
-		dis[s]=0,Q.push(Node(s,dis[s]));
-		while(!Q.empty()){
-			static Node s;
-			s=Q.top();
-			Q.pop();
-			reg int u=s.id;
-			if(vis[u])
-				continue;
-			vis[u]=true;
-			for(reg int i=head[u];i;i=Next[i]){
-				reg int v=to[i];
-				if(dis[v]>dis[u]+w[i]){
-					dis[v]=dis[u]+w[i];
-					Q.push(Node(v,dis[v]));
+	inline void Solve(void){
+		fac[0]=1;
+		for(reg int i=1;i<=(n<<1);++i)
+			fac[i]=1ll*fac[i-1]*i%mod;
+		invfac[n<<1]=fpow(fac[n<<1],mod-2);
+		for(reg int i=(n<<1)-1;i>=0;--i)
+			invfac[i]=1ll*invfac[i+1]*(i+1)%mod;
+		fill(sum,sum+(n<<1)+1,0);
+		for(reg int i=1;i<=n;++i)
+			for(reg int j=k;j>=1;--j){
+				f[i][j]=add(sum[j-1],1ll*binom(i-1,j-1)*gj[i]%mod);
+				sum[j]=add(sum[j],f[i][j]);
+			}
+		fill(sum,sum+(n<<1)+1,0);
+		g[0][0]=1,sum[0]=1;
+		for(reg int i=1;i<=n;++i)
+			for(reg int j=k;j>=1;--j){
+				g[i][j]=1ll*sum[j-1]*qh[i]%mod;
+				sum[j]=add(sum[j],g[i][j]);
+			}
+		reg int ans=0;
+		for(reg int i=m-n;i<=m-1;++i){
+			if(0<=i&&i<=n){
+				if(i<k){
+					reg int res1=0;
+					for(reg int j=i;j<=n;++j)
+						res1=add(res1,g[j][i]);
+					reg int res2=0;
+					for(reg int j=k-i;j<=n;++j)
+						res2=add(res2,1ll*binom(n-j,m-k)*f[j][k-i]%mod);
+					ans=add(ans,1ll*res1*res2%mod);
+				}
+				else{
+					reg int res1=0;
+					for(reg int j=k-1;j<=n;++j)
+						res1=add(res1,1ll*binom(n-j,i-k+1)*g[j][k-1]%mod);
+					reg int res2=0;
+					for(reg int j=1;j<=n;++j)
+						res2=add(res2,1ll*binom(n-j,m-i-1)*f[j][1]%mod);
+					ans=add(ans,1ll*res1*res2%mod);
 				}
 			}
 		}
+		printf("%d\n",ans);
 		return;
 	}
-};
-
-namespace SegmentTree{
-	#define lson ( (k) << 1 )
-	#define rson ( (k) << 1 | 1 )
-	#define mid ( ( (l) + (r) ) >> 1 )
-	struct Line{
-		ll k,b;
-		inline Line(reg ll k=0,reg ll b=0):k(k),b(b){
-			return;
-		}
-	};
-	inline ll getVal(const Line& a,reg int x){
-		return a.k*x+a.b;
-	}
-	struct Node{
-		Line val;
-		bool tag;
-		#define val(x) unit[(x)].val
-		#define tag(x) unit[(x)].tag
-	};
-	Node unit[MAXN<<2];
-	inline void update(reg int k,reg int l,reg int r,Line Val){
-		if(!tag(k)){
-			tag(k)=true;
-			val(k)=Val;
-			return;
-		}
-		reg ll lef=getVal(val(k),l),rig=getVal(val(k),r);
-		reg ll tmpl=getVal(Val,l),tmpr=getVal(Val,r);
-		if(lef<=tmpl&&rig<=tmpr)
-			return;
-		if(tmpl<lef&&tmpr<rig){
-			swap(val(k),Val);
-			return;
-		}
-		reg ll midv=getVal(val(k),mid),tmpv=getVal(Val,mid);
-		if(midv<=tmpv){
-			if(tmpl<lef)
-				update(lson,l,mid,Val);
-			else
-				update(rson,mid+1,r,Val);
-		}
-		else{
-			swap(val(k),Val);
-			if(lef<=tmpl)
-				update(lson,l,mid,Val);
-			else
-				update(rson,mid+1,r,Val);
-		}
-		return;
-	}
-	inline ll query(reg int k,reg int l,reg int r,reg int x){
-		reg ll res=inf;
-		if(tag(k))
-			res=min(res,getVal(val(k),x));
-		if(l==r)
-			return res;
-		if(x<=mid)
-			res=min(res,query(lson,l,mid,x));
-		else
-			res=min(res,query(rson,mid+1,r,x));
-		return res;
-	}
-	#undef lson
-	#undef rson
-	#undef mid
 }
 
-int n,m,s,t;
-Graph Gs,Gt;
-
 int main(void){
-	n=read(),m=read(),s=read(),t=read();
-	for(reg int i=1;i<=m;++i){
-		static int u,v,w;
-		u=read(),v=read(),w=read();
-		Gs.Add_Edge(u,v,w),Gt.Add_Edge(v,u,w);
+	reg int t=read();
+	while(t--){
+		n=read(),m=read(),k=read();
+		for(reg int i=1;i<=n;++i)
+			qh[i]=read();
+		for(reg int i=1;i<=n;++i)
+			gj[i]=read();
+		sort(qh+1,qh+n+1),reverse(qh+1,qh+n+1);
+		sort(gj+1,gj+n+1),reverse(gj+1,gj+n+1);
+		Subtask::Solve();
 	}
-	Gs.dijkstra(s),Gt.dijkstra(t);
-	reg ll ans=min(Gs.dis[t],Gt.dis[s]);
-	for(reg int i=1;i<=n;++i)
-		if(Gt.dis[i]!=inf)
-			SegmentTree::update(1,1,n,SegmentTree::Line(-2ll*i,Gt.dis[i]+1ll*i*i));
-	for(reg int i=1;i<=n;++i)
-		if(Gs.dis[i]!=inf)
-			ans=min(ans,Gs.dis[i]+1ll*i*i+SegmentTree::query(1,1,n,i));
-	printf("%lld\n",ans);
 	return 0;
 }
