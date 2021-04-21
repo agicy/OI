@@ -23,7 +23,14 @@
         {
             "name": "FZOI-1",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/usr/include/c++/9",
+                "/usr/include/x86_64-linux-gnu/c++/9",
+                "/usr/include/c++/9/backward",
+                "/usr/lib/gcc/x86_64-linux-gnu/9/include",
+                "/usr/local/include",
+                "/usr/include/x86_64-linux-gnu",
+                "/usr/include"
             ],
             "defines": [
                 "_DEBUG",
@@ -34,9 +41,12 @@
             "cStandard": "c17",
             "cppStandard": "c++14",
             "compilerArgs": [
-                "-m64"
+                "-m64",
+                "-Wall",
+                "-Werror",
+                "-Wextra"
             ],
-            "intelliSenseMode": "linux-gcc-x64"
+            "intelliSenseMode": "windows-msvc-x64"
         },
         {
             "name": "DESKTOP-42AMUUH",
