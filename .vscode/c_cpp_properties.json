@@ -46,7 +46,7 @@
                 "-Werror",
                 "-Wextra"
             ],
-            "intelliSenseMode": "windows-msvc-x64"
+            "intelliSenseMode": "linux-gcc-x64"
         },
         {
             "name": "DESKTOP-42AMUUH",
