@@ -86,7 +86,8 @@
 		"queue": "cpp",
 		"stack": "cpp",
 		"climits": "cpp",
-		"cassert": "cpp"
+		"cassert": "cpp",
+		"version": "cpp"
 	},
 	"[cpp]":{
 		"editor.wordBasedSuggestions": true,
