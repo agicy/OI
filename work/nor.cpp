@@ -1,68 +1,129 @@
 #include<bits/stdc++.h>
 using namespace std;
-#define int long long
-
-const int N=20;
-const int M=1e6+5;
-
-inline int read()
-{
-	int x=0,f=1;
-	char c=getchar();
-	while(c<'0' || c>'9')
-	{
-	    if(c=='-')
-	        f=-1;
-	    c=getchar();
-	}
-	while(c>='0' && c<='9')
-	{
-	    x=x*10+c-'0';
-	    c=getchar();
-	}
-	return x*f;
+#define reg register
+typedef long long ll;
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
+static char buf[100000],*p1=buf,*p2=buf;
+#define flush() (fwrite(wbuf,1,wp1,stdout),wp1=0)
+//#define putchar(c) (wp1==wp2&&(flush(),0),wbuf[wp1++]=c)
+static char wbuf[1<<21];int wp1;const int wp2=1<<21;
+inline int read(void){
+	reg char ch=getchar();
+	reg int res=0;
+	while(!isdigit(ch))ch=getchar();
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	return res;
 }
 
-int n;
-int f[(1<<18)+5][N];
-int a[N][N];
-char c[M];
+inline void writeln(reg int x){
+	static char buf[32];
+	reg int p=-1;
+	if(x==0) putchar('0');
+	else while(x) buf[++p]=(x%10)^'0',x/=10;
+	while(~p) putchar(buf[p--]);
+	putchar('\n');
+	return;
+}
 
-signed main()
-{
-	n=read();
-	scanf("%s",c+1);
-	int ans=0;
-	for(int i=n;i>=1;i--)
-	{
-		if(c[i]=='0') continue;
-		int place=i-1;
-		while(place && c[place]=='1') place--;
-		if(place==i-1) ans++;
-		else 
-		{
-			c[place]='1';
-			i=place+1;		
-			ans++;
-		} 
-	}
-	if(c[0]=='1') ans++;
-	cout<<ans<<endl;
-	/*n=read(); 
-	for(int i=0;i<n;i++)
-		for(int j=0;j<n;j++)
-			a[i][j]=read();
-	f[0][0]=1;
-	for(int i=0;i<n;i++) f[(1<<i)][i]=1;
-	for(int i=1;i<(1<<n);i++)
-		for(int j=0;j<n;j++)
-			if(((i>>j)&1) && !f[i][j])
-			{
-				for(int k=0;k<n;k++)
-					if(k!=j && ((i>>k)&1))
-						f[i][j]=(f[i][j]+f[i^(1<<j)][k]);
+inline int max(reg int a,reg int b){
+	return a>b?a:b;
+}
+
+inline int min(reg int a,reg int b){
+	return a<b?a:b;
+}
+
+const int MAXN=1e5+5;
+const int MAXM=1e5+5;
+
+int n,m,p;
+int a[MAXN];
+vector<pair<int,int>/**/> q[MAXM];
+
+namespace Subtask3{
+	const int MAXA=1e5+5;
+	int pos[MAXA];
+	int pre[MAXN];
+	int lef[MAXN],rig[MAXN],id[MAXN];
+	int tmp[MAXN];
+	inline int solve(reg int l,reg int r){
+		reg int lid=id[l],rid=id[r];
+		if(lid==rid||lid+1==rid){
+			reg int res=0;
+			for(reg int i=l;i<=r;++i)
+				if(pre[i]<l)
+					++res;
+			return res;
+		}
+		else{
+			reg int res=0;
+			for(reg int i=l;i<=rig[lid];++i)
+				if(pre[i]<l)
+					++res;
+			for(reg int i=lef[rid];i<=r;++i)
+				if(pre[i]<l)
+					++res;
+			for(reg int i=lid+1;i<rid;++i){
+				if(tmp[lef[i]]>=l)
+					continue;
+				reg int _l=lef[i],_r=rig[i],_mid;
+				while(_l<_r){
+					_mid=(_l+_r)>>1;
+					if(tmp[_mid+1]<l)
+						_l=_mid+1;
+					else
+						_r=_mid;
+				}
+				res+=_l-lef[i]+1;
 			}
-	int ans=0;
-	for(int i=0;i<n;i++) ans=(ans+f[(1<<n)-1])%mod;*/
+			return res;
+		}
+	}
+	inline void Solve(void){
+		for(reg int i=1;i<=n;++i){
+			pre[i]=pos[a[i]];
+			pos[a[i]]=i;
+		}
+		reg int B=sqrt(n),tot=(n+B-1)/B;
+		for(reg int i=1;i<=tot;++i){
+			lef[i]=(i-1)*B+1,rig[i]=min(i*B,n);
+			for(reg int j=lef[i];j<=rig[i];++j){
+				id[j]=i;
+				tmp[j]=pre[j];
+			}
+			sort(tmp+lef[i],tmp+rig[i]+1);
+		}
+		reg int lastans=0;
+		for(reg int i=1;i<=m;++i){
+			if(p&&i!=1){
+				for(reg int j=0,siz=q[i].size();j<siz;++j){
+					reg int x=(q[i][j].first^lastans)%n+1,y=(q[i][j].second^lastans)%n+1;
+					q[i][j].first=min(x,y),q[i][j].second=max(x,y);
+				}
+			}
+			assert(q[i].size()==1);
+			reg int res=solve(q[i][0].first,q[i][0].second);
+			writeln(lastans=res);
+		}
+		return;
+	}
+}
+
+int main(void){
+	n=read(),m=read(),p=read();
+	for(reg int i=1;i<=n;++i)
+		a[i]=read();
+	reg bool subtask3flag=true;
+	for(reg int i=1;i<=m;++i){
+		reg int k=read();
+		q[i].resize(k);
+		if(k>1)
+			subtask3flag=false;
+		for(reg int j=0;j<k;++j)
+			q[i][j].first=read(),q[i][j].second=read();
+	}
+	if(subtask3flag)
+		Subtask3::Solve();
+	flush();
 	return 0;
 }
