@@ -4,9 +4,9 @@ using namespace std;
 typedef long long ll;
 
 int main(void){
-	system("g++ std.cpp -o std -Wall -Wextra");
-	system("g++ nor.cpp -o nor -Wall -Wextra");
-	system("g++ dat.cpp -o dat -Wall -Wextra");
+	system("g++ std.cpp -o std -Wall -Wextra -fsanitize=undefined -fsanitize=address");
+	system("g++ nor.cpp -o nor -Wall -Wextra -fsanitize=undefined -fsanitize=address");
+	system("g++ dat.cpp -o dat -Wall -Wextra -fsanitize=undefined -fsanitize=address");
 	reg int cnt=0;
 	while(true){
 		system("./dat > input");

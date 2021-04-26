@@ -4,6 +4,9 @@ using namespace std;
 typedef long long ll;
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
+#define flush() (fwrite(wbuf,1,wp1,stdout),wp1=0)
+#define putchar(c) (wp1==wp2&&(flush(),0),wbuf[wp1++]=c)
+static char wbuf[1<<21];int wp1;const int wp2=1<<21;
 inline int read(void){
 	reg char ch=getchar();
 	reg int res=0;
@@ -12,169 +15,398 @@ inline int read(void){
 	return res;
 }
 
-const int MAXN=3e5+5;
-const int mod=998244353;
-const int inv1e4=796898467;
-
-inline int add(reg int a,reg int b){
-	a+=b;
-	return a>=mod?a-mod:a;
-}
-
-namespace SegmentTree{
-	#define mid ( ( (l) + (r) ) >> 1 )
-	struct Node{
-		int lson,rson;
-		int sum,tMul;
-		#define lson(x) unit[(x)].lson
-		#define rson(x) unit[(x)].rson
-		#define sum(x) unit[(x)].sum
-		#define tMul(x) unit[(x)].tMul
-	};
-	const int MAXSIZE=40*MAXN;
-	int tot;
-	Node unit[MAXSIZE];
-	int top,S[MAXSIZE];
-	inline int getId(void){
-		if(top)
-			return S[top--];
-		else
-			return ++tot;
-	}
-	inline int New(void){
-		reg int p=getId();
-		lson(p)=rson(p)=sum(p)=0,tMul(p)=1;
-		return p;
-	}
-	inline void del(reg int p){
-		lson(p)=rson(p)=sum(p)=0;
-		tMul(p)=1;
-		S[++top]=p;
-		return;
-	}
-	inline void pushup(reg int p){
-		sum(p)=add(sum(lson(p)),sum(rson(p)));
-		return;
-	}
-	inline void mul(reg int p,reg int val){
-		sum(p)=1ll*sum(p)*val%mod,tMul(p)=1ll*tMul(p)*val%mod;
-		return;
-	}
-	inline void pushdown(reg int p){
-		if(tMul(p)!=1){
-			if(lson(p))
-				mul(lson(p),tMul(p));
-			if(rson(p))
-				mul(rson(p),tMul(p));
-			tMul(p)=1;
-		}
-		return;
-	}
-	inline void update(reg int &p,reg int l,reg int r,reg int pos,reg int val){
-		if(!p)
-			p=New();
-		if(l==r){
-			sum(p)=add(sum(p),val);
-			return;
-		}
-		pushdown(p);
-		if(pos<=mid)
-			update(lson(p),l,mid,pos,val);
-		else
-			update(rson(p),mid+1,r,pos,val);
-		pushup(p);
-		return;
-	}
-	inline int merge(reg int x,reg int y,reg int l,reg int r,reg int xmul,reg int ymul,reg int val){
-		if(!x&&!y)
-			return 0;
-		else if(!x){
-			mul(y,ymul);
-			return y;
-		}
-		else if(!y){
-			mul(x,xmul);
-			return x;
-		}
-		else{
-			pushdown(x),pushdown(y);
-			reg int p=New();
-			reg int lsumx=sum(lson(x)),lsumy=sum(lson(y)),rsumx=sum(rson(x)),rsumy=sum(rson(y));
-			lson(p)=merge(lson(x),lson(y),l,mid,add(xmul,1ll*rsumy*add(1,mod-val)%mod),add(ymul,1ll*rsumx*add(1,mod-val)%mod),val);
-			rson(p)=merge(rson(x),rson(y),mid+1,r,add(xmul,1ll*lsumy*val%mod),add(ymul,1ll*lsumx*val%mod),val);
-			pushup(p);
-			del(x),del(y);
-			return p;
-		}
-	}
-	int cnt,T[MAXN];
-	inline void query(reg int p,reg int l,reg int r){
-		if(l==r){
-			T[++cnt]=1ll*sum(p)*sum(p)%mod;
-			return;
-		}
-		pushdown(p);
-		if(lson(p)) query(lson(p),l,mid);
-		if(rson(p)) query(rson(p),mid+1,r);
-		return;
-	}
-	#undef mid
-	#undef lson
-	#undef rson
-	#undef sum
-	#undef tMul
-}
-
-int n,m;
-int deg[MAXN],ch[MAXN][2];
-int p[MAXN];
-vector<int> V;
-int rt[MAXN];
-
-inline void dfs(reg int u){
-	switch(deg[u]){
-		case 0:{
-			SegmentTree::update(rt[u],1,m,p[u],1);
-			break;
-		}
-		case 1:{
-			dfs(ch[u][0]);
-			rt[u]=rt[ch[u][0]];
-			break;
-		}
-		case 2:{
-			dfs(ch[u][0]),dfs(ch[u][1]);
-			rt[u]=SegmentTree::merge(rt[ch[u][0]],rt[ch[u][1]],1,m,0,0,p[u]);
-			break;
-		}
-	}
+inline void writeln(const char *s){
+	while(*s) putchar(*(s++));
+	putchar('\n');
 	return;
 }
 
-int main(void){
-	n=read(),read();
-	for(reg int i=2;i<=n;++i){
-		static int fa;
-		fa=read();
-		ch[fa][deg[fa]++]=i;
+inline int max(reg int a,reg int b){
+	return a>b?a:b;
+}
+
+inline int min(reg int a,reg int b){
+	return a<b?a:b;
+}
+
+const int MAXN=1e5+5;
+const int MAXM=1e5+5;
+
+struct operation{
+	int opt,x,y;
+};
+
+int n,m;
+int a[MAXN],ch[MAXN][2];
+bool isSon[MAXN];
+int rt;
+operation op[MAXM];
+
+namespace Subtask1{
+	const int MAXN=5e3+5;
+	struct Node{
+		int lson,rson,val;
+		bool tRev;
+	};
+	Node unit[MAXN];
+	inline void update(reg int p,reg int v){
+		unit[p].val=v;
+		return;
 	}
-	for(reg int i=1;i<=n;++i){
-		p[i]=read();
-		if(deg[i])
-			p[i]=1ll*p[i]*inv1e4%mod;
+	inline void reverse(reg int p){
+		swap(unit[p].lson,unit[p].rson);
+		unit[p].tRev=!unit[p].tRev;
+		return;
+	}
+	inline void pushdown(reg int p){
+		if(unit[p].tRev){
+			if(unit[p].lson)
+				reverse(unit[p].lson);
+			if(unit[p].rson)
+				reverse(unit[p].rson);
+			unit[p].tRev=false;
+		}
+		return;
+	}
+	inline bool query(reg int p,reg int x){
+		if(!p)
+			return false;
+		if(p==x)
+			return true;
+		pushdown(p);
+		if(unit[x].val<unit[p].val)
+			return query(unit[p].lson,x);
 		else
-			V.push_back(p[i]);
+			return query(unit[p].rson,x);
 	}
-	sort(V.begin(),V.end()),V.erase(unique(V.begin(),V.end()),V.end());
-	m=V.size();
+	inline void Solve(void){
+		for(reg int i=1;i<=n;++i)
+			unit[i].val=a[i],unit[i].lson=ch[i][0],unit[i].rson=ch[i][1];
+		for(reg int i=1;i<=m;++i)
+			switch(op[i].opt){
+				case 1:{
+					update(op[i].x,op[i].y);
+					break;
+				}
+				case 2:{
+					reverse(op[i].x);
+					break;
+				}
+				case 3:{
+					reg bool res=query(rt,op[i].x);
+					writeln(res?"YES":"NO");
+					break;
+				}
+			}
+		return;
+	}
+}
+
+namespace Subtask2{
+	const int inf=0x3f3f3f3f;
+	vector<int> G[MAXN];
+	int fa[MAXN],dep[MAXN];
+	int siz[MAXN],son[MAXN];
+	inline void dfs1(reg int u,reg int father){
+		siz[u]=1;
+		fa[u]=father;
+		dep[u]=dep[father]+1;
+		for(reg int i=0,_siz=G[u].size();i<_siz;++i){
+			reg int v=G[u][i];
+			dfs1(v,u);
+			siz[u]+=siz[v];
+			if(siz[son[u]]<siz[v])
+				son[u]=v;
+		}
+		return;
+	}
+	int tim,dfn[MAXN];
+	int top[MAXN];
+	inline void dfs2(reg int u,reg int topf){
+		dfn[u]=++tim;
+		top[u]=topf;
+		if(!son[u])
+			return;
+		dfs2(son[u],topf);
+		for(reg int i=0,siz=G[u].size();i<siz;++i){
+			reg int v=G[u][i];
+			if(v!=son[u])
+				dfs2(v,v);
+		}
+		return;
+	}
+	int le[MAXN],ri[MAXN];
+	inline void dfs(reg int u,reg int lef,reg int rig){
+		if(!u)
+			return;
+		if(!lef)
+			le[u]=u;
+		else
+			le[u]=lef;
+		if(!rig)
+			ri[u]=u;
+		else
+			ri[u]=rig;
+		dfs(ch[u][0],lef?lef:ch[u][0],rig?rig:u);
+		dfs(ch[u][1],lef?lef:u,rig?rig:ch[u][1]);
+		return;
+	}
+	namespace SegmentTree{
+		#define lson ( (k) << 1 )
+		#define rson ( (k) << 1 | 1 )
+		#define mid ( ( (l) + (r) ) >> 1 )
+		struct Node{
+			int Max,Min;
+			#define Max(x) unit[(x)].Max
+			#define Min(x) unit[(x)].Min
+		};
+		Node unit[MAXN<<2];
+		inline void pushup(reg int k){
+			Max(k)=max(Max(lson),Max(rson));
+			Min(k)=min(Min(lson),Min(rson));
+			return;
+		}
+		inline void build(reg int k,reg int l,reg int r,reg int a[]){
+			if(l==r){
+				Max(k)=Min(k)=a[l];
+				return;
+			}
+			build(lson,l,mid,a),build(rson,mid+1,r,a);
+			pushup(k);
+			return;
+		}
+		inline void update(reg int k,reg int l,reg int r,reg int pos,reg int val){
+			if(l==r){
+				Max(k)=Min(k)=val;
+				return;
+			}
+			if(pos<=mid)
+				update(lson,l,mid,pos,val);
+			else
+				update(rson,mid+1,r,pos,val);
+			pushup(k);
+			return;
+		}
+		inline int queryMax(reg int k,reg int l,reg int r,reg int L,reg int R){
+			if(L<=l&&r<=R)
+				return Max(k);
+			if(L<=mid&&mid<R)
+				return max(queryMax(lson,l,mid,L,R),queryMax(rson,mid+1,r,L,R));
+			else if(L<=mid)
+				return queryMax(lson,l,mid,L,R);
+			else
+				return queryMax(rson,mid+1,r,L,R);
+		}
+		inline int queryMin(reg int k,reg int l,reg int r,reg int L,reg int R){
+			if(L<=l&&r<=R)
+				return Min(k);
+			if(L<=mid&&mid<R)
+				return min(queryMin(lson,l,mid,L,R),queryMin(rson,mid+1,r,L,R));
+			else if(L<=mid)
+				return queryMin(lson,l,mid,L,R);
+			else
+				return queryMin(rson,mid+1,r,L,R);
+		}
+		#undef lson
+		#undef rson
+		#undef mid
+	}
+	inline int queryMax(reg int x){
+		reg int res=-inf;
+		while(top[x]!=rt){
+			res=max(res,SegmentTree::queryMax(1,1,n,dfn[top[x]],dfn[x]));
+			x=fa[top[x]];
+		}
+		res=max(res,SegmentTree::queryMax(1,1,n,dfn[rt],dfn[x]));
+		return res;
+	}
+	inline int queryMin(reg int x){
+		reg int res=inf;
+		while(top[x]!=rt){
+			res=min(res,SegmentTree::queryMin(1,1,n,dfn[top[x]],dfn[x]));
+			x=fa[top[x]];
+		}
+		res=min(res,SegmentTree::queryMin(1,1,n,dfn[rt],dfn[x]));
+		return res;
+	}
+	inline bool query(reg int u){
+		reg int Max=queryMax(u),Min=queryMin(u);
+		reg int lVal=a[le[u]],rVal=a[ri[u]];
+		return Max==rVal&&Min==lVal;
+	}
+	inline void Solve(void){
+		for(reg int i=1;i<=n;++i)
+			for(reg int j=0;j<2;++j)
+				if(ch[i][j])
+					G[i].push_back(ch[i][j]);
+		dfs1(rt,0),dfs2(rt,rt);
+		static int val[MAXN];
+		for(reg int i=1;i<=n;++i)
+			val[dfn[i]]=a[i];
+		SegmentTree::build(1,1,n,val);
+		dfs(rt,0,0);
+		for(reg int i=1;i<=m;++i)
+			switch(op[i].opt){
+				case 1:{
+					a[op[i].x]=op[i].y;
+					SegmentTree::update(1,1,n,dfn[op[i].x],op[i].y);
+					break;
+				}
+				case 2:{
+					puts("Hello, World!"),exit(0);
+					break;
+				}
+				case 3:{
+					reg bool res=query(op[i].x);
+					writeln(res?"YES":"NO");
+					break;
+				}
+			}
+		return;
+	}
+}
+
+namespace Subtask{
+	vector<int> G[MAXN];
+	int fa[MAXN],dep[MAXN];
+	int siz[MAXN],son[MAXN];
+	inline void dfs1(reg int u,reg int father){
+		siz[u]=1;
+		fa[u]=father;
+		dep[u]=dep[father]+1;
+		for(reg int i=0,_siz=G[u].size();i<_siz;++i){
+			reg int v=G[u][i];
+			dfs1(v,u);
+			siz[u]+=siz[v];
+			if(siz[son[u]]<siz[v])
+				son[u]=v;
+		}
+		return;
+	}
+	int tim,dfn[MAXN];
+	int top[MAXN];
+	inline void dfs2(reg int u,reg int topf){
+		dfn[u]=++tim;
+		top[u]=topf;
+		if(!son[u])
+			return;
+		dfs2(son[u],topf);
+		for(reg int i=0,siz=G[u].size();i<siz;++i){
+			reg int v=G[u][i];
+			if(v!=son[u])
+				dfs2(v,v);
+		}
+		return;
+	}
+	inline int LCA(reg int x,reg int y){
+		while(top[x]!=top[y])
+			if(dep[top[x]]>dep[top[y]])
+				x=fa[top[x]];
+			else
+				y=fa[top[y]];
+		return dep[x]<dep[y]?x:y;
+	}
+	struct Node{
+		int lson,rson,val;
+		bool tRev;
+	};
+	Node unit[MAXN];
+	inline void update(reg int p,reg int v){
+		unit[p].val=v;
+		return;
+	}
+	inline void reverse(reg int p){
+		swap(unit[p].lson,unit[p].rson);
+		unit[p].tRev=!unit[p].tRev;
+		return;
+	}
+	inline void pushdown(reg int p){
+		if(unit[p].tRev){
+			if(unit[p].lson)
+				reverse(unit[p].lson);
+			if(unit[p].rson)
+				reverse(unit[p].rson);
+			unit[p].tRev=false;
+		}
+		return;
+	}
+	inline bool query(reg int p,reg int x){
+		if(!p)
+			return false;
+		if(p==x)
+			return true;
+		if(LCA(p,x)!=p)
+			return false;
+		pushdown(p);
+		if(unit[x].val<unit[p].val)
+			return query(unit[p].lson,x);
+		else
+			return query(unit[p].rson,x);
+	}
+	inline void Solve(void){
+		for(reg int i=1;i<=n;++i)
+			for(reg int j=0;j<2;++j)
+				if(ch[i][j])
+					G[i].push_back(ch[i][j]);
+		dfs1(rt,0),dfs2(rt,rt);
+		for(reg int i=1;i<=n;++i)
+			unit[i].val=a[i],unit[i].lson=ch[i][0],unit[i].rson=ch[i][1];
+		for(reg int i=1;i<=m;++i)
+			switch(op[i].opt){
+				case 1:{
+					update(op[i].x,op[i].y);
+					break;
+				}
+				case 2:{
+					reverse(op[i].x);
+					break;
+				}
+				case 3:{
+					reg bool res=query(rt,op[i].x);
+					writeln(res?"YES":"NO");
+					break;
+				}
+			}
+		return;
+	}
+}
+
+int main(void){
+	n=read(),m=read();
+	for(reg int i=1;i<=n;++i){
+		a[i]=read(),ch[i][0]=read(),ch[i][1]=read();
+		isSon[ch[i][0]]=isSon[ch[i][1]]=true;
+	}
 	for(reg int i=1;i<=n;++i)
-		if(!deg[i])
-			p[i]=lower_bound(V.begin(),V.end(),p[i])-V.begin()+1;
-	dfs(1);
-	SegmentTree::query(rt[1],1,m);
-	reg int ans=0;
-	for(reg int i=1;i<=SegmentTree::cnt;++i)
-		ans=add(ans,1ll*i*V[i-1]%mod*SegmentTree::T[i]%mod);
-	printf("%d\n",ans);
+		if(!isSon[i]){
+			rt=i;
+			break;
+		}
+	reg bool subtask2flag=true;
+	for(reg int i=1;i<=m;++i){
+		op[i].opt=read();
+		switch(op[i].opt){
+			case 1:{
+				op[i].x=read(),op[i].y=read();
+				break;
+			}
+			case 2:{
+				op[i].x=read();
+				subtask2flag=false;
+				break;
+			}
+			case 3:{
+				op[i].x=read();
+				break;
+			}
+		}
+	}
+	if(n<=5e3&&m<=5e3)
+		Subtask1::Solve();
+	else if(subtask2flag)
+		Subtask2::Solve();
+	else
+		Subtask::Solve();
+	flush();
 	return 0;
 }
