@@ -12,39 +12,71 @@ inline int read(void){
 	return res;
 }
 
-const int MAXP=300+5;
-const int MAXN=3e3+5;
+const int MAXV=3e3+5;
+const ll inf=0x3f3f3f3f3f3f3f3f;
 
-int n,m;
-int a[MAXN];
-int sum[MAXN];
-int f[MAXN][MAXP],p[MAXN][MAXP];
+int v,p;
+int a[MAXV];
+ll sum[MAXV];
+ll f[MAXV];
+int cnt[MAXV];
 
-inline int calc(reg int l,reg int r){
-	reg int mid=(l+r+1)>>1;
-	return a[mid]*(mid-l+1)-(sum[mid]-sum[l-1])+(sum[r]-sum[mid])-a[mid]*(r-mid);
+inline ll getVal(reg int l,reg int r){
+	reg int mid=(l+r)>>1;
+	return sum[r]+sum[l-1]-(sum[mid]+sum[mid-1])-(((r^l)&1)?a[mid]:0);
+}
+
+inline bool cmp(reg int i,reg int j,reg int k){
+	return f[i]+getVal(i+1,k)<f[j]+getVal(j+1,k)||(f[i]+getVal(i+1,k)<f[j]+getVal(j+1,k)&&cnt[i]<cnt[j]);
+}
+
+struct Node{
+	int lef,rig;
+	inline Node(reg int lef=0,reg int rig=0):lef(lef),rig(rig){
+		return;
+	}
+};
+
+inline void calc(reg ll mid){
+	reg int _head=0,_tail=0;
+	static Node Q[MAXV];
+	Q[_tail++]=Node(0,1);
+	for(reg int i=1;i<=v;++i){
+		while(_tail-_head>1&&Q[_head+1].rig<=i)
+			++_head;
+		reg int j=Q[_head].lef;
+		f[i]=f[j]+getVal(j+1,i)+mid;
+		cnt[i]=cnt[j]+1;
+		while(_head<_tail&&cmp(i,Q[_tail-1].lef,Q[_tail-1].rig))
+			--_tail;
+		reg int l=Q[_tail-1].rig,r=v+1,mid;
+		while(l<r){
+			mid=(l+r)>>1;
+			if(cmp(i,Q[_tail-1].lef,mid))
+				r=mid;
+			else
+				l=mid+1;
+		}
+		if(l<=v)
+			Q[_tail++]=Node(i,l);
+	}
+	return;
 }
 
 int main(void){
-	n=read(),m=read();
-	for(reg int i=1;i<=n;++i){
-		a[i]=read();
-		sum[i]=sum[i-1]+a[i];
+	v=read(),p=read();
+	for(reg int i=1;i<=v;++i)
+		a[i]=read(),sum[i]=sum[i-1]+a[i];
+	reg ll l=0,r=sum[v]+1,mid;
+	while(l<r){
+		mid=(l+r)>>1;
+		calc(mid);
+		if(cnt[v]<=p)
+			r=mid;
+		else
+			l=mid+1;
 	}
-	memset(f,0x3f,sizeof(f));
-	for(reg int i=1;i<=n;++i)
-		f[i][1]=calc(1,i);
-	for(reg int i=1;i<=m;++i)
-		p[n][i]=1;
-	for(reg int j=2;j<=m;++j){
-		p[n+1][j]=n;
-		for(reg int i=n;i>=1;--i)
-			for(reg int k=p[i][j-1];k<=p[i+1][j];++k)
-				if(f[k][j-1]+calc(k+1,i)<f[i][j]){
-					f[i][j]=f[k][j-1]+calc(k+1,i);
-					p[i][j]=k;
-				}
-	}
-	printf("%d\n",f[n][m]);
+	calc(l);
+	printf("%lld\n",f[v]-l*p);
 	return 0;
 }
