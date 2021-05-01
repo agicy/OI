@@ -20,7 +20,7 @@ inline void writeln(reg int x){
 	static char buf[32];
 	reg int p=-1;
 	if(x<0) x=-x,putchar('-');
-	if(x==0) putchar('0');
+	if(!x) putchar('0');
 	else while(x) buf[++p]=(x%10)^'0',x/=10;
 	while(~p) putchar(buf[p--]);
 	putchar('\n');
