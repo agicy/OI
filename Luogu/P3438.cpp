@@ -12,68 +12,85 @@ inline int read(void){
 	return res;
 }
 
-const int MAXW=1e3+5;
-const int MAXN=MAXW*MAXW;
-
-struct Node{
+struct Point{
 	int x,y;
-	inline void Read(void){
-		x=read()-1,y=read()-1;
+	inline Point(reg int x=0,reg int y=0):x(x),y(y){
 		return;
 	}
-	inline bool operator<(const Node& a)const{
-		return y<a.y||(y==a.y&&x<a.x);
+	inline bool operator<(const Point& a)const{
+		if(y!=a.y)
+			return y<a.y;
+		else
+			return x<a.x;
 	}
 };
 
-int w1,w2;
-Node st,ed;
-int n;
-Node p[MAXN];
+const int MAXN=1e3+5;
+const int MAXM=1e3+5;
+const int MAXQ=1e6+5;
+const int inf=1e3+5;
 
-inline int X(reg int i){
-	return p[i].y;
+int n,m;
+Point st,ed;
+int q;
+Point p[MAXQ];
+vector<int> V;
+
+inline double calc(reg int xa,reg int ya,reg int xb,reg int yb,reg int x){
+	return 1.0*(xa*xa-xb*xb+2*x*(xb-xa))/(ya-yb)+ya+yb;
 }
 
-int x;
+int dis[MAXN][MAXM];
+Point fr[MAXN];
 
-inline int Y(reg int i){
-	return p[i].x*p[i].x+p[i].y*p[i].y-2*x*p[i].x;
+inline void getDis(void){
+	sort(p+1,p+q+1);
+	static int _head[MAXM],_tail[MAXM];
+	for(reg int l=1,r;l<=q;l=r){
+		r=l+1;
+		while(r<=q&&p[l].y==p[r].y)
+			++r;
+		_head[p[l].y]=l,_tail[p[l].y]=r;
+	}
+	for(reg int i=1;i<=n;++i){
+		fr[0]=Point(inf,-inf);
+		reg int tot=0,top=0;
+		for(reg int j=1;j<=m;++j){
+			if(!_tail[j])
+				continue;
+			reg int Min=abs(p[_head[j]].x-i);
+			while(_tail[j]-_head[j]>1&&abs(p[_head[j]+1].x-i)<Min)
+				++_head[j],Min=abs(p[_head[j]].x-i);
+			fr[++tot]=p[_head[j]];
+		}
+		static int id[MAXQ],S[MAXQ];
+		for(reg int j=1;j<=tot;++j){
+			reg double res=calc(fr[j].x,fr[j].y,fr[id[top]].x,fr[id[top]].y,i);
+			while(top&&res<=S[top])
+				--top,res=calc(fr[j].x,fr[j].y,fr[id[top]].x,fr[id[top]].y,i);
+			S[++top]=res,id[top]=j;
+		}
+		for(reg int j=1,l=1;j<=m;++j){
+			while(S[l+1]<(j<<1)&&l+1<=top)
+				++l;
+			dis[i][j]=(i-fr[id[l]].x)*(i-fr[id[l]].x)+(j-fr[id[l]].y)*(j-fr[id[l]].y);
+			V.push_back(dis[i][j]);
+		}
+	}
+	sort(V.begin(),V.end());
+	V.erase(unique(V.begin(),V.end()),V.end());
+	return;
 }
-
-inline bool check1(reg int i,reg int j,reg int k){
-	reg int xi=X(i),xj=X(j),xk=X(k);
-	reg int yi=Y(i),yj=Y(j),yk=Y(k);
-	reg int prex=xj-xi,prey=yj-yi;
-	reg int newx=xk-xj,newy=yk-yj;
-	return 1ll*newx*prey-1ll*prex*newy>=0;
-}
-
-inline bool check2(reg int i,reg int j,reg int k){
-	reg int xi=X(i),xj=X(j);
-	reg int yi=Y(i),yj=Y(j);
-	reg int prex=xj-xi,prey=yj-yi;
-	reg int newx=1,newy=k;
-	return 1ll*newx*prey-1ll*prex*newy<=0;
-}
-
-int dis[MAXW][MAXW];
-
-inline int getId(reg int i,reg int j){
-	return i*w2+j;
-}
-
-bool vis[MAXW][MAXW];
-int _head,_tail;
-int Qx[MAXW*MAXW],Qy[MAXW*MAXW];
 
 inline bool check(reg int lim){
 	if(dis[st.x][st.y]<lim)
 		return false;
-	for(reg int i=0;i<w1;++i)
-		for(reg int j=0;j<w2;++j)
+	static bool vis[MAXN][MAXM];
+	for(reg int i=1;i<=n;++i)
+		for(reg int j=1;j<=m;++j)
 			vis[i][j]=false;
-	_head=_tail=0;
+	reg int _head=0,_tail=0;
+	static int Qx[MAXN*MAXM],Qy[MAXN*MAXM];
 	vis[st.x][st.y]=true,Qx[_tail]=st.x,Qy[_tail]=st.y,++_tail;
 	while(_head<_tail){
 		reg int x=Qx[_head],y=Qy[_head];
@@ -84,42 +101,21 @@ inline bool check(reg int lim){
 		const int dy[]={0,-1,1,0};
 		for(reg int k=0;k<4;++k){
 			reg int fx=x+dx[k],fy=y+dy[k];
-			if(0<=fx&&fx<w1&&0<=fy&&fy<w2&&!vis[fx][fy]&&dis[fx][fy]>=lim)
+			if(1<=fx&&fx<=n&&1<=fy&&fy<=m&&!vis[fx][fy]&&dis[fx][fy]>=lim)
 				vis[fx][fy]=true,Qx[_tail]=fx,Qy[_tail]=fy,++_tail;
 		}
 	}
 	return false;
 }
 
-int Q[MAXN];
-
 int main(void){
-	w1=read(),w2=read();
-	st.Read(),ed.Read();
-	n=read();
-	for(reg int i=0;i<n;++i)
-		p[i].Read();
-	sort(p,p+n);
-	vector<int> V;
-	V.resize(w1*w2);
-	for(reg int i=0;i<w1;++i){
-		x=i;
-		reg int _head=0,_tail=0;
-		for(reg int j=0;j<n;++j){
-			while(_tail-_head>1&&check1(Q[_tail-2],Q[_tail-1],j))
-				--_tail;
-			Q[_tail++]=j;
-		}
-		for(reg int j=0;j<w2;++j){
-			while(_tail-_head>1&&check2(Q[_head],Q[_head+1],2*j))
-				++_head;
-			dis[i][j]=Y(Q[_head])-2*j*X(Q[_head])+i*i+j*j;
-			V[getId(i,j)]=dis[i][j];
-		}
-	}
-	sort(V.begin(),V.end());
-	puts("INit");
-	reg int l=0,r=w1*w2-1,mid;
+	n=read(),m=read();
+	st.x=read(),st.y=read(),ed.x=read(),ed.y=read();
+	q=read();
+	for(reg int i=1;i<=q;++i)
+		p[i].x=read(),p[i].y=read();
+	getDis();
+	reg int l=0,r=V.size()-1,mid;
 	while(l<r){
 		mid=(l+r)>>1;
 		if(check(V[mid+1]))
