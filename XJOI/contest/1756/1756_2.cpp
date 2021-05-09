@@ -1,3 +1,4 @@
+#pragma GCC optimize("Ofast")
 #include<bits/stdc++.h>
 using namespace std;
 #define reg register
@@ -70,6 +71,7 @@ inline void Add_Tube(reg int u,reg int v,reg ll len){
 
 int dep[MAXV];
 int Q[MAXV];
+int cur[MAXV];
 
 inline bool bfs(reg int s,reg int t){
 	fill(dep,dep+t+1,-1);
@@ -77,6 +79,7 @@ inline bool bfs(reg int s,reg int t){
 	dep[s]=1,Q[_tail++]=s;
 	while(_head<_tail){
 		reg int u=Q[_head++];
+		cur[u]=head[u];
 		for(reg int i=head[u];i;i=Next[i]){
 			reg int v=to[i];
 			if(dep[v]==-1&&w[i]){
@@ -87,8 +90,6 @@ inline bool bfs(reg int s,reg int t){
 	}
 	return dep[t]!=-1;
 }
-
-int cur[MAXV];
 
 inline ll dfs(reg int u,reg int t,reg ll lim){
 	if(u==t)
@@ -112,8 +113,12 @@ inline ll dfs(reg int u,reg int t,reg ll lim){
 inline ll dinic(reg int s,reg int t){
 	reg ll res=0;
 	while(bfs(s,t)){
-		memcpy(cur,head,sizeof(head));
-		res+=dfs(s,t,0x3f3f3f3f);
+		while(true){
+			reg ll tmp=dfs(s,t,0x3f3f3f3f);
+			if(!tmp)
+				break;
+			res+=tmp;
+		}
 	}
 	return res;
 }
