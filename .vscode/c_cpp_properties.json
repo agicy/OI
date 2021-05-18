@@ -67,6 +67,21 @@
                 "-Wextra"
             ],
             "intelliSenseMode": "gcc-x64"
+        },
+        {
+            "name": "XJOI",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "D:\\mingw-w64\\x86_64-8.1.0-win32-seh-rt_v6-rev0\\mingw64\\bin\\gcc.exe",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "${default}"
         }
     ],
     "version": 4
