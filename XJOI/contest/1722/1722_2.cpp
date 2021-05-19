@@ -1,4 +1,3 @@
-#pragma GCC optimize("Ofast")
 #include<bits/stdc++.h>
 using namespace std;
 #define reg register
@@ -116,7 +115,7 @@ inline void solve(reg int _l,reg int _r,reg int lr,reg int rr,reg int lb,reg int
 	}
 	reg int Maxb=-1;
 	for(reg int i=midb+1;i<=rb;++i)
-		if(b[i].w>b[Maxb].w)
+		if(Maxb==-1||b[i].w>b[Maxb].w)
 			Maxb=i;
 	if(Maxb!=-1){
 		V.reserve(midr-lr+1);
