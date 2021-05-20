@@ -66,7 +66,8 @@ int main(void){
 	reg int ans=0;
 	for(reg int i=1;i<=m;++i)
 		ans=add(ans,1ll*f[i]*inv[i]%mod);
-	delete[] inv,f;
+	delete[] inv;
+	delete[] f;
 	printf("%d\n",ans);
 	fprintf(stderr,"%.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
 	return 0;

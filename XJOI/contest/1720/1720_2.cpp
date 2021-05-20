@@ -17,10 +17,6 @@ inline ll getSum1(reg int i){
 	return 1ll*i*(i+1)/2;
 }
 
-inline ll getSum1(reg int l,reg int r){
-	return getSum1(r)-getSum1(l-1);
-}
-
 struct Interval{
 	int l,r;
 	inline Interval(reg int l=0,reg int r=0):l(l),r(r){
