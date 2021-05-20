@@ -10,22 +10,13 @@ inline int myrand(reg int l,reg int r){
 const int MAXN=1e5+5;
 const int MAXM=1e5+5;
 
-int n,m,p;
-int a[MAXN];
-int l[MAXM],r[MAXM];
+int n;
 
 int main(void){
 	srand(time(0));
-	n=myrand(1,5e3),m=myrand(1,5e3),p=1;
+	n=myrand(1,500);
+	printf("%d\n",n);
 	for(reg int i=1;i<=n;++i)
-		a[i]=myrand(1,1e5);
-	for(reg int i=1;i<=m;++i)
-		l[i]=myrand(1,n),r[i]=myrand(1,n);
-	printf("%d %d %d\n",n,m,p);
-	for(reg int i=1;i<=n;++i)
-		printf("%d%c",a[i],i==n?'\n':' ');
-	for(reg int i=1;i<=m;++i)
-		printf("1\n%d %d\n",min(l[i],r[i]),max(l[i],r[i]));
-
+		printf("%d%c",myrand(1,i),i==n?'\n':' ');
 	return 0;
 }

@@ -87,7 +87,8 @@
 		"stack": "cpp",
 		"climits": "cpp",
 		"cassert": "cpp",
-		"version": "cpp"
+		"version": "cpp",
+		"stdbool.h": "c"
 	},
 	"[cpp]":{
 		"editor.wordBasedSuggestions": true,
