@@ -4,25 +4,12 @@ using namespace std;
 typedef long long ll;
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
 static char buf[100000],*p1=buf,*p2=buf;
-#define flush() (fwrite(wbuf,1,wp1,stdout),wp1=0)
-//#define putchar(c) (wp1==wp2&&(flush(),0),wbuf[wp1++]=c)
-static char wbuf[1<<21];int wp1;const int wp2=1<<21;
 inline int read(void){
 	reg char ch=getchar();
 	reg int res=0;
 	while(!isdigit(ch))ch=getchar();
 	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
 	return res;
-}
-
-inline void writeln(reg int x){
-	static char buf[32];
-	reg int p=-1;
-	if(x==0) putchar('0');
-	else while(x) buf[++p]=(x%10)^'0',x/=10;
-	while(~p) putchar(buf[p--]);
-	putchar('\n');
-	return;
 }
 
 inline int max(reg int a,reg int b){
@@ -33,97 +20,94 @@ inline int min(reg int a,reg int b){
 	return a<b?a:b;
 }
 
-const int MAXN=1e5+5;
-const int MAXM=1e5+5;
+const int MAXN=3e6+5;
 
-int n,m,p;
-int a[MAXN];
-vector<pair<int,int>/**/> q[MAXM];
+int n;
+int l[MAXN];
 
-namespace Subtask3{
-	const int MAXA=1e5+5;
-	int pos[MAXA];
-	int pre[MAXN];
-	int lef[MAXN],rig[MAXN],id[MAXN];
-	int tmp[MAXN];
-	inline int solve(reg int l,reg int r){
-		reg int lid=id[l],rid=id[r];
-		if(lid==rid||lid+1==rid){
-			reg int res=0;
-			for(reg int i=l;i<=r;++i)
-				if(pre[i]<l)
-					++res;
-			return res;
+namespace Subtask1{
+	struct Interval{
+		int l,r;
+		inline Interval(reg int l=0,reg int r=0):l(l),r(r){
+			return;
 		}
-		else{
-			reg int res=0;
-			for(reg int i=l;i<=rig[lid];++i)
-				if(pre[i]<l)
-					++res;
-			for(reg int i=lef[rid];i<=r;++i)
-				if(pre[i]<l)
-					++res;
-			for(reg int i=lid+1;i<rid;++i){
-				if(tmp[lef[i]]>=l)
-					continue;
-				reg int _l=lef[i],_r=rig[i],_mid;
-				while(_l<_r){
-					_mid=(_l+_r)>>1;
-					if(tmp[_mid+1]<l)
-						_l=_mid+1;
-					else
-						_r=_mid;
-				}
-				res+=_l-lef[i]+1;
-			}
-			return res;
+		inline int len(void)const{
+			return r-l+1;
 		}
+	};
+	inline Interval cap(const Interval& a,const Interval& b){
+		return Interval(max(a.l,b.l),min(a.r,b.r));
 	}
 	inline void Solve(void){
+		reg ll ans=0;
+		for(reg int L=1;L<=n;++L)
+			for(reg int R=L;R<=n;++R){
+				reg int Max=0;
+				for(reg int i=1;i<=n;++i)
+					Max=max(Max,cap(Interval(L,R),Interval(l[i],i)).len());
+				ans+=Max;
+			}
+		printf("%lld\n",ans);
+		return;
+	}
+}
+
+namespace Subtask2{
+	inline ll getSum1(reg int i){
+		return 1ll*i*(i+1)/2;
+	}
+	inline ll getSum1(reg int l,reg int r){
+		return getSum1(r)-getSum1(l-1);
+	}
+	struct Interval{
+		int l,r;
+		inline Interval(reg int l=0,reg int r=0):l(l),r(r){
+			return;
+		}
+		inline int len(void)const{
+			return r-l+1;
+		}
+	};
+	int tot;
+	Interval a[MAXN];
+	ll f[MAXN];
+	inline void Solve(void){
+		reg int top=0;
+		static int S[MAXN];
 		for(reg int i=1;i<=n;++i){
-			pre[i]=pos[a[i]];
-			pos[a[i]]=i;
+			while(top&&l[S[top]]>=l[i])
+				--top;
+			S[++top]=i;
 		}
-		reg int B=sqrt(n),tot=(n+B-1)/B;
+		for(reg int i=1;i<=top;++i)
+			a[++tot]=Interval(l[S[i]],S[i]);
+		top=0;
 		for(reg int i=1;i<=tot;++i){
-			lef[i]=(i-1)*B+1,rig[i]=min(i*B,n);
-			for(reg int j=lef[i];j<=rig[i];++j){
-				id[j]=i;
-				tmp[j]=pre[j];
+			for(reg int j=a[i-1].r+1;j<=a[i].r;++j){
+				reg int len=j-a[i].l+1;
+				while(top&&a[S[top]].len()<=len)
+					--top;
+				reg int k=S[top];
+				if(!k)
+					f[j]=getSum1(len)+1ll*len*(a[i].l-1);
+				else
+					f[j]=getSum1(len)+1ll*(j-a[k].r-1)*len+f[a[k].r]-getSum1(j-a[i].l);
 			}
-			sort(tmp+lef[i],tmp+rig[i]+1);
+			S[++top]=i;
 		}
-		reg int lastans=0;
-		for(reg int i=1;i<=m;++i){
-			if(p&&i!=1){
-				for(reg int j=0,siz=q[i].size();j<siz;++j){
-					reg int x=(q[i][j].first^lastans)%n+1,y=(q[i][j].second^lastans)%n+1;
-					q[i][j].first=min(x,y),q[i][j].second=max(x,y);
-				}
-			}
-			assert(q[i].size()==1);
-			reg int res=solve(q[i][0].first,q[i][0].second);
-			writeln(lastans=res);
-		}
+		reg ll ans=0;
+		for(reg int i=1;i<=n;++i)
+			ans+=f[i];
+		printf("%lld\n",ans);
 		return;
 	}
 }
 
 int main(void){
-	n=read(),m=read(),p=read();
+	n=read();
 	for(reg int i=1;i<=n;++i)
-		a[i]=read();
-	reg bool subtask3flag=true;
-	for(reg int i=1;i<=m;++i){
-		reg int k=read();
-		q[i].resize(k);
-		if(k>1)
-			subtask3flag=false;
-		for(reg int j=0;j<k;++j)
-			q[i][j].first=read(),q[i][j].second=read();
-	}
-	if(subtask3flag)
-		Subtask3::Solve();
-	flush();
+		l[i]=read();
+	Subtask2::Solve();
+	fprintf(stderr,"%.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
 	return 0;
 }
