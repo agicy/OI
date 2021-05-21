@@ -2,114 +2,76 @@
 using namespace std;
 #define reg register
 typedef long long ll;
-#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
-static char buf[100000],*p1=buf,*p2=buf;
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,1<<21,stdin),p1==p2)?EOF:*p1++)
+static char buf[1<<21],*p1=buf,*p2=buf;
 inline int read(void){
+	reg bool f=false;
 	reg char ch=getchar();
 	reg int res=0;
-	while(!isdigit(ch))ch=getchar();
+	while(!isdigit(ch))f|=(ch=='-'),ch=getchar();
 	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
-	return res;
+	return f?-res:res;
 }
 
-inline int max(reg int a,reg int b){
-	return a>b?a:b;
-}
+const int MAXN=2e3+5;
+const int MAXM=2e3+5;
 
-inline int min(reg int a,reg int b){
-	return a<b?a:b;
-}
+int n,m;
+int a[MAXN],b[MAXM];
+int M[MAXN][MAXM];
 
-const int MAXN=3e6+5;
-
-int n;
-int l[MAXN];
-
-namespace Subtask1{
-	struct Interval{
-		int l,r;
-		inline Interval(reg int l=0,reg int r=0):l(l),r(r){
-			return;
-		}
-		inline int len(void)const{
-			return r-l+1;
-		}
-	};
-	inline Interval cap(const Interval& a,const Interval& b){
-		return Interval(max(a.l,b.l),min(a.r,b.r));
-	}
-	inline void Solve(void){
-		reg ll ans=0;
-		for(reg int L=1;L<=n;++L)
-			for(reg int R=L;R<=n;++R){
-				reg int Max=0;
-				for(reg int i=1;i<=n;++i)
-					Max=max(Max,cap(Interval(L,R),Interval(l[i],i)).len());
-				ans+=Max;
-			}
-		printf("%lld\n",ans);
+struct Node{
+	int x,y;
+	inline Node(reg int x=0,reg int y=0):x(x),y(y){
 		return;
 	}
-}
+};
 
-namespace Subtask2{
-	inline ll getSum1(reg int i){
-		return 1ll*i*(i+1)/2;
-	}
-	inline ll getSum1(reg int l,reg int r){
-		return getSum1(r)-getSum1(l-1);
-	}
-	struct Interval{
-		int l,r;
-		inline Interval(reg int l=0,reg int r=0):l(l),r(r){
-			return;
-		}
-		inline int len(void)const{
-			return r-l+1;
-		}
-	};
-	int tot;
-	Interval a[MAXN];
-	ll f[MAXN];
-	inline void Solve(void){
-		reg int top=0;
-		static int S[MAXN];
-		for(reg int i=1;i<=n;++i){
-			while(top&&l[S[top]]>=l[i])
-				--top;
-			S[++top]=i;
-		}
-		for(reg int i=1;i<=top;++i)
-			a[++tot]=Interval(l[S[i]],S[i]);
-		top=0;
-		for(reg int i=1;i<=tot;++i){
-			for(reg int j=a[i-1].r+1;j<=a[i].r;++j){
-				reg int len=j-a[i].l+1;
-				while(top&&a[S[top]].len()<=len)
-					--top;
-				reg int k=S[top];
-				if(!k)
-					f[j]=getSum1(len)+1ll*len*(a[i].l-1);
-				else{
-					reg int pos=a[k].r-j+a[i].l;
-					f[j]=getSum1(len)+1ll*(a[i].l-pos)*len+getSum1(len+1,a[k].r-a[k].l+1);
-				}
+bool vis[MAXN][MAXM];
+
+inline bool bfs(reg int s,reg int t){
+	reg int _head=0,_tail=0;
+	for(reg int i=1;i<=n;++i)
+		for(reg int j=1;j<=m;++j)
+			vis[i][j]=false;
+	static Node Q[MAXN*MAXM];
+	if(M[s][1]<0)
+		return false;
+	vis[s][1]=true,Q[_tail++]=Node(s,1);
+	while(_head<_tail){
+		static Node s;
+		s=Q[_head++];
+		reg int x=s.x,y=s.y;
+		if(x==t&&y==m)
+			return true;
+		const int dx[]={0,1};
+		const int dy[]={1,0};
+		for(reg int i=0;i<2;++i){
+			reg int fx=x+dx[i],fy=y+dy[i];
+			if(1<=fx&&fx<=n&&1<=fy&&fy<=m&&M[fx][fy]>=0&&!vis[fx][fy]){
+				vis[fx][fy]=true;
+				Q[_tail++]=Node(fx,fy);
 			}
-			S[++top]=i;
 		}
-		reg ll ans=0;
-		for(reg int i=1;i<=n;++i)
-			ans+=f[i];
-		printf("%lld\n",ans);
-		return;
 	}
+	return false;
 }
 
 int main(void){
-	n=read();
+	n=read(),m=read();
 	for(reg int i=1;i<=n;++i)
-		l[i]=read();
-		Subtask1::Solve();
+		a[i]=read();
+	for(reg int j=1;j<=m;++j)
+		b[j]=read();
+	for(reg int i=1;i<=n;++i)
+		for(reg int j=1;j<=m;++j)
+			M[i][j]=a[i]+b[j];
+	reg int ans=0;
+	for(reg int S=1;S<=n;++S)
+		for(reg int T=S;T<=n;++T)
+			if(bfs(S,T))
+				++ans;
+	printf("%d\n",ans);
 	fprintf(stderr,"%.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
 	return 0;
 }
