@@ -1,21 +1,22 @@
+#pragma GCC optimize("Ofast")
 #include<bits/stdc++.h>
 using namespace std;
 #define reg register
 typedef long long ll;
-#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
-static char buf[100000],*p1=buf,*p2=buf;
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,1<<21,stdin),p1==p2)?EOF:*p1++)
+static char buf[1<<21],*p1=buf,*p2=buf;
 #define flush() (fwrite(wbuf,1,wp1,stdout),wp1=0)
 #define putchar(c) (wp1==wp2&&(flush(),0),wbuf[wp1++]=c)
 static char wbuf[1<<21];int wp1;const int wp2=1<<21;
 inline int read(void){
 	reg char ch=getchar();
-	reg int ans=0;
+	reg int res=0;
 	while(!isdigit(ch))ch=getchar();
-	while(isdigit(ch))ans=10*ans+(ch^'0'),ch=getchar();
-	return ans;
+	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	return res;
 }
 
-inline void writeln(reg ll x){
+inline void writeln(reg int x){
 	static char buf[32];
 	reg int p=-1;
 	if(x<0) x=-x,putchar('-');
@@ -23,6 +24,12 @@ inline void writeln(reg ll x){
 	else while(x) buf[++p]=(x%10)^'0',x/=10;
 	while(~p) putchar(buf[p--]);
 	putchar('\n');
+	return;
+}
+
+inline void swap(reg int &a,reg int &b){
+	int tmp=a;
+	a=b,b=tmp;
 	return;
 }
 
@@ -39,6 +46,7 @@ struct Basis{
 		for(reg int i=MAXLOG2A-1;i>=0;--i)
 			if((x>>i)&1){
 				if(!unit[i]){
+					++tot;
 					unit[i]=x;
 					return;
 				}
@@ -52,7 +60,7 @@ struct Basis{
 				x^=unit[i];
 		return x;
 	}
-	inline void merge(const Basis& a){
+	inline void merge(Basis a){
 		if(tot==MAXLOG2A)
 			return;
 		else if(a.tot==MAXLOG2A)
@@ -92,27 +100,30 @@ namespace UnionFind{
 		top=0;
 		return;
 	}
-	inline Node find(int x){
-		if(x==fa[x])
-			return Node(x,0);
-		else
-			return Node(find(fa[x]).Xor(val[x]));
+	inline int find(reg int x){
+		while(x!=fa[x])
+			x=fa[x];
+		return x;
+	}
+	inline int getVal(reg int x){
+		reg int res=0;
+		while(x!=fa[x])
+			res^=val[x],x=fa[x];
+		return res;
 	}
 	inline int query(reg int a,reg int b){
-		Node ia=find(a),ib=find(b);
-		if(ia.fa!=ib.fa)
+		reg int ra=find(a),rb=find(b);
+		if(ra!=rb)
 			return -1;
 		else
-			return ia.val^ib.val;
+			return getVal(a)^getVal(b);
 	}
 	inline int merge1(reg int a,reg int b,reg int w){
-		static Node ia,ib;
-		ia=find(a),ib=find(b);
-		w^=ia.val^ib.val;
-		if(ia.fa==ib.fa)
+		reg int ra=find(a),rb=find(b);
+		w^=getVal(a)^getVal(b);
+		if(ra==rb)
 			return w;
 		else{
-			int ra=ia.fa,rb=ib.fa;
 			if(siz[ra]>siz[rb])
 				swap(ra,rb);
 			S[++top]=ra,fa[ra]=rb,val[ra]=w,siz[rb]+=siz[ra];
@@ -120,13 +131,11 @@ namespace UnionFind{
 		}
 	}
 	inline void merge2(reg int a,reg int b,reg int w){
-		static Node ia,ib;
-		ia=find(a),ib=find(b);
-		w^=ia.val^ib.val;
-		if(ia.fa==ib.fa)
-			bas[ia.fa].insert(w);
+		reg int ra=find(a),rb=find(b);
+		w^=getVal(a)^getVal(b);
+		if(ra==rb)
+			bas[ra].insert(w);
 		else{
-			int ra=ia.fa,rb=ib.fa;
 			if(siz[ra]>siz[rb])
 				swap(ra,rb);
 			S[++top]=ra,fa[ra]=rb,val[ra]=w,siz[rb]+=siz[ra];
@@ -178,7 +187,7 @@ int main(void){
 	for(reg int i=1;i<=m;++i)
 		e[i].u=read(),e[i].v=read(),e[i].w=read();
 	UnionFind::Init(n);
-	reg int B=0.5*sqrt(n*log2(n));
+	reg int B=300;
 	for(reg int i=1;i<=q;++i){
 		static int l,r,a,b;
 		l=read(),r=read(),a=read(),b=read();
@@ -212,14 +221,14 @@ int main(void){
 				reg int top=UnionFind::top;
 				for(reg int j=ev.l;j<=i*B;++j)
 					val[j]=UnionFind::merge1(e[j].u,e[j].v,e[j].w);
-				bas=UnionFind::bas[UnionFind::find(ev.a).fa];
+				bas=UnionFind::bas[UnionFind::find(ev.a)];
 				reg int tmp=UnionFind::query(ev.a,ev.b);
 				if(tmp==-1){
 					ans[ev.id]=-1;
 					UnionFind::rollback(top);
 				}
 				else{
-					UnionFind::tim[UnionFind::find(ev.a).fa]=++tim;
+					UnionFind::tim[UnionFind::find(ev.a)]=++tim;
 					for(reg int j=ev.l;j<=i*B;++j)
 						if(val[j]&&UnionFind::query(ev.a,e[j].u)>=0)
 							bas.insert(val[j]);
