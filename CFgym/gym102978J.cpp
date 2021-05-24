@@ -1,3 +1,4 @@
+#pragma GCC optimize("Ofast")
 #include<bits/stdc++.h>
 using namespace std;
 #define reg register
@@ -22,6 +23,10 @@ inline void write(reg int x){
 	else while(x) buf[++p]=(x%10)^'0',x/=10;
 	while(~p) putchar(buf[p--]);
 	return;
+}
+
+inline int max(reg int a,reg int b){
+	return a>b?a:b;
 }
 
 const int mod=998244353;
@@ -109,11 +114,6 @@ namespace Poly{
 		}
 		return;
 	}
-	inline void print(const poly& a){
-		for(reg int i=0,siz=a.size();i<siz;++i)
-			printf("%d%c",a[i].x,i==siz-1?'\n':' ');
-		return;
-	}
 	inline poly add(poly a,poly b){
 		a.resize(max(a.size(),b.size()));
 		for(reg int i=0,siz=b.size();i<siz;++i)
@@ -155,92 +155,98 @@ const int MAXN=2.5e5+5;
 
 int n;
 int a[MAXN];
-modInt fac[MAXN],invfac[MAXN];
+modInt fac[MAXN<<1],invfac[MAXN<<1];
 
-inline modInt binom(reg int n,reg int m){
-	if(m<0||n<m)
-		return 0;
-	else
-		return fac[n]*invfac[m]*invfac[n-m];
+inline poly getRng(poly f,reg int l,reg int r){
+	return poly{f.begin()+l,f.begin()+r+1};
 }
 
 inline poly getMov(poly f,reg int k){
-	if(!k)
+	if(k==-1)
 		return f;
-	else{
-		printf("mov f=:"),print(f);
+	else if(f.size()){
 		reg int siz=f.size();
 		reverse(f.begin(),f.end());
 		poly tmp;
 		tmp.resize(siz);
-		printf("k=%d\n",k);
 		for(reg int i=0;i<siz;++i)
-			tmp[i]=fac[i+k-1]*invfac[i];
+			tmp[i]=fac[i+k]*invfac[i];
 		poly g=mul(f,tmp);
 		g.resize(siz);
 		for(reg int i=0;i<siz;++i)
-			g[i]=g[i]*invfac[k-1];
-		printf("mov g=:"),print(g);
+			g[i]=g[i]*invfac[k];
+		reverse(g.begin(),g.end());
+		return g;
+	}
+	else
+		return poly{};
+}
+
+inline poly getTra(poly f,reg int len){
+	if(f.size()){
+		for(reg int i=0,siz=f.size();i<siz;++i)
+			f[i]=f[i]*invfac[i];
+		reg int delta=f.size()-1;
+		poly tmp;
+		tmp.resize(delta+len);
+		for(reg int i=-(f.size()-1);i<len;++i)
+			tmp[i+delta]=fac[len-i-1];
+		poly g=mul(f,tmp);
+		for(reg int i=0;i<len;++i)
+			g[i]=g[i+delta]*invfac[len-i-1];
+		g.resize(len);
+		return g;
+	}
+	else{
+		poly g;
+		g.resize(len);
 		return g;
 	}
 }
 
-inline poly solve(reg int l,reg int r,poly rig){
+inline poly solve(reg int l,reg int r,const poly& rig){
 	if(l==r){
 		modInt sum=0;
 		for(modInt x:rig)
 			sum=sum+x;
-		poly res=vector<modInt>{sum};
-		printf("l=%d r=%d rig:",l,r),print(rig),printf("res:"),print(res);
-		return res;
+		return vector<modInt>{sum};
 	}
-	reg int mid=(l+r)>>1;
-	reg int val=a[mid];
+	reg int mid=(l+r)>>1,delta=a[mid];
 	for(reg int i=mid+1;i<=r;++i)
-		a[i]-=val;
-	poly urdn=solve(mid+1,r,shiftL(rig,val));
+		a[i]-=delta;
+
+	poly __up=solve(mid+1,r,getRng(rig,a[mid],a[r]+delta-1));
+	poly __ri=getRng(rig,0,a[mid]-1);
+
+	poly __le_part1=getMov(__ri,r-(mid+1));
+	poly __dn_part1=getMov(__up,a[mid]-1);
+	poly __le_part2=getTra(__up,a[mid]);
+	poly __dn_part2=getTra(__ri,r-(mid+1)+1);
+
+	poly __le=add(__le_part1,__le_part2);
+	poly __dn=add(__dn_part1,__dn_part2);
+
 	for(reg int i=mid+1;i<=r;++i)
-		a[i]+=val;
-	printf("urdn=:"),print(urdn);
-	for(reg int i=0,siz=urdn.size();i<siz;++i)
-		urdn[i]=urdn[i]*invfac[i];
-	printf("proces urdn=:"),print(urdn);
-	poly pod;
-	reg int delta=r-(mid+1);
-	pod.resize(delta+a[mid]+1);
-	for(reg int i=-(r-(mid+1));i<=a[mid];++i)
-		pod[i+delta]=fac[val-i];
-	printf("proces pod=:"),print(pod);
-	poly g=mul(urdn,pod);
-	printf("proces g=:"),print(g);
-	g=shiftL(g,delta);
-	g.resize(a[mid]+1);
-	for(reg int i=0,siz=g.size();i<siz;++i)
-		g[i]=g[i]*fac[val-i];
-	poly pat=rig; pat.resize(a[mid]+1);
-	g=add(g,getMov(pat,r-(mid+1)));
-	printf("g=:"),print(g);
-	g=getMov(g,1);
-	printf("g=:"),print(g);
-	poly ldn=solve(l,mid,g),rdn=getMov(urdn,a[mid]);
-	poly res=add(ldn,shiftR(rdn,mid-l+1));
-	printf("l=%d r=%d rig:",l,r),print(rig),printf("res:"),print(res);
-	return res;
+		a[i]+=delta;
+	poly __dwn=solve(l,mid,__le);
+	return add(__dwn,shiftR(__dn,mid-l+1));
 }
+
+int S;
 
 int main(void){
 	n=read();
 	for(reg int i=1;i<=n;++i)
-		a[i]=read()-1;
+		a[i]=read(),S=max(S,a[i]);
+	S+=n;
 	fac[0]=1;
-	for(reg int i=1;i<MAXN;++i)
+	for(reg int i=1;i<=S;++i)
 		fac[i]=fac[i-1]*i;
-	invfac[MAXN-1]=fpow(fac[MAXN-1],mod-2);
-	for(reg int i=MAXN-2;i>=0;--i)
+	invfac[S]=fpow(fac[S],mod-2);
+	for(reg int i=S-1;i>=0;--i)
 		invfac[i]=invfac[i+1]*(i+1);
 	vector<modInt> rig;
-	rig.resize(a[n]+1,modInt(0));
-	rig[a[n]]=1;
+	rig.resize(a[n],modInt(1));
 	poly ans=solve(1,n,rig);
 	for(reg int i=0;i<n;++i)
 		write(ans[i].x),putchar(' ');
