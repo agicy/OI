@@ -94,19 +94,22 @@ namespace UnionFind{
 }
 
 namespace Graph{
-	vector<int> G[MAXN];
+	int cnt,head[MAXN],to[MAXQ],w[MAXQ],Next[MAXQ];
 	bool in[MAXN],vis[MAXN];
 	int top,S[MAXN];
 	inline void Init(void){
+		cnt=0;
 		while(top){
 			reg int u=S[--top];
 			in[u]=false,vis[u]=false;
-			G[u].clear();
+			head[u]=0;
 		}
 		return;
 	}
 	inline void Add_Edge(reg int u,reg int v){
-		G[u].push_back(v);
+		Next[++cnt]=head[u];
+		to[cnt]=v;
+		head[u]=cnt;
 		return;
 	}
 	inline void Add_Tube(reg int u,reg int v){
@@ -119,9 +122,11 @@ namespace Graph{
 		if(!in[u]) in[u]=true,S[top++]=u;
 		vis[u]=true;
 		reg int sum=UnionFind::unit[UnionFind::find(u)].siz;
-		for(int v:G[u])
+		for(reg int i=head[u];i;i=Next[i]){
+			reg int v=to[i];
 			if(!vis[v])
 				sum+=dfs(v);
+		}
 		return sum;
 	}
 }
@@ -138,8 +143,9 @@ struct edges{
 
 int n,m,q;
 Edge e[MAXM];
-vector<updates> up[MAXQ];
-vector<querys> qu[MAXQ];
+int cntu,cntq;
+updates up[MAXQ];
+querys qu[MAXQ];
 bool upd[MAXM];
 int ans[MAXQ];
 
@@ -148,59 +154,58 @@ int main(void){
 	for(reg int i=0;i<m;++i)
 		e[i].u=read()-1,e[i].v=read()-1,e[i].d=read();
 	q=read();
-	reg int B=max(100,int(sqrt(m*log2(1.0*m)))),tot=(q+B-1)/B;
+	static edges E[MAXM];
+	for(reg int i=0;i<m;++i)
+		E[i]=edges(i,e[i].u,e[i].v,e[i].d);
+	sort(E,E+m);
+	reg int B=max(100,int(0.8*sqrt(m*log2(1.0*m)))),tot=(q+B-1)/B;
 	for(reg int i=0;i<tot;++i){
 		reg int lef=i*B,rig=min(q-1,(i+1)*B-1);
+		cntu=cntq=0;
 		for(reg int j=lef;j<=rig;++j){
 			static int opt,a,b;
 			opt=read(),a=read()-1,b=read();
 			switch(opt){
 				case 1:{
-					up[i].push_back(updates(j,a,b));
+					up[cntu++]=updates(j,a,b);
 					break;
 				}
 				case 2:{
-					qu[i].push_back(querys(j,a,b));
+					qu[cntq++]=querys(j,a,b);
 					break;
 				}
 			}
 		}
-	}
-	static edges E[MAXM];
-	for(reg int i=0;i<m;++i)
-		E[i]=edges(i,e[i].u,e[i].v,e[i].d);
-	sort(E,E+m);
-	for(reg int i=0;i<tot;++i){
 		reg int top=0;
 		static int S[MAXM];
-		for(updates u:up[i])
-			if(!upd[u.id])
-				upd[u.id]=true,S[top++]=u.id;
+		for(reg int j=0;j<cntu;++j)
+			if(!upd[up[j].id])
+				upd[up[j].id]=true,S[top++]=up[j].id;
 		reg int cnt1=0,cnt2=0;
 		static edges tmp1[MAXM],tmp2[MAXM];
 		for(reg int j=0;j<m;++j)
 			if(!upd[E[j].id])
 				tmp1[cnt1++]=E[j];
 		UnionFind::Init(n);
-		sort(qu[i].begin(),qu[i].end(),Qcmp_val);
-		for(reg int j=0,siz=qu[i].size(),ptr=0;j<siz;++j){
-			while(ptr<cnt1&&tmp1[ptr].w>=qu[i][j].val)
+		sort(qu,qu+cntq,Qcmp_val);
+		for(reg int j=0,ptr=0;j<cntq;++j){
+			while(ptr<cnt1&&tmp1[ptr].w>=qu[j].val)
 				UnionFind::merge(tmp1[ptr].u,tmp1[ptr].v),++ptr;
 			static int val[MAXM];
-			for(updates u:up[i])
-				val[u.id]=e[u.id].d;
-			for(updates u:up[i])
-				if(u.tim<qu[i][j].id)
-					val[u.id]=u.val;
+			for(reg int k=0;k<cntu;++k)
+				val[up[k].id]=e[up[k].id].d;
+			for(reg int k=0;k<cntu;++k)
+				if(up[k].tim<qu[j].id)
+					val[up[k].id]=up[k].val;
 			Graph::Init();
-			for(updates u:up[i])
-				if(val[u.id]>=qu[i][j].val)
-					if(!UnionFind::search(e[u.id].u,e[u.id].v))
-						Graph::Add_Tube(UnionFind::find(e[u.id].u),UnionFind::find(e[u.id].v));
-			ans[qu[i][j].id]=Graph::dfs(UnionFind::find(qu[i][j].pos));
+			for(reg int k=0;k<cntu;++k)
+				if(val[up[k].id]>=qu[j].val)
+					if(!UnionFind::search(e[up[k].id].u,e[up[k].id].v))
+						Graph::Add_Tube(UnionFind::find(e[up[k].id].u),UnionFind::find(e[up[k].id].v));
+			ans[qu[j].id]=Graph::dfs(UnionFind::find(qu[j].pos));
 		}
-		for(updates u:up[i])
-			e[u.id].d=u.val;
+		for(reg int j=0;j<cntu;++j)
+			e[up[j].id].d=up[j].val;
 		for(reg int j=0;j<top;++j){
 			reg int id=S[j];
 			upd[id]=false;
