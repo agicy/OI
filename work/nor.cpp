@@ -1,321 +1,268 @@
 #include<bits/stdc++.h>
 using namespace std;
-#define reg register
-typedef long long ll;
-#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,1<<21,stdin),p1==p2)?EOF:*p1++)
-static char buf[1<<21],*p1=buf,*p2=buf;
-inline int read(void){
-	reg bool f=false;
-	reg char ch=getchar();
-	reg int res=0;
-	while(!isdigit(ch))f|=(ch=='-'),ch=getchar();
-	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
-	return f?-res:res;
+
+inline int read(){
+	char ch=getchar();
+	int v=0;
+	while(ch < '0' || ch > '9') ch=getchar();
+	while(ch >= '0' && ch<='9') v=v * 10 + ch - '0',ch=getchar();
+	return v;
 }
 
-inline int max(reg int a,reg int b){
-	return a>b?a:b;
-}
+int n,m,q;
+bool s1[101010];
+int type[101010];
+int s0Length;
 
-inline int min(reg int a,reg int b){
-	return a<b?a:b;
-}
+struct Question{
+	int id;
+	int l,r,area,curProgress=0;
+}qu[101010],questionSortTmp[101010];
 
-const int MAXN=2e5+5;
-const int MAXM=2e5+5;
-const int MAXLOG2N=18+1;
-const int inf=0x3f3f3f3f;
-
-int n,m;
-int a[MAXN],b[MAXM];
-int Maxb,Minb;
-int preMaxb[MAXM],preMinb[MAXM];
-int sufMaxb[MAXM],sufMinb[MAXM];
-
-namespace ST{
-	int lg[MAXN];
-	int Max[MAXLOG2N][MAXN];
-	inline void Init(reg int n,reg int a[]){
-		lg[0]=-1;
-		for(reg int i=1;i<=n;++i){
-			lg[i]=lg[i>>1]+1;
-			Max[0][i]=a[i];
-		}
-		for(reg int j=1;j<MAXLOG2N;++j)
-			for(reg int i=1;i+(1<<j)-1<=n;++i)
-				Max[j][i]=max(Max[j-1][i],Max[j-1][i+(1<<(j-1))]);
-		return;
-	}
-	inline int queryMax(reg int l,reg int r){
-		reg int k=lg[r-l+1];
-		return max(Max[k][l],Max[k][r-(1<<k)+1]);
-	}
-}
-
-struct Event{
-	int x,l,r,val;
-	inline Event(reg int x=0,reg int l=0,reg int r=0,reg int val=0):x(x),l(l),r(r),val(val){
-		return;
-	}
-	inline bool operator<(const Event& a)const{
-		return x<a.x;
-	}
-};
-
-struct Interval{
-	int l,r;
-	inline Interval(reg int l=0,reg int r=0):l(l),r(r){
-		return;
-	}
-};
-
-vector<Event> Eadd;
-vector<Event> Edel;
-
-inline void solve(reg int ln,reg int rn){
-	if(ln>rn)
-		return;/*
-	printf("solve %d %d\n",ln,rn);*/
-	reg int Mina=min_element(a+ln,a+rn+1)-a;
-	if(a[Mina]+b[Maxb]<0)
-		solve(ln,Mina-1),solve(Mina+1,rn);
-	else{
-		vector<Interval> V;
-		reg int las=-1;
-		for(reg int i=ln;i<=rn;++i){
-			if(a[i]+b[Minb]<0){
-				if(las==-1)
-					las=i;
+inline bool check(int l){
+	for(int i=1;i < 40 / l;i++)
+		for(int j=0;j < l;j++)
+			if(s1[j + 1] != s1[i * l + j + 1] && i * l + j + 1<=m)
+			{
+				//printf("%d fake in %d and %d\n",l + 1,j,i * l + j + 1);
+				return false;
 			}
-			else{
-				if(las!=-1){
-					V.push_back(Interval(las,i-1));
-					las=-1;
-				}
-			}
-		}
-		if(las!=-1)
-			V.push_back(Interval(las,rn));/*
-		for(reg int i=0,siz=V.size();i<siz;++i)
-			printf("i=%d inv=[%d,%d]\n",i,V[i].l,V[i].r);*/
-		reg int ptr=0,lim=0;
-		for(reg int i=ln;i<=rn;++i){
-			while(ptr<(int)V.size()&&V[ptr].l<=i){
-				lim=V[ptr].r+1;
-				++ptr;
-			}
-			Eadd.push_back(Event(i,max(lim,i),rn+1,1));
-			Eadd.push_back(Event(i+1,max(lim,i),rn+1,-1));/*
-			printf("i=%d -> [%d,%d]\n",i,max(lim,i),rn);
-			printf("ang((%d,%d),(%d,%d)) %d\n",i,max(lim,i),i,rn,1);*/
-		}
-	}
-	return;
+	return true;
 }
+inline void measureS0Length(){
+	for(int res=1;res<=20;res++){
+		if(m % res != 0) continue;
+		if(res > m) continue;
 
-vector<int> V;
-
-namespace SegmentTree{
-	#define lson ( (k) << 1 )
-	#define rson ( (k) << 1 | 1 )
-	#define mid ( ( (l) + (r) ) >> 1 )
-	struct Node{
-		int len,cnt,tag;
-		#define len(x) unit[(x)].len
-		#define cnt(x) unit[(x)].cnt
-		#define tag(x) unit[(x)].tag
-	};
-	Node unit[MAXN<<2];
-	inline void pushup(reg int k,reg int l,reg int r){
-		if(tag(k))
-			cnt(k)=len(k);
-		else if(l!=r)
-			cnt(k)=cnt(lson)+cnt(rson);
-		else
-			cnt(k)=0;
-		return;
-	}
-	inline void build(reg int k,reg int l,reg int r){
-		len(k)=V[r+1]-V[l];
-		cnt(k)=tag(k)=0;
-		if(l==r)
-			return;
-		build(lson,l,mid),build(rson,mid+1,r);
-		return;
-	}
-	int L,R,val;
-	inline void update(reg int k,reg int l,reg int r){
-		if(L<=l&&r<=R){
-			tag(k)+=val;
-			pushup(k,l,r);
+		if(check(res)) {
+			s0Length=res;
 			return;
 		}
-		if(L<=mid)
-			update(lson,l,mid);
-		if(R>mid)
-			update(rson,mid+1,r);
-		pushup(k,l,r);
-		return;
 	}
-	#undef lson
-	#undef rson
-	#undef mid
-	#undef len
-	#undef cnt
-	#undef tag
+}
+inline void readS1(){
+	int ptr=0;
+	char ch;
+	while(ch < '0' || ch > '1') ch=getchar();
+	for(int i=1;i<=m;i++) s1[i]=ch == '1',ch=getchar();
 }
 
-inline ll sweepLine(vector<Event> E){
-	sort(E.begin(),E.end());
-	/*
-	for(reg int i=0,siz=E.size();i<siz;++i)
-		printf("i=%d E=(x=%d,l=%d,r=%d,val=%d)\n",i,E[i].x,E[i].l,E[i].r,E[i].val);
-	*/
-	for(reg int i=0,siz=E.size();i<siz;++i)
-		V.push_back(E[i].l),V.push_back(E[i].r);
-	sort(V.begin(),V.end()),V.erase(unique(V.begin(),V.end()),V.end());
-	for(reg int i=0,siz=E.size();i<siz;++i){
-		E[i].l=lower_bound(V.begin(),V.end(),E[i].l)-V.begin();
-		E[i].r=lower_bound(V.begin(),V.end(),E[i].r)-V.begin();
-	}
-	reg ll res=0;
-	SegmentTree::build(1,0,V.size()-2);
-	/*
-	printf("!!!!!!!! V.size()=%d\n",V.size());
-	for(reg int i=0,siz=E.size();i<siz;++i)
-		printf("i=%d E=(x=%d,l=%d,r=%d,val=%d)\n",i,E[i].x,E[i].l,E[i].r,E[i].val);
-	*/
-	for(reg int i=0,siz=E.size();i<siz;++i){
-		if(i){
-			res+=1ll*SegmentTree::unit[1].cnt*(E[i].x-E[i-1].x);
-			/*
-			puts("======");
-			printf("i=%d res=%lld cnt=%d\n\n",i,res,SegmentTree::unit[1].cnt);
-			puts("======");*/
-		}
-		SegmentTree::L=E[i].l,SegmentTree::R=E[i].r-1,SegmentTree::val=E[i].val;
-		SegmentTree::update(1,0,V.size()-2);
-	}
-	return res;
+bool vis[101010];
+int nex[201010],to[201010],head[101010],edgeCnt=0;
+inline void Add_Edge(int u,int v){
+	nex[++edgeCnt]=head[u];
+	to[edgeCnt]=v;
+	head[u]=edgeCnt;
 }
 
-int main(void){
-	n=read(),m=read();
-	for(reg int i=1;i<=n;++i)
-		a[i]=read();
-	ST::Init(n,a);
-	for(reg int j=1;j<=m;++j)
-		b[j]=read();/*
-	puts("=====");
-	puts("matrix:");
-	for(reg int i=1;i<=n;++i)
-		for(reg int j=1;j<=m;++j)
-			printf("%d%c",a[i]+b[j],j==m?'\n':'\t');
-	puts("====");*/
-	preMaxb[0]=-inf,preMinb[0]=inf;
-	for(reg int j=1;j<=m;++j){
-		preMaxb[j]=max(preMaxb[j-1],b[j]);
-		preMinb[j]=min(preMinb[j-1],b[j]);
+bool gravityVis[101010];
+int siz[101010];
+int curGravity,curGravityWeight,totSize;
+void dfs1(int p){
+	gravityVis[p]=true;
+	siz[p]=1;
+	for(int i=head[p];i;i=nex[i]){
+		int v=to[i];
+		if(vis[v] || gravityVis[v]) continue;
+		dfs1(v);
+		siz[p] += siz[v];
 	}
-	sufMaxb[m+1]=-inf,sufMinb[m+1]=inf;
-	for(reg int j=m;j>=1;--j){
-		sufMaxb[j]=max(sufMaxb[j+1],b[j]);
-		sufMinb[j]=min(sufMinb[j+1],b[j]);
+}
+void dfs2(int p){
+	gravityVis[p]=false;
+	int res=0;
+	for(int i=head[p];i;i=nex[i]){
+		int v=to[i];
+		if(vis[v] || !gravityVis[v]) continue;
+		res=max(res,siz[v]);
 	}
-	Maxb=max_element(b+1,b+m+1)-b,Minb=min_element(b+1,b+m+1)-b;/*
-	printf("Maxb=%d Minb=%d\n",Maxb,Minb);
-	puts("====");*/
-	solve(1,n);
-	/*puts("====");*/
-	for(reg int i=1;i<=n;++i){
-		if(a[i]+b[1]>=0)
-			continue;
-		else{
-			reg int _l,_r,_mid;
-			_l=1,_r=m;
-			while(_l<_r){
-				_mid=(_l+_r)>>1;
-				if(a[i]+preMaxb[_mid+1]<0)
-					_l=_mid+1;
-				else
-					_r=_mid;
-			}
-			reg int j=_l;
-			_l=1,_r=j;
-			while(_l<_r){
-				_mid=(_l+_r)>>1;
-				if(preMinb[_mid]==preMinb[j])
-					_r=_mid;
-				else
-					_l=_mid+1;
-			}
-			reg int k=_l;
-			_l=1,_r=i;
-			while(_l<_r){
-				_mid=(_l+_r)>>1;
-				if(ST::queryMax(_mid,i)+b[k]<0)
-					_r=_mid;
-				else
-					_l=_mid+1;
-			}
-			reg int up=_l;/*
-			printf("fi i=%d j=%d k=%d up=%d\n",i,j,k,up);
-			printf("delete [%d,%d]\n",up,i);*/
-			Eadd.push_back(Event(up,1,n+1,1));
-			Eadd.push_back(Event(i+1,1,n+1,-1));
-			Edel.push_back(Event(up,1,n+1,1));
-			Edel.push_back(Event(i+1,1,n+1,-1));
-			//printf("ang((%d,%d),(%d,%d)) %d\n",up,1,i,n,-1);
-		}
-	}/*
-	puts("====");
-*/
-	for(reg int i=n;i>=1;--i){
-		if(a[i]+b[m]>=0)
-			continue;
-		else{
+	res=max(res,totSize - siz[p]);
+	if(res < curGravityWeight){
+		curGravityWeight=res;
+		curGravity=p;
+	}
+	for(int i=head[p];i;i=nex[i]){
+		int v=to[i];
+		if(vis[v] || !gravityVis[v]) continue;
+		dfs2(v);
+	}
+}
+inline void getGravity(int start){
+	curGravity=-1,curGravityWeight=0x3f3f3f3f;
+	dfs1(start);
+	//for(int i=1;i<=n;i++) printf("%d ",siz[i]);
+	totSize=siz[start];
+	dfs2(start);
+	//printf("%d",curGravity);
+}
 
-			reg int _l,_r,_mid;
-			_l=1,_r=m;
-			while(_l<_r){
-				_mid=(_l+_r)>>1;
-				if(a[i]+sufMaxb[_mid]<0)
-					_r=_mid;
-				else
-					_l=_mid+1;
-			}
-			reg int j=_l;
-			_l=j,_r=m;
-			while(_l<_r){
-				_mid=(_l+_r)>>1;
-				if(sufMinb[_mid+1]==sufMinb[j])
-					_l=_mid+1;
-				else
-					_r=_mid;
-			}
-			reg int k=_l;
-			_l=i,_r=n;
-			while(_l<_r){
-				_mid=(_l+_r)>>1;
-				if(ST::queryMax(i,_mid+1)+b[k]<0)
-					_l=_mid+1;
-				else
-					_r=_mid;
-			}
-			reg int dn=_l;/*
-			printf("i=%d j=%d(%d) k=%d dn=%d\n",i,j,a[i]+sufMaxb[j]<0,k,dn);
-*/
-			Eadd.push_back(Event(1,i,dn+1,-1));
-			Eadd.push_back(Event(n+1,i,dn+1,1));
-			Edel.push_back(Event(1,i,dn+1,-1));
-			Edel.push_back(Event(n+1,i,dn+1,1));/*
-			printf("delete [%d,%d]\n",i,dn);
-			printf("ang((%d,%d),(%d,%d)) %d\n",1,i,n,dn,-1);*/
+bool dtvis[101010];
+int area[101010];
+inline void spreadArea(int p){
+	dtvis[p]=true;
+	//printf("%d ",p);
+	for(int i=head[p];i;i=nex[i]){
+		int v=to[i];
+		if(vis[v] || dtvis[v]) continue;
+		area[v]=area[p];
+		spreadArea(v);
+	}
+	dtvis[p]=false;
+}
+
+int areaCnt;
+int areaSize[101010];
+int nextArea[101010];
+int dist[21][101010];
+
+void getTargetDist(int p){
+	dtvis[p]=true;/*
+	for(int j=0;j < s0Length;j++){
+		printf("dist:(%d,%d) -> %d\n",j,p,dist[j][p]);
+	}*/
+
+	for(int i=head[p];i;i=nex[i]){
+		int v=to[i];
+		if(vis[v] || dtvis[v]) continue;
+		
+		for(int j=0;j < s0Length;j++){
+			if(type[v] == s1[j + 1]) dist[j][v]=dist[j + 1 < s0Length ? j + 1 : 0][p] + 1;
+			else dist[j][v]=dist[j][p];
 		}
-	}/*
-	puts("====");*/
-	reg int ans1=sweepLine(Eadd),ans2=sweepLine(Edel);/*
-	printf("ans1=%d ans2=%d\n",ans1,ans2);*/
-	printf("%d\n",ans1-ans2);
+
+		getTargetDist(v);
+	}
+	dtvis[p]=false;
+}
+inline void getDistArea(int p){
+	areaCnt=0;
+	for(int i=head[p];i;i=nex[i]){
+		int v=to[i];
+		if(vis[v]) continue;
+	//	printf("area %d:",areaCnt + 1);
+		nextArea[++areaCnt]=v;
+		area[v]=areaCnt;
+		spreadArea(v);
+	//	printf("\n");
+	}
+	if(!areaCnt) return;
+	
+	area[p]=areaCnt + 1;
+	nextArea[areaCnt + 1]=0;
+
+	for(int i=0;i < s0Length;i++){
+		if(type[p] == s1[i + 1]) dist[i][p]=1;
+		else dist[i][p]=0;
+	}
+	getTargetDist(p);
+}
+
+int sortTmp[101010]={1};
+inline void sortQuestions(int l,int r,int areaCnt){
+	for(int i=1;i<=areaCnt + 1;i++) areaSize[i]=0;
+	for(int i=l;i<=r;i++){
+		qu[i].area=area[qu[i].r];
+		//printf("quest %d(%d,%d) area=%d\n",i,qu[i].l,qu[i].r,qu[i].area);
+		areaSize[qu[i].area]++;
+	}
+	areaSize[0]=0;
+	for(int i=1;i<=areaCnt + 1;i++){
+		sortTmp[i]=sortTmp[i - 1] + areaSize[i - 1];
+		//printf("Area %d siz=%d pos=%d\n",i,areaSize[i],sortTmp[i]);
+	}
+	for(int i=l;i<=r;i++){
+		int pos=sortTmp[qu[i].area]++;
+		questionSortTmp[pos + (l - 1)]=qu[i];
+	}
+	//printf("sorted:\n");
+	for(int i=l;i<=r;i++){
+		qu[i]=questionSortTmp[i];
+	//	printf("%d->(%d~%d,%d)",i,qu[i].l,qu[i].r,qu[i].area);
+	}
+	//printf("\n");
+}
+
+inline void cutQuestions(int l,int r,int areaCnt){
+	for(int i=l;i<=r;i++){
+	//	printf("->");
+		if(area[qu[i].l] == qu[i].area) continue;
+	//	printf("solving %d (%d~%d,progress=%d)\n",i,qu[i].l,qu[i].r,qu[i].curProgress);
+		qu[i].curProgress += dist[qu[i].curProgress % s0Length][qu[i].l];
+		qu[i].l=nextArea[qu[i].area];
+		if(!qu[i].l) qu[i].r=0;
+	//	printf("get new: (%d~%d),progress=%d\n",qu[i].l,qu[i].r,qu[i].curProgress);
+	}
+}
+
+struct Vector3{
+	int x,y,z;
+	Vector3(int x,int y,int z) : x(x),y(y),z(z){}
+	void Print(){ printf("(%d,%d,%d)",x,y,z);}
+};
+
+void Solve(int p,int l,int r){
+	//printf("-----solving %d,(%d-%d)-----\n",p,l,r);
+	vis[p]=true;
+	getDistArea(p);
+	if(areaCnt == 0) return;
+	sortQuestions(l,r,areaCnt);
+	cutQuestions(l,r,areaCnt);
+	//printf("next solve:\n");
+	stack<Vector3> solvingList;
+	for(int i=1;i<=areaCnt;i++){
+		if(areaSize[i] == 0) continue;
+		getGravity(nextArea[i]);
+		int v=curGravity;
+	//	printf("%d(i=%d):",v,i);
+		solvingList.push(Vector3(v,sortTmp[i - 1] + l - 1,sortTmp[i - 1] + areaSize[i] + l - 2));
+	//	solvingList.top().Print();
+	//	printf("\n");
+	}
+	while(!solvingList.empty()){
+		Vector3 v=solvingList.top();
+		solvingList.pop();
+		Solve(v.x,v.y,v.z);
+	}
+}
+
+int finalRes[101010];
+inline void answer(){
+	for(int i=1;i<=q;i++){
+		int p=qu[i].curProgress;
+		if(qu[i].l != 0){
+			if(qu[i].l != qu[i].r) printf("!");
+			if(type[qu[i].l] == s1[qu[i].curProgress % s0Length + 1]) 
+				p++;
+		}
+		finalRes[qu[i].id]=p;
+	}
+	for(int i=1;i<=q;i++) printf("%d\n",finalRes[i]);
+}
+int main(){
+	memset(vis,0,sizeof vis);
+	memset(gravityVis,0,sizeof gravityVis);
+	n=read(),m=read(),q=read();
+ 	readS1();
+	measureS0Length();
+	fprintf(stderr,"stage1 %.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
+	for(int i=1;i<=n;i++)
+	    type[i]=read();
+	for(int i=1;i < n;i++){
+		int u=read(),v=read();
+		Add_Edge(u,v),Add_Edge(v,u);
+	}
+	for(int i=1;i<=q;i++){
+		qu[i].l=read();
+		qu[i].r=read();
+		qu[i].id=i;
+	}
+	fprintf(stderr,"stage2 %.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
+	getGravity(1);
+	int x=curGravity;
+	fprintf(stderr,"stage3 %.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
+	Solve(x,1,q);
+	fprintf(stderr,"stage4 %.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
+	answer();
+	fprintf(stderr,"final %.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
 	return 0;
 }
