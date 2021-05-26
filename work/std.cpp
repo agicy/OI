@@ -1,77 +1,83 @@
-#include<bits/stdc++.h>
+
+//std:
+#include<algorithm>
+#include<cstdio>
+#include<vector>
+#define pb push_back
+#define ll long long
+#define MaxN 405
 using namespace std;
-#define reg register
-typedef long long ll;
-#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,1<<21,stdin),p1==p2)?EOF:*p1++)
-static char buf[1<<21],*p1=buf,*p2=buf;
-inline int read(void){
-	reg bool f=false;
-	reg char ch=getchar();
-	reg int res=0;
-	while(!isdigit(ch))f|=(ch=='-'),ch=getchar();
-	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
-	return f?-res:res;
+const int mod=998244353;
+ll powM(ll a,int t=mod-2){
+  ll ret=1;
+  while(t){
+    if (t&1)ret=ret*a%mod;
+    a=a*a%mod;t>>=1;
+  }return ret;
 }
-
-const int MAXN=2e3+5;
-const int MAXM=2e3+5;
-
-int n,m;
-int a[MAXN],b[MAXM];
-int M[MAXN][MAXM];
-
-struct Node{
-	int x,y;
-	inline Node(reg int x=0,reg int y=0):x(x),y(y){
-		return;
-	}
-};
-
-bool vis[MAXN][MAXM];
-
-inline bool bfs(reg int s,reg int t){
-	reg int _head=0,_tail=0;
-	for(reg int i=1;i<=n;++i)
-		for(reg int j=1;j<=m;++j)
-			vis[i][j]=false;
-	static Node Q[MAXN*MAXM];
-	if(M[s][1]<0)
-		return false;
-	vis[s][1]=true,Q[_tail++]=Node(s,1);
-	while(_head<_tail){
-		static Node s;
-		s=Q[_head++];
-		reg int x=s.x,y=s.y;
-		if(x==t&&y==m)
-			return true;
-		const int dx[]={0,1};
-		const int dy[]={1,0};
-		for(reg int i=0;i<2;++i){
-			reg int fx=x+dx[i],fy=y+dy[i];
-			if(1<=fx&&fx<=n&&1<=fy&&fy<=m&&M[fx][fy]>=0&&!vis[fx][fy]){
-				vis[fx][fy]=true;
-				Q[_tail++]=Node(fx,fy);
-			}
-		}
-	}
-	return false;
+ll c[MaxN][MaxN][2];
+void Init(int n)
+{
+  ll buf=1;
+  for (int i=0;i<=n;i++){
+    c[i][0][0]=c[i][0][1]=1;
+    for (int j=1;j<=n;j++){
+      c[i][j][1]=c[i][j-1][1]*buf%mod;
+      c[i][j][0]=c[i][j-1][0]*(buf-1)%mod;
+    }buf=buf*2%mod;
+  }
 }
-
-int main(void){
-	n=read(),m=read();
-	for(reg int i=1;i<=n;++i)
-		a[i]=read();
-	for(reg int j=1;j<=m;++j)
-		b[j]=read();
-	for(reg int i=1;i<=n;++i)
-		for(reg int j=1;j<=m;++j)
-			M[i][j]=a[i]+b[j];
-	reg int ans=0;
-	for(reg int S=1;S<=n;++S)
-		for(reg int T=S;T<=n;++T)
-			if(bfs(S,T))
-				++ans;
-	printf("%d\n",ans);
-	fprintf(stderr,"%.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
-	return 0;
+vector<int> g[MaxN];
+int siz[MaxN],len[MaxN];
+ll f[MaxN][MaxN][2];
+void dfs(int u)
+{
+  if (!u)return ;
+  f[u][0][1]=1;
+  for (int i=0,v;i<g[u].size();i++){
+    dfs(v=g[u][i]);
+    siz[u]+=siz[v];
+    for (int k=siz[u];k>=0;k--){
+      ll sav0=0,sav1=0;
+      for (int j=0;j<=min(siz[v],k);j++){
+        ll buf=(f[v][j][0]+f[v][j][1])*(f[u][k-j][0]+f[u][k-j][1])%mod,
+           buf2=f[v][j][1]*f[u][k-j][1]%mod;
+        sav0+=buf-buf2;sav1+=buf2;
+      }f[u][k][0]=sav0%mod;
+      f[u][k][1]=sav1%mod;
+    }
+  }for (int p=0;p<=siz[u];p++){
+    f[u][p][0]=f[u][p][0]*c[siz[u]-p][len[u]][0]%mod;
+    f[u][p][1]=f[u][p][1]*c[siz[u]-p][len[u]][1]%mod;
+  }
+}
+int n,h[MaxN],tn;
+int build(int l,int r,int pre)
+{
+  int mx=*min_element(h+l,h+r+1),
+      u=++tn,p=l;
+  len[u]=mx-pre;
+  for (int i=l;i<=r;i++)
+    if (h[i]==mx){
+      g[u].pb(0);
+      if (p<i)g[u].pb(build(p,i-1,mx));
+      p=i+1;
+    }
+  if (p<=r)g[u].pb(build(p,r,mx));
+  return u;
+}
+int main()
+{
+  scanf("%d",&n);Init(n);
+  for (int i=1;i<=n;i++)
+    scanf("%d",&h[i]);
+  siz[0]=1;f[0][1][1]=mod-1;f[0][0][1]=f[0][1][0]=1;
+  //0节点代表空行 
+  int rt=build(1,n,0);
+  dfs(rt);
+  ll ans=0;
+  for (int p=0;p<=n;p++)
+    ans+=f[rt][p][0]+f[rt][p][1];
+  printf("%lld",(ans%mod+mod)%mod);
+  return 0;
 }
