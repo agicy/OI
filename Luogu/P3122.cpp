@@ -139,34 +139,36 @@ inline void solve(reg int l,reg int r,reg int lu,reg int ru,reg int lq,reg int r
 				--top;
 			S[++top]=tmp[i];
 		}
-		for(reg int i=midq+1;i<=rq;++i){
-			reg int __l=1,__r=top,__mid;
-			while(__l<__r){
-				__mid=(__l+__r)>>1;
-				if(getVal(qu[i],S[__mid])<getVal(qu[i],S[__mid+1]))
-					__l=__mid+1;
-				else
-					__r=__mid;
+		for(reg int i=midq+1;i<=rq;++i)
+			if(qu[i].Max<=0){
+				reg int __l=1,__r=top,__mid;
+				while(__l<__r){
+					__mid=(__l+__r)>>1;
+					if(getVal(qu[i],S[__mid])<getVal(qu[i],S[__mid+1]))
+						__l=__mid+1;
+					else
+						__r=__mid;
+				}
+				qu[i].Max=max(qu[i].Max,getVal(qu[i],S[__l]));
 			}
-			qu[i].Max=max(qu[i].Max,getVal(qu[i],S[__l]));
-		}
 		top=0;
 		for(reg int i=1;i<=tot;++i){
 			while(top>1&&cross(S[top]-S[top-1],tmp[i]-S[top-1])<=0)
 				--top;
 			S[++top]=tmp[i];
 		}
-		for(reg int i=midq+1;i<=rq;++i){
-			reg int __l=1,__r=top,__mid;
-			while(__l<__r){
-				__mid=(__l+__r)>>1;
-				if(getVal(qu[i],S[__mid])>getVal(qu[i],S[__mid+1]))
-					__l=__mid+1;
-				else
-					__r=__mid;
+		for(reg int i=midq+1;i<=rq;++i)
+			if(qu[i].Min>=0){
+				reg int __l=1,__r=top,__mid;
+				while(__l<__r){
+					__mid=(__l+__r)>>1;
+					if(getVal(qu[i],S[__mid])>getVal(qu[i],S[__mid+1]))
+						__l=__mid+1;
+					else
+						__r=__mid;
+				}
+				qu[i].Min=min(qu[i].Min,getVal(qu[i],S[__l]));
 			}
-			qu[i].Min=min(qu[i].Min,getVal(qu[i],S[__l]));
-		}
 	}
 	solve(mid+1,r,midu+1,ru,midq+1,rq);
 	return;
