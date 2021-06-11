@@ -53,7 +53,7 @@ inline double getDis(const Point& a,const Point& b){
 }
 
 inline bool isEmpty(const Point& a){
-	return a.x!=a.x||a.y!=a.y;
+	return isnan(a.x)||isnan(a.y);
 }
 
 struct Circle{
@@ -90,17 +90,15 @@ inline Point getPot(const Circle &a,const Circle &b){
 			return a.getRig();
 		else{
 			reg double d=getDis(a.o,b.o);
-			reg double ang=acos(((sqr(a.r)+sqr(d))-sqr(b.r))/(2*a.r*d));
-			reg double delta=atan2(b.o.y-a.o.y,b.o.x-a.o.x);
-			reg double ang1=delta+ang,ang2=delta-ang;
-			Point p1=a.o+Vector(cos(ang1)*a.r,sin(ang1)*a.r);
-			Point p2=a.o+Vector(cos(ang2)*a.r,sin(ang2)*a.r);
-			Point res;
+			reg double val=(sqr(a.r)+sqr(d)-sqr(b.r))/(2*d);
+			reg double h=sqrt(sqr(a.r)-sqr(val));
+			Point bas=a.o+(b.o-a.o)*(val/d);
+			Vector tmp=Vector(b.o.y-a.o.y,a.o.x-b.o.x)*(h/d);
+			Point p1=bas-tmp,p2=bas+tmp;
 			if(sgn(p2.x-p1.x)>0)
-				res=p2;
+				return p2;
 			else
-				res=p1;
-			return res;
+				return p1;
 		}
 	}
 }
