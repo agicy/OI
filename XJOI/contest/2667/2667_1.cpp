@@ -92,36 +92,21 @@ int main(void){
 		f[0][0]=0;
 		for(reg int i=1;i<=n+1;++i){
 			for(reg int j=1;j<=n+1;++j){
-				reg int __l,__r,__mid,ptr;
 				Point r=getPointR(i-1,j-1);
 				while(tailr[i-1]-headr[i-1]>1&&sgn(cross(row[i-1][tailr[i-1]-1]-row[i-1][tailr[i-1]-2],r-row[i-1][tailr[i-1]-2]))<=0)
 					--tailr[i-1];
 				row[i-1][tailr[i-1]++]=r;
-				__l=headr[i-1],__r=tailr[i-1]-1;
-				while(__l<__r){
-					__mid=(__l+__r)>>1;
-					if(sgn(row[i-1][__mid+1].y-row[i-1][__mid].y-1.0*sumy[j-1]*(row[i-1][__mid+1].x-row[i-1][__mid].x))>=0)
-						__r=__mid;
-					else
-						__l=__mid+1;
-				}
-				ptr=__l;
-				f[i][j]=max(f[i][j],getValR(row[i-1][ptr],i,j));
+				while(tailr[i-1]-headr[i-1]>1&&sgn(row[i-1][headr[i-1]+1].y-row[i-1][headr[i-1]].y-1.0*sumy[j-1]*(row[i-1][headr[i-1]+1].x-row[i-1][headr[i-1]].x))<0)
+					++headr[i-1];
+				f[i][j]=max(f[i][j],getValR(row[i-1][headr[i-1]],i,j));
 
 				Point c=getPointC(i-1,j-1);
 				while(tailc[j-1]-headc[j-1]>1&&sgn(cross(col[j-1][tailc[j-1]-1]-col[j-1][tailc[j-1]-2],c-col[j-1][tailc[j-1]-2]))<=0)
 					--tailc[j-1];
 				col[j-1][tailc[j-1]++]=c;
-				__l=headc[j-1],__r=tailc[j-1]-1;
-				while(__l<__r){
-					__mid=(__l+__r)>>1;
-					if(sgn(col[j-1][__mid+1].y-col[j-1][__mid].y-1.0*sumx[i-1]*(col[j-1][__mid+1].x-col[j-1][__mid].x))>=0)
-						__r=__mid;
-					else
-						__l=__mid+1;
-				}
-				ptr=__l;
-				f[i][j]=max(f[i][j],getValC(col[j-1][ptr],i,j));
+				while(tailc[j-1]-headc[j-1]>1&&sgn(col[j-1][headc[j-1]+1].y-col[j-1][headc[j-1]].y-1.0*sumx[i-1]*(col[j-1][headc[j-1]+1].x-col[j-1][headc[j-1]].x))<0)
+					++headc[j-1];
+				f[i][j]=max(f[i][j],getValC(col[j-1][headc[j-1]],i,j));
 
 				//printf("i=%d j=%d f=%lld\n",i,j,f[i][j]);
 			}
