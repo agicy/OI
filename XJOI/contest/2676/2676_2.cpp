@@ -101,7 +101,7 @@ int Cnt;
 modInt ans;
 
 inline vector<int> merge(vector<int> a,vector<int> b){
-	vector
+	return 
 }
 
 inline void dfs(reg bool flag,reg int las,bitset<MAXN> p,bitset<MAXN> np,vector<int> V){
