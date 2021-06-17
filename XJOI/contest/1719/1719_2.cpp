@@ -1,3 +1,4 @@
+#pragma GCC optimize("Ofast")
 #include<bits/stdc++.h>
 using namespace std;
 #define reg register
@@ -11,12 +12,11 @@ static char buf[1<<21],*p1=buf,*p2=buf;
 #define putchar(c) (wp1==wp2&&(flush(),0),wbuf[wp1++]=c)
 static char wbuf[1<<21];int wp1;const int wp2=1<<21;
 inline int read(void){
-	reg bool f=false;
 	reg char ch=getchar();
 	reg int res=0;
-	while(!isdigit(ch)) f|=(ch=='-'),ch=getchar();
+	while(!isdigit(ch)) ch=getchar();
 	while(isdigit(ch)) res=10*res+(ch^'0'),ch=getchar();
-	return f?-res:res;
+	return res;
 }
 
 inline char* read(reg char *s){
@@ -30,7 +30,6 @@ inline char* read(reg char *s){
 inline void writeln(reg ll x){
 	static char buf[32];
 	reg int p=-1;
-	if(x<0) x=-x,putchar('-');
 	if(!x) putchar('0');
 	else while(x) buf[++p]=(x%10)^'0',x/=10;
 	while(~p) putchar(buf[p--]);
@@ -42,59 +41,35 @@ inline int max(reg int a,reg int b){
 	return a>b?a:b;
 }
 
+const int MAXQ=2e6+5;
 const int MAXS=2e6+5;
 
+int q;
+int opt[MAXQ],k[MAXQ];
+vector<char> s[MAXQ];
+
 namespace SAM{
-	namespace BIT{
-		inline int lowbit(reg int x){
-			return x&(-x);
-		}
-		int n=2e6;
-		ll unit[MAXS];
-		inline void _update(reg int id,reg ll val){
-			if(!id)
-				return;
-			for(reg int i=id;i<=n;i+=lowbit(i))
-				unit[i]+=val;
-			return;
-		}
-		inline ll _query(reg int id){
-			reg ll res=0;
-			for(reg int i=id;i;i^=lowbit(i))
-				res+=unit[i];
-			return res;
-		}
-	}
+	ll ans[MAXS];
+	ll delta[MAXS];
 	namespace LCT{
 		const int MAXSIZE=MAXS<<1;
 		struct Node{
 			int fa,ch[2];
 			int dep;
-			int val,tVal;
+			int val;
 			#define fa(x) unit[(x)].fa
 			#define ch(x) unit[(x)].ch
 			#define dep(x) unit[(x)].dep
 			#define val(x) unit[(x)].val
-			#define tVal(x) unit[(x)].tVal
 		};
 		#define lson(x) ch(x)[0]
 		#define rson(x) ch(x)[1]
 		Node unit[MAXSIZE];
-		inline void New(reg int p,reg int d,reg int f,reg int v){
-			fa(p)=f;
-			lson(p)=rson(p)=0;
-			dep(p)=d;
-			val(p)=v,tVal(p)=0;
-			return;
-		}
 		inline bool get(reg int p){
 			return rson(fa(p))==p;
 		}
 		inline bool isRoot(reg int p){
 			return lson(fa(p))!=p&&rson(fa(p))!=p;
-		}
-		inline void pushup(reg int p){
-			return;
 		}
 		inline void rotate(reg int p){
 			if(isRoot(p))
@@ -105,18 +80,12 @@ namespace SAM{
 			ch(f)[dir]=ch(p)[dir^1];
 			ch(p)[dir^1]=f,fa(f)=p;
 			fa(p)=ff;
-			pushup(f),pushup(p);
-			return;
-		}
-		inline void Cov(reg int p,reg int v){
-			if(p) val(p)=tVal(p)=v;
 			return;
 		}
 		inline void pushdown(reg int p){
-			if(tVal(p)){
-				if(lson(p)) Cov(lson(p),tVal(p));
-				if(rson(p)) Cov(rson(p),tVal(p));
-				tVal(p)=0;
+			if(val(p)){
+				if(lson(p)) val(lson(p))=val(p);
+				if(rson(p)) val(rson(p))=val(p);
 			}
 			return;
 		}
@@ -131,35 +100,25 @@ namespace SAM{
 			for(reg int f;f=fa(p),!isRoot(p);rotate(p))
 				if(!isRoot(f))
 					rotate(get(p)==get(f)?f:p);
-			pushup(p);
 			return;
 		}
 		inline void update(reg int p,reg int v){
-			printf("LCT::update p=%d v=%d\n",p,v);
-			reg int pre=0,las=0;
-			for(;p;pre=p,p=fa(p)){
-				printf("LCT::update p=%d v=%d\n",p,v);
-				puts("splay");
+			reg int pre=0;
+			for(;p;rson(p)=pre,pre=p,p=fa(p)){
 				splay(p);
-				puts("check");
 				if(val(p)>=v)
 					break;
-				puts("bit");
-				printf("dep=%d\n",dep(p));
-				reg int del=v-val(p);
-				BIT::_update(dep(p),del-las);
-				las=del;
-				puts("link");
-				rson(p)=pre;
-				puts("pushup");
-				pushup(p);
+				delta[dep(fa(p))+1]+=v-val(p);
+				delta[dep(p)+1]-=v-val(p);
 			}
 			if(pre)
-				Cov(pre,v);
-			printf("p=%d dep=%d\n",p,dep(p));
-			BIT::_update(dep(p),-las);
+				val(pre)=v;
 			return;
 		}
+		#undef fa
+		#undef ch
+		#undef dep
+		#undef val
 		#undef lson
 		#undef rson
 	}
@@ -170,8 +129,12 @@ namespace SAM{
 		#define dep(x) unit[(x)].dep
 		#define ch(x) unit[(x)].ch
 	};
-	int tot=1;
+	int tot;
 	Node unit[MAXS<<1];
+	inline void init(void){
+		tot=1;
+		return;
+	}
 	inline int insert(reg int las,reg int c){
 		reg int np=++tot,p=las;
 		dep(np)=dep(p)+1;
@@ -189,21 +152,23 @@ namespace SAM{
 				fa(nq)=fa(q);
 				dep(nq)=dep(p)+1;
 				fa(q)=fa(np)=nq;
-				LCT::splay(q);
-				LCT::New(nq,dep(nq),fa(nq),LCT::val(q));
 				while(p&&ch(p)[c]==q)
 					ch(p)[c]=nq,p=fa(p);
 			}
 		}
-		LCT::New(np,dep(np),fa(np),LCT::val(np));
 		return np;
+	}
+	inline void build(void){
+		for(reg int i=2;i<=tot;++i)
+			LCT::unit[i].fa=fa(i),LCT::unit[i].dep=dep(i);
+		return;
 	}
 	inline void update(reg int p,reg int val){
 		LCT::update(p,val);
 		return;
 	}
 	inline ll query(reg int k){
-		return BIT::_query(k);
+		return ans[k];
 	}
 	#undef fa
 	#undef dep
@@ -218,16 +183,47 @@ namespace Trie{
 		#define ch(x) unit[(x)].ch
 		#define spos(x) unit[(x)].spos
 	};
-	int tot=1;
+	int tot;
 	Node unit[MAXSIZE];
-	inline void insert(reg char s[],reg int len,reg int val){
+	inline void init(void){
+		tot=1;
+		return;
+	}
+	inline void insert(reg char s[],reg int len){
 		reg int p=1;
 		for(reg int i=1;i<=len;++i){
 			reg int c=s[i]-'a';
 			if(!ch(p)[c])
-				ch(p)[c]=++tot,spos(ch(p)[c])=SAM::insert(spos(p),c);
+				ch(p)[c]=++tot;
 			p=ch(p)[c];
-			SAM::update(spos(p),val);
+		}
+		return;
+	}
+	inline void query(const vector<char>& s,vector<int>& pos){
+		reg int p=1;
+		for(reg int i=0,siz=s.size();i<siz;++i){
+			reg int c=s[i]-'a';
+			if(!ch(p)[c])
+				ch(p)[c]=++tot;
+			p=ch(p)[c];
+			pos.push_back(spos(p));
+		}
+		return;
+	}
+	inline void build(void){
+		SAM::init();
+		spos(1)=1;
+		queue<int> Q;
+		Q.push(1);
+		while(!Q.empty()){
+			reg int u=Q.front();
+			Q.pop();
+			for(reg int i=0;i<4;++i)
+				if(ch(u)[i]){
+					int v=ch(u)[i];
+					spos(v)=SAM::insert(spos(u),i);
+					Q.push(v);
+				}
 		}
 		return;
 	}
@@ -235,28 +231,42 @@ namespace Trie{
 	#undef spos
 }
 
-char s[MAXS];
-
 bool ed;
 
 int main(void){
 	reg int q=read();
-	SAM::LCT::New(1,0,0,1e9);
-	Trie::unit[1].spos=1;
-	while(q--){
-		switch(read()){
+	Trie::init();
+	for(reg int i=1;i<=q;++i){
+		opt[i]=read(),k[i]=read();
+		if(opt[i]==1){
+			static char str[MAXS];
+			reg int len=read(str+1)-(str+1);
+			Trie::insert(str,len);
+			s[i].resize(len);
+			for(reg int j=0;j<len;++j)
+				s[i][j]=str[j+1];
+		}
+	}
+	Trie::build();
+	SAM::build();
+	for(reg int i=1;i<=q;++i)
+		switch(opt[i]){
 			case 1:{
-				reg int w=read();
-				reg int len=read(s+1)-(s+1);
-				Trie::insert(s,len,w);
+				vector<int> pos;
+				Trie::query(s[i],pos);
+				for(int x:pos)
+					SAM::update(x,k[i]);
+				for(reg int j=1,siz=s[i].size();j<=siz+1;++j)
+					SAM::delta[j]+=SAM::delta[j-1];
+				for(reg int j=1,siz=s[i].size();j<=siz+1;++j)
+					SAM::ans[j]+=SAM::delta[j],SAM::delta[j]=0;
 				break;
 			}
 			case 2:{
-				writeln(SAM::query(read()));
+				writeln(SAM::query(k[i]));
 				break;
 			}
 		}
-	}
 	flush();
 	fprintf(stderr,"%.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
 	fprintf(stderr,"%.3lf MiB\n",(&ed-&st)/1048576.0);
