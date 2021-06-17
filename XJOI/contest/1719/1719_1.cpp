@@ -41,88 +41,26 @@ struct Node{
 int n;
 Node a[MAXN];
 
-namespace Subtask3{
-	struct Vector{
-		int x,y;
-		inline Vector(reg int x=0,reg int y=0):x(x),y(y){
-			return;
-		}
-	};
-	inline int cross(const Vector& a,const Vector& b){
-		return a.x*b.y-a.y*b.x;
-	}
-	inline bool cmp(const Vector& a,const Vector& b){
-		return cross(a,b)<0;
-	}
-	Vector V[MAXN];
-	inline int getVal(reg int S){
-		for(reg int i=0;i<n;++i)
-			if((S>>i)&1)
-				V[i]=Vector(a[i+1].y,a[i+1].x);
-			else
-				V[i]=Vector(a[i+1].x,a[i+1].y);
-		sort(V,V+n,cmp);
-		reg int res=0,sum=0;
-		for(reg int i=0;i<n;++i){
-			res+=sum*V[i].x*2+V[i].y*V[i].x;
-			sum+=V[i].y;
-		}
-		return res;
-	}
-	inline void Solve(void){
-		reg int ans=0;
-		for(reg int S=0;S<(1<<n);++S)
-			ans=max(ans,getVal(S));
-		printf("%.2lf\n",0.5*ans);
+struct Vector{
+	int x,y;
+	inline Vector(reg int x=0,reg int y=0):x(x),y(y){
 		return;
 	}
+};
+
+inline int cross(const Vector& a,const Vector& b){
+	return a.x*b.y-a.y*b.x;
 }
 
-namespace Subtask5{
-	struct Vector{
-		int x,y;
-		inline Vector(reg int x=0,reg int y=0):x(x),y(y){
-			return;
-		}
-	};
-	inline int cross(const Vector& a,const Vector& b){
-		return a.x*b.y-a.y*b.x;
-	}
-	inline bool cmp(const Vector& a,const Vector& b){
-		return cross(a,b)<0;
-	}
-	const ll inf=0x3f3f3f3f3f3f3f3f;
-	Vector V[MAXN];
-	int prex[MAXN];
-	int sum[MAXN];
-	ll f[MAXN][MAXN*MAXX];
-	inline void Solve(void){
-		for(reg int i=1;i<=n;++i)
-			V[i]=Vector(max(a[i].x,a[i].y),min(a[i].x,a[i].y));
-		sort(V+1,V+n+1,cmp);
-		for(reg int i=1;i<=n;++i){
-			sum[i]=sum[i-1]+(V[i].x+V[i].y);
-			prex[i]=prex[i-1]+V[i].x;
-		}
-		for(reg int i=0;i<=n;++i)
-			for(reg int j=0;j<=prex[i];++j)
-				f[i][j]=-inf;
-		f[0][0]=0;
-		for(reg int i=0;i<n;++i)
-			for(reg int j=0;j<=prex[i];++j)
-				if(f[i][j]>=0){
-					f[i+1][j+V[i+1].y]=max(f[i+1][j+V[i+1].y],f[i][j]+2ll*V[i+1].x*j);
-					f[i+1][j+V[i+1].x]=max(f[i+1][j+V[i+1].x],f[i][j]+2ll*(sum[i]-j)*V[i+1].x);
-				}
-		reg ll ans=0;
-		for(reg int i=0;i<=prex[n];++i)
-			ans=max(ans,f[n][i]);
-		for(reg int i=1;i<=n;++i)
-			ans+=a[i].x*a[i].y;
-		printf("%.2lf\n",ans*0.5);
-		return;
-	}
+inline bool cmp(const Vector& a,const Vector& b){
+	return cross(a,b)<0;
 }
+
+const ll inf=0x3f3f3f3f3f3f3f3f;
+Vector V[MAXN];
+int prex[MAXN];
+int sum[MAXN];
+ll f[MAXN][MAXN*MAXX];
 
 bool ed;
 
@@ -130,12 +68,29 @@ int main(void){
 	n=read();
 	for(reg int i=1;i<=n;++i)
 		a[i].x=read(),a[i].y=read();
-	/*if(n<=20)
-		fputs("S3\n",stderr),
-		Subtask3::Solve();
-	else
-		fputs("S5\n",stderr),*/
-		Subtask5::Solve();
+	for(reg int i=1;i<=n;++i)
+		V[i]=Vector(max(a[i].x,a[i].y),min(a[i].x,a[i].y));
+	sort(V+1,V+n+1,cmp);
+	for(reg int i=1;i<=n;++i){
+		sum[i]=sum[i-1]+(V[i].x+V[i].y);
+		prex[i]=prex[i-1]+V[i].x;
+	}
+	for(reg int i=0;i<=n;++i)
+		for(reg int j=0;j<=prex[i];++j)
+			f[i][j]=-inf;
+	f[0][0]=0;
+	for(reg int i=0;i<n;++i)
+		for(reg int j=0;j<=prex[i];++j)
+			if(f[i][j]>=0){
+				f[i+1][j+V[i+1].y]=max(f[i+1][j+V[i+1].y],f[i][j]+2ll*V[i+1].x*j);
+				f[i+1][j+V[i+1].x]=max(f[i+1][j+V[i+1].x],f[i][j]+2ll*(sum[i]-j)*V[i+1].x);
+			}
+	reg ll ans=0;
+	for(reg int i=0;i<=prex[n];++i)
+		ans=max(ans,f[n][i]);
+	for(reg int i=1;i<=n;++i)
+		ans+=a[i].x*a[i].y;
+	printf("%.2lf\n",ans*0.5);
 	fprintf(stderr,"%.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
 	fprintf(stderr,"%.3lf MiB\n",(&ed-&st)/1048576.0);
 	return 0;
