@@ -1,3 +1,4 @@
+#pragma GCC optimize("Ofast")
 #include<bits/stdc++.h>
 using namespace std;
 #define reg register
@@ -25,79 +26,78 @@ inline int min(reg int a,reg int b){
 
 const int MAXN=5;
 const int MAXM=7;
-const int inf=0x3f3f3f3f;
 
-int n,m;
-char M[MAXN+1][MAXM];
-int len[1<<MAXM];
-int mir[MAXN+1];
-int f[2][MAXN*MAXM+1][1<<MAXM];
-
-inline int lg(reg int x){
-	switch(x){
-		case 1<<0:return 0;
-		case 1<<1:return 1;
-		case 1<<2:return 2;
-		case 1<<3:return 3;
-		case 1<<4:return 4;
-		case 1<<5:return 5;
-		case 1<<6:return 6;
-		default:assert(false);return -1;
-	}
-}
-
-inline int lowbit(reg int x){
-	return x&(-x);
-}
-
-bool ed;
+int n,m,nm;
+int f[2][MAXN*MAXM+1][1<<(MAXN+1)];
+char a[MAXM][MAXN];
 
 int main(void){
 	reg int t=read();
 	while(t--){
-		n=read(),m=read();
-		for(reg int i=1;i<=n;++i)
+		n=read(),m=read(),nm=n*m;
+		for(reg int i=0;i<n;++i)
 			for(reg int j=0;j<m;++j)
 				do
-					M[i][j]=getchar();
-				while(!isdigit(M[i][j]));
-		for(reg int i=1;i<=n;++i){
-			mir[i]=0;
-			for(reg int j=0;j<m;++j)
-				if(M[i][j]=='1')
-					mir[i]|=1<<j;
-		}
-		for(reg int S=0;S<(1<<m);++S){
-			if(__builtin_parity(S))
-				continue;
-			reg int sum=0,las=-1;
-			for(reg int T=S;T;T^=lowbit(T))
-				if(las==-1)
-					las=lg(lowbit(T));
-				else
-					sum+=lg(lowbit(T))-las,las=-1;
-			len[S]=sum;
-		}
-		fill(f[0][0],f[0][0]+(1<<m),-inf);
-		f[0][0][0]=0;
+					a[j][i]=getchar();
+				while(!isdigit(a[j][i]));
+		swap(n,m);
+		reg int ptr=0;
+		for(reg int S=0;S<(1<<(m+1));++S)
+			f[ptr][0][S]=-1;
+		f[ptr][0][0]=0;
 		for(reg int i=0;i<n;++i){
-			for(reg int j=0;j<=(i+1)*m;++j)
+			for(reg int j=0;j<m;++j){
+				for(reg int cnt=0;cnt<=i*m+j+1;++cnt)
+					for(reg int S=0;S<(1<<(m+1));++S)
+						f[ptr^1][cnt][S]=-1;
+				for(reg int cnt=0;cnt<=i*m+j;++cnt)
+					for(reg int S=0;S<(1<<(m+1));++S)
+						if(f[ptr][cnt][S]>=0)
+							switch((S>>j)&3){
+								case 0:{
+									f[ptr^1][cnt][S]=max(f[ptr^1][cnt][S],f[ptr][cnt][S]);
+									if(a[i][j]=='1'&&i!=n-1&&j!=m-1)
+										f[ptr^1][cnt+1][S|(1<<j)|(1<<(j+1))]=max(f[ptr^1][cnt+1][S|(1<<j)|(1<<(j+1))],f[ptr][cnt][S]+1);
+									break;
+								}
+								case 1:{
+									if(j!=m-1)
+										f[ptr^1][cnt][(S^(1<<j))|(1<<(j+1))]=max(f[ptr^1][cnt][(S^(1<<j))|(1<<(j+1))],f[ptr][cnt][S]+1);
+									if(a[i][j]=='1'&&i!=n-1)
+										f[ptr^1][cnt+1][S]=max(f[ptr^1][cnt+1][S],f[ptr][cnt][S]+1);
+									break;
+								}
+								case 2:{
+									if(i!=n-1)
+										f[ptr^1][cnt][(S^(1<<(j+1)))|(1<<j)]=max(f[ptr^1][cnt][(S^(1<<(j+1)))|(1<<j)],f[ptr][cnt][S]+1);
+									if(a[i][j]=='1'&&j!=m-1)
+										f[ptr^1][cnt+1][S]=max(f[ptr^1][cnt+1][S],f[ptr][cnt][S]+1);
+									break;
+								}
+								case 3:{
+									if(i!=n-1&&j!=m-1)
+										f[ptr^1][cnt][S]=max(f[ptr^1][cnt][S],f[ptr][cnt][S]+2);
+									if(a[i][j]=='1')
+										f[ptr^1][cnt+1][S^(1<<j)^(1<<(j+1))]=max(f[ptr^1][cnt+1][S^(1<<j)^(1<<(j+1))],f[ptr][cnt][S]+1);
+									break;
+								}
+							}
+				ptr^=1;
+			}
+			for(reg int cnt=0;cnt<=(i+1)*m;++cnt)
+				for(reg int S=0;S<(1<<(m+1));++S)
+					f[ptr^1][cnt][S]=-1;
+			for(reg int cnt=0;cnt<=(i+1)*m;++cnt)
 				for(reg int S=0;S<(1<<m);++S)
-					f[(i+1)&1][j][S]=-inf;
-			for(reg int j=0;j<=i*m;++j)
-				for(reg int S=0;S<(1<<m);++S)
-					if(f[i&1][j][S]>-inf)
-						for(reg int T=0;T<(1<<m);++T)
-							if((!__builtin_parity(T))&&((mir[i+1]&T)==T))
-								f[(i+1)&1][j+__builtin_popcount(T)][S^T]=max(f[(i+1)&1][j+__builtin_popcount(T)][S^T],f[i&1][j][S]+len[T]+(__builtin_popcount(S&T)-__builtin_popcount(T^(S&T)))*(i+1));
+					if(f[ptr][cnt][S]>=0)
+						f[ptr^1][cnt][S<<1]=f[ptr][cnt][S];
+			ptr^=1;
 		}
-		f[n&1][0][0]=max(f[n&1][0][0],0);
-		for(reg int i=1;i<=n*m;++i)
-			f[n&1][i][0]=max(f[n&1][i][0],f[n&1][i-1][0]);
-		for(reg int i=0;i<=n*m;++i)
-			printf("%d%c",4*n*m-2*f[n&1][i][0],i==n*m?'\n':' ');
+		f[ptr][0][0]=max(f[ptr][0][0],0);
+		for(reg int i=1;i<=nm;++i)
+			f[ptr][i][0]=max(f[ptr][i][0],f[ptr][i-1][0]);
+		for(reg int i=0;i<=nm;++i)
+			printf("%d%c",(nm<<2)-(f[ptr][i][0]<<1),i==nm?'\n':' ');
 	}
-	fprintf(stderr,"%.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
-	fprintf(stderr,"%.3lf MiB\n",(&ed-&st)/1048576.0);
 	return 0;
 }

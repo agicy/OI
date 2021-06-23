@@ -125,7 +125,7 @@ namespace Graph{
 inline void dfs(reg int u){
 	if(ST::G[u].empty()){
 		if(!Graph::check())
-			ans[ST::id(u)]='1';
+			ans[ST::id(u)]=1;
 		return;
 	}
 	for(int v1:ST::G[u]){
@@ -156,13 +156,11 @@ int main(void){
 		ST::init();
 		for(reg int i=n-1;i>=0;--i)
 			ST::insert(s[i],i);
-		for(reg int i=0;i<n;++i)
-			ans[i]='0';
 		ST::build();
 		ST::dfs(1);
 		dfs(1);
 		for(reg int i=0;i<n;++i)
-			putchar(ans[i]);
+			putchar(ans[i]+'0'),ans[i]=0;
 		putchar('\n');
 	}
 	fprintf(stderr,"%.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
