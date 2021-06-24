@@ -11,6 +11,7 @@ inline int read(void){
 	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
 	return res;
 }
+
 const int mod=1e9+7;
 
 struct modInt{
@@ -54,8 +55,7 @@ inline modInt fpow(modInt x,reg int exp){
 	while(exp){
 		if(exp&1)
 			res*=x;
-		x*=x;
-		exp>>=1;
+		x*=x,exp>>=1;
 	}
 	return res;
 }
