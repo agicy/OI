@@ -8,6 +8,9 @@ bool st;
 
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,1<<21,stdin),p1==p2)?exit(0),EOF:*p1++)
 static char buf[1<<21],*p1=buf,*p2=buf;
+#define flush() (fwrite(wbuf,1,wp1,stdout),wp1=0)
+#define putchar(c) (wp1==wp2&&(flush(),0),wbuf[wp1++]=c)
+static char wbuf[1<<21];int wp1;const int wp2=1<<21;
 inline int read(void){
 	reg char ch=getchar();
 	reg int res=0;
@@ -71,16 +74,24 @@ namespace ST{
 		las=np;
 		return;
 	}
-	vector<int> G[MAXN<<1];
+	int cnt,head[MAXN<<1],to[MAXN<<1],Next[MAXN<<1];
+	inline void Add_Edge(reg int u,reg int v){
+		Next[++cnt]=head[u];
+		to[cnt]=v;
+		head[u]=cnt;
+		return;
+	}
 	inline void build(void){
+		cnt=0;
 		for(reg int i=1;i<=tot;++i)
-			G[i].clear();
-		for(int i=2;i<=tot;++i)
-			G[fa(i)].push_back(i);
+			head[i]=0;
+		for(reg int i=2;i<=tot;++i)
+			Add_Edge(fa(i),i);
 		return;
 	}
 	inline void dfs(reg int u){
-		for(int v:G[u]){
+		for(reg int i=head[u];i;i=Next[i]){
+			reg int v=to[i];
 			dfs(v);
 			id(u)=id(v);
 		}
@@ -94,51 +105,43 @@ char ans[MAXN];
 int cnt[lim][lim];
 
 namespace Graph{
-	int inDeg[lim];
-	vector<int> G[lim];
+	int S[lim];
 	inline bool check(void){
 		for(reg int i=0;i<lim;++i)
-			inDeg[i]=0,G[i].clear();
+			S[i]=0;
 		for(reg int i=0;i<lim;++i)
-			for(int j=0;j<lim;++j)
+			for(reg int j=0;j<lim;++j)
 				if(cnt[i][j])
-					G[i].push_back(j),++inDeg[j];
-		reg int _head=0,_tail=0;
-		static int Q[lim];
+					S[i]|=1<<j;
 		for(reg int i=0;i<lim;++i)
-			if(!inDeg[i])
-				Q[_tail++]=i;
-		reg int cnt=0;
-		while(_head<_tail){
-			reg int u=Q[_head++];
-			++cnt;
-			for(int v:G[u]){
-				--inDeg[v];
-				if(!inDeg[v])
-					Q[_tail++]=v;
-			}
-		}
-		return cnt<lim;
+			for(reg int j=0;j<lim;++j)
+				if((S[j]>>i)&1)
+					S[j]|=S[i];
+		for(reg int i=0;i<lim;++i)
+			if((S[i]>>i)&1)
+				return true;
+		return false;
 	}
 }
 
 inline void dfs(reg int u){
-	if(ST::G[u].empty()){
+	if(!ST::head[u]){
 		if(!Graph::check())
 			ans[ST::id(u)]=1;
 		return;
 	}
-	for(int v1:ST::G[u]){
-		reg int c1=s[ST::dep(u)+ST::id(v1)];
-		for(int v2:ST::G[u])
-			if(v1!=v2){
-				reg int c2=s[ST::dep(u)+ST::id(v2)];
+	for(reg int i=ST::head[u];i;i=ST::Next[i]){
+		for(reg int j=ST::head[u];j;j=ST::Next[j])
+			if(i!=j){
+				reg int v1=ST::to[i],c1=s[ST::dep(u)+ST::id(v1)];
+				reg int v2=ST::to[j],c2=s[ST::dep(u)+ST::id(v2)];
 				++cnt[c1][c2];
 			}
-		dfs(v1);
-		for(int v2:ST::G[u])
-			if(v1!=v2){
-				reg int c2=s[ST::dep(u)+ST::id(v2)];
+		dfs(ST::to[i]);
+		for(reg int j=ST::head[u];j;j=ST::Next[j])
+			if(i!=j){
+				reg int v1=ST::to[i],c1=s[ST::dep(u)+ST::id(v1)];
+				reg int v2=ST::to[j],c2=s[ST::dep(u)+ST::id(v2)];
 				--cnt[c1][c2];
 			}
 	}
@@ -163,6 +166,7 @@ int main(void){
 			putchar(ans[i]+'0'),ans[i]=0;
 		putchar('\n');
 	}
+	flush();
 	fprintf(stderr,"%.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
 	fprintf(stderr,"%.3lf MiB\n",(&ed-&st)/1048576.0);
 	return 0;
