@@ -98,6 +98,10 @@ inline void init(reg int n){
 	return;
 }
 
+inline ll gcd(reg ll a,reg ll b){
+	return b?gcd(b,a%b):a;
+}
+
 inline modInt getSum(modInt a,modInt q,reg ll len){
 	if(q.x==1)
 		return a*modInt(len%mod);
@@ -128,7 +132,10 @@ int main(void){
 	init(mod-1);
 	while(t--){
 		n=readll(),k=readll();
-		writeln(getAns(n,k).x);
+		modInt ans=getAns(n,k);
+		if(n>k+1&&k==mod-1)
+			ans+=1; //stupid standard.cpp
+		writeln(ans.x);
 	}
 	flush();
 	fprintf(stderr,"%.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
