@@ -23,7 +23,7 @@ struct modInt{
 		reg int sum=x-a.x;
 		return sum<0?sum+mod:sum;
 	}
-	inline modInt operator-(void){
+	inline modInt operator-(void)const{
 		return modInt(0)-*this;
 	}
 	inline modInt operator*(const modInt& a)const{

@@ -63,15 +63,28 @@ struct modInt{
 	inline modInt operator*(const modInt& a)const{
 		return 1ll*x*a.x%mod;
 	}
+	inline void operator+=(const modInt& a){
+		x+=a.x;
+		if(x>=mod) x-=mod;
+		return;
+	}
+	inline void operator-=(const modInt& a){
+		x-=a.x;
+		if(x<0) x+=mod;
+		return;
+	}
+	inline void operator*=(const modInt& a){
+		x=1ll*x*a.x%mod;
+		return;
+	}
 };
 
 inline modInt fpow(modInt x,reg int exp){
 	modInt res=1;
 	while(exp){
 		if(exp&1)
-			res=res*x;
-		x=x*x;
-		exp>>=1;
+			res*=x;
+		x*=x,exp>>=1;
 	}
 	return res;
 }

@@ -19,6 +19,7 @@ const int mod=998244353;
 struct modInt{
 	int x;
 	inline modInt(reg int x=0):x(x){
+		assert(0<=x&&x<mod);
 		return;
 	}
 	inline modInt operator+(const modInt& a)const{

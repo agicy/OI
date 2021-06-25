@@ -8,7 +8,7 @@ const int mod=1e9+7;
 struct modInt{
 	int x;
 	inline modInt(reg int x=0):x(x){
-		//assert(0<=x&&x<mod);
+		assert(0<=x&&x<mod);
 		return;
 	}
 	inline modInt operator+(const modInt& a)const{

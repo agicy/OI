@@ -26,7 +26,7 @@ const int mod=998244353;
 struct modInt{
 	int x;
 	inline modInt(reg int x=0):x(x){
-		//assert(0<=x&&x<mod);
+		assert(0<=x&&x<mod);
 		return;
 	}
 	inline modInt operator+(const modInt& a)const{
@@ -37,7 +37,7 @@ struct modInt{
 		reg int sum=x-a.x;
 		return sum<0?sum+mod:sum;
 	}
-	inline modInt operator-(void){
+	inline modInt operator-(void)const{
 		return modInt(0)-*this;
 	}
 	inline modInt operator*(const modInt& a)const{

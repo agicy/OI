@@ -1,50 +1,4 @@
-#pragma GCC optimize("Ofast,no-stack-protector")
-#pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,avx,mmx,tune=native")
 #pragma GCC optimize("Ofast")
-#pragma GCC optimize("inline")
-#pragma GCC optimize("-fgcse")
-#pragma GCC optimize("-fgcse-lm")
-#pragma GCC optimize("-fipa-sra")
-#pragma GCC optimize("-ftree-pre")
-#pragma GCC optimize("-ftree-vrp")
-#pragma GCC optimize("-fpeephole2")
-#pragma GCC optimize("-ffast-math")
-#pragma GCC optimize("-fsched-spec")
-#pragma GCC optimize("unroll-loops")
-#pragma GCC optimize("-falign-jumps")
-#pragma GCC optimize("-falign-loops")
-#pragma GCC optimize("-falign-labels")
-#pragma GCC optimize("-fdevirtualize")
-#pragma GCC optimize("-fcaller-saves")
-#pragma GCC optimize("-fcrossjumping")
-#pragma GCC optimize("-fthread-jumps")
-#pragma GCC optimize("-funroll-loops")
-#pragma GCC optimize("-fwhole-program")
-#pragma GCC optimize("-freorder-blocks")
-#pragma GCC optimize("-fschedule-insns")
-#pragma GCC optimize("inline-functions")
-#pragma GCC optimize("-ftree-tail-merge")
-#pragma GCC optimize("-fschedule-insns2")
-#pragma GCC optimize("-fstrict-aliasing")
-#pragma GCC optimize("-fstrict-overflow")
-#pragma GCC optimize("-falign-functions")
-#pragma GCC optimize("-fcse-skip-blocks")
-#pragma GCC optimize("-fcse-follow-jumps")
-#pragma GCC optimize("-fsched-interblock")
-#pragma GCC optimize("-fpartial-inlining")
-#pragma GCC optimize("no-stack-protector")
-#pragma GCC optimize("-freorder-functions")
-#pragma GCC optimize("-findirect-inlining")
-#pragma GCC optimize("-fhoist-adjacent-loads")
-#pragma GCC optimize("-frerun-cse-after-loop")
-#pragma GCC optimize("inline-small-functions")
-#pragma GCC optimize("-finline-small-functions")
-#pragma GCC optimize("-ftree-switch-conversion")
-#pragma GCC optimize("-foptimize-sibling-calls")
-#pragma GCC optimize("-fexpensive-optimizations")
-#pragma GCC optimize("-funsafe-loop-optimizations")
-#pragma GCC optimize("inline-functions-called-once")
-#pragma GCC optimize("-fdelete-null-pointer-checks")
 #include<bits/stdc++.h>
 using namespace std;
 #define reg register
@@ -65,6 +19,7 @@ const int mod=998244353;
 struct modInt{
 	int x;
 	inline modInt(reg int x=0):x(x){
+		assert(0<=x&&x<mod);
 		return;
 	}
 	inline modInt operator+(const modInt& a)const{
@@ -74,6 +29,9 @@ struct modInt{
 	inline modInt operator-(const modInt& a)const{
 		reg int sum=x-a.x;
 		return sum<0?sum+mod:sum;
+	}
+	inline modInt operator-(void)const{
+		return modInt(0)-*this;
 	}
 	inline modInt operator*(const modInt& a)const{
 		return 1ll*x*a.x%mod;
@@ -94,20 +52,19 @@ struct modInt{
 	}
 };
 
-const modInt g=3;
-const modInt invg=332748118;
-const modInt zero(0);
-
 inline modInt fpow(modInt x,reg int exp){
 	modInt res=1;
 	while(exp){
 		if(exp&1)
 			res*=x;
-		x*=x;
-		exp>>=1;
+		x*=x,exp>>=1;
 	}
 	return res;
 }
+
+const modInt g=3;
+const modInt invg=332748118;
+const modInt zero(0);
 
 namespace Poly{
 	vector<int> rev;
