@@ -10,8 +10,8 @@ static char wbuf[1<<21];int wp1;const int wp2=1<<21;
 
 inline void read(reg char *s){
 	*s=getchar();
-	while(!isalpha(*s))*s=getchar();
-	while(isalpha(*s))*(++s)=getchar();
+	while(!isalpha(*s)) *s=getchar();
+	while(isalpha(*s)) *(++s)=getchar();
 	*s='\0';
 	return;
 }

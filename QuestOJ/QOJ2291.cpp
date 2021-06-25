@@ -8,7 +8,7 @@ inline int read(void){
 	reg bool f=false;
 	reg char ch=getchar();
 	reg int ans=0;
-	while(!isdigit(ch))f|=(ch=='-'),ch=getchar();
+	while(!isdigit(ch)) f|=(ch=='-'),ch=getchar();
 	while(isdigit(ch))ans=10*ans+(ch^'0'),ch=getchar();
 	return f?-ans:ans;
 }

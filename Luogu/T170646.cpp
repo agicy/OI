@@ -15,8 +15,8 @@ inline int read(void){
 
 inline void read(reg char *s){
 	*s=getchar();
-	while(!isdigit(*s))*s=getchar();
-	while(isdigit(*s))*(++s)=getchar();
+	while(!isdigit(*s)) *s=getchar();
+	while(isdigit(*s)) *(++s)=getchar();
 	*s='\0';
 	return;
 }

@@ -15,7 +15,7 @@ inline int read(void){
 			return EOF;
 		f|=(ch=='-'),ch=getchar();
 	}
-	while(isdigit(ch)) res=10*res+ch-'0',ch=getchar();
+	while(isdigit(ch)) res=10*res+(ch^'0'),ch=getchar();
 	return f?-res:res;
 }
 
