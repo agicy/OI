@@ -7,7 +7,7 @@ static char buf[1<<21],*p1=buf,*p2=buf;
 inline int read(void){
 	reg char ch=getchar();
 	reg int ans=0;
-	while(!isdigit(ch))ch=getchar();
+	while(!isdigit(ch)) ch=getchar();
 	while(isdigit(ch))ans=10*ans+(ch^'0'),ch=getchar();
 	return ans;
 }

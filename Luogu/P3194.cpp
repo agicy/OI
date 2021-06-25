@@ -8,8 +8,8 @@ inline int read(void){
 	reg bool f=false;
 	reg char ch=getchar();
 	reg int res=0;
-	while(!isdigit(ch))ch=getchar();
-	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	while(!isdigit(ch)) ch=getchar();
+	while(isdigit(ch)) res=10*res+(ch^'0'),ch=getchar();
 	return f?-res:res;
 }
 

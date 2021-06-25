@@ -13,14 +13,14 @@ inline int read(void){
 	reg char ch=getchar();
 	reg int res=0;
 	while(!isdigit(ch))f|=(ch=='-'),ch=getchar();
-	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	while(isdigit(ch)) res=10*res+(ch^'0'),ch=getchar();
 	return f?-res:res;
 }
 
 inline uint readu(void){
 	reg char ch=getchar();
 	reg uint res=0;
-	while(!isdigit(ch))ch=getchar();
+	while(!isdigit(ch)) ch=getchar();
 	while(isdigit(ch))res=10u*res+(ch^'0'),ch=getchar();
 	return res;
 }
