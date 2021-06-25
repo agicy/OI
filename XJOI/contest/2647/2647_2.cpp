@@ -31,7 +31,7 @@ inline void write(reg int x){
 template<typename mod_t,mod_t mod> struct modInt{
 	mod_t x;
 	inline modInt(mod_t x=0):x(x){
-		//assert(0<=x&&x<mod);
+		assert(0<=x&&x<mod);
 		return;
 	}
 	inline modInt operator+(const modInt& a)const{

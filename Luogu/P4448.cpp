@@ -54,8 +54,7 @@ inline modInt fpow(modInt x,reg int exp){
 	while(exp){
 		if(exp&1)
 			res*=x;
-		x*=x;
-		exp>>=1;
+		x*=x,exp>>=1;
 	}
 	return res;
 }

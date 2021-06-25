@@ -97,17 +97,11 @@ inline void Init(reg int n){
 	return;
 }
 
-int Cnt;
 modInt ans;
 
-inline vector<int> merge(vector<int> a,vector<int> b){
-	return 
-}
-
-inline void dfs(reg bool flag,reg int las,bitset<MAXN> p,bitset<MAXN> np,vector<int> V){
+inline void dfs(reg bool flag,reg int las,bitset<MAXN> p,bitset<MAXN> np){
 	if(!p.count()||!np.count())
 		return;
-	++Cnt;
 	if(las>=0){
 		if(flag)
 			ans+=cnt[p.count()][np.count()];
@@ -141,7 +135,6 @@ int main(void){
 	modInt inv2=fpow(2,mod-2);
 	printf("%d\n",(ans*inv2).x);
 
-	fprintf(stderr,"Cnt=%d\n",Cnt);
 	fprintf(stderr,"%.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
 	fprintf(stderr,"%.3lf MiB\n",(&ed-&st)/1048576.0);
 	return 0;
