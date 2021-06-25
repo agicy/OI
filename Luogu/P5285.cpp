@@ -11,15 +11,15 @@ static char wbuf[1<<21];int wp1;const int wp2=1<<21;
 inline int read(void){
 	reg char ch=getchar();
 	reg int res=0;
-	while(!isdigit(ch))ch=getchar();
-	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	while(!isdigit(ch)) ch=getchar();
+	while(isdigit(ch)) res=10*res+(ch^'0'),ch=getchar();
 	return res;
 }
 
 inline ll readll(void){
 	reg char ch=getchar();
 	reg ll res=0;
-	while(!isdigit(ch))ch=getchar();
+	while(!isdigit(ch)) ch=getchar();
 	while(isdigit(ch))res=10ll*res+(ch^'0'),ch=getchar();
 	return res;
 }
@@ -27,7 +27,7 @@ inline ll readll(void){
 inline int read_mod998244352(void){
 	reg char ch=getchar();
 	reg int res=0;
-	while(!isdigit(ch))ch=getchar();
+	while(!isdigit(ch)) ch=getchar();
 	while(isdigit(ch))res=(10ll*res%998244352+(ch^'0'))%998244352,ch=getchar();
 	return res;
 }
@@ -35,7 +35,7 @@ inline int read_mod998244352(void){
 inline int read_mod1145140(void){
 	reg char ch=getchar();
 	reg int res=0;
-	while(!isdigit(ch))ch=getchar();
+	while(!isdigit(ch)) ch=getchar();
 	while(isdigit(ch))res=(10ll*res%1145140+(ch^'0'))%1145140,ch=getchar();
 	return res;
 }

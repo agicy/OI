@@ -11,16 +11,16 @@ static char wbuf[1<<21];int wp1;const int wp2=1<<21;
 inline int read(void){
 	reg char ch=getchar();
 	reg int res=0;
-	while(!isdigit(ch))ch=getchar();
-	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	while(!isdigit(ch)) ch=getchar();
+	while(isdigit(ch)) res=10*res+(ch^'0'),ch=getchar();
 	return res;
 }
 
 inline uint readu(void){
 	reg char ch=getchar();
 	reg uint res=0;
-	while(!isdigit(ch))ch=getchar();
-	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	while(!isdigit(ch)) ch=getchar();
+	while(isdigit(ch)) res=10*res+(ch^'0'),ch=getchar();
 	return res;
 }
 

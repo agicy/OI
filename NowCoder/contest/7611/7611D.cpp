@@ -5,15 +5,15 @@ typedef long long ll;
 inline int read(void){
 	char ch=getchar();
 	int res=0;
-	while(!isdigit(ch))ch=getchar();
-	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	while(!isdigit(ch)) ch=getchar();
+	while(isdigit(ch)) res=10*res+(ch^'0'),ch=getchar();
 	return res;
 }
 
 inline ll readll(void){
 	char ch=getchar();
 	ll res=0;
-	while(!isdigit(ch))ch=getchar();
+	while(!isdigit(ch)) ch=getchar();
 	while(isdigit(ch))res=10ll*res+(ch^'0'),ch=getchar();
 	return res;
 }

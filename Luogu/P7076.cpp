@@ -8,15 +8,15 @@ static char buf[1<<21],*p1=buf,*p2=buf;
 inline int read(void){
 	reg char ch=getchar();
 	reg int res=0;
-	while(!isdigit(ch))ch=getchar();
-	while(isdigit(ch))res=10*res+(ch^'0'),ch=getchar();
+	while(!isdigit(ch)) ch=getchar();
+	while(isdigit(ch)) res=10*res+(ch^'0'),ch=getchar();
 	return res;
 }
 
 inline ull readull(void){
 	reg char ch=getchar();
 	reg ull res=0;
-	while(!isdigit(ch))ch=getchar();
+	while(!isdigit(ch)) ch=getchar();
 	while(isdigit(ch))res=10ull*res+(ch^'0'),ch=getchar();
 	return res;
 }
