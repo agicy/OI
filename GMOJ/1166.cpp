@@ -5,15 +5,15 @@
 using std::max;
 using std::sort;
 #define INF 0X3F3F3F3F
-#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,1<<21,stdin),p1==p2)?EOF:*p1++)
 
 const int MAXN=10000+5;
 
-static char buf[100000],*p1=buf,*p2=buf;
+static char buf[1<<21],*p1=buf,*p2=buf;
 inline int read(void){
 	register char ch=getchar();
 	int x=0;
-	while(ch<'0'||'9'<ch)ch=getchar();
+	while(!isdigit(ch)) ch=getchar();
 	while('0'<=ch&&ch<='9')x=x*10+ch-48,ch=getchar();
 	return x;
 }

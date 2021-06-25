@@ -4,8 +4,8 @@ using namespace std;
 inline int read(void){
 	reg char ch=getchar();
 	reg int res=0;
-	while(ch<'0'||'9'<ch)ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
+	while(!isdigit(ch)) ch=getchar();
+	while(isdigit(ch)) res=10*res+ch-'0',ch=getchar();
 	return res;
 }
 

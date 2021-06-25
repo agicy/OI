@@ -6,8 +6,8 @@ static char rbuf[100000],*rp1=rbuf,*rp2=rbuf;
 inline int read(void){
 	char ch=getchar();
 	int res=0;
-	while(ch<'0'||'9'<ch)ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
+	while(!isdigit(ch)) ch=getchar();
+	while(isdigit(ch)) res=10*res+ch-'0',ch=getchar();
 	return res;
 }
 

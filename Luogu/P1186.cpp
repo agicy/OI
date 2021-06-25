@@ -3,8 +3,8 @@
 #include<queue>
 using std::queue;
 #define max(a,b) ( (a) > (b) ? (a) : (b) )
-#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
-static char buf[100000],*p1=buf,*p2=buf;
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,1<<21,stdin),p1==p2)?EOF:*p1++)
+static char buf[1<<21],*p1=buf,*p2=buf;
 inline int read(void){
 	register char ch=getchar();
 	register int sum=0;
