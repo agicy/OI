@@ -8,7 +8,7 @@ inline int read(void){
 	reg bool f=false;
 	reg char ch=getchar();
 	reg int res=0;
-	while(!isdigit(ch))f|=(ch=='-'),ch=getchar();
+	while(!isdigit(ch)) f|=(ch=='-'),ch=getchar();
 	while(isdigit(ch)) res=10*res+(ch^'0'),ch=getchar();
 	return f?-res:res;
 }
@@ -16,7 +16,7 @@ inline ll readll(void){
 	reg bool f=false;
 	reg char ch=getchar();
 	reg ll res=0;
-	while(!isdigit(ch))f|=(ch=='-'),ch=getchar();
+	while(!isdigit(ch)) f|=(ch=='-'),ch=getchar();
 	while(isdigit(ch))res=10ll*res+(ch^'0'),ch=getchar();
 	return f?-res:res;
 }

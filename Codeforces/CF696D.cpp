@@ -22,8 +22,8 @@ inline ll readll(void){
 
 inline void read(reg char *s){
 	*s=getchar();
-	while(!isalpha(*s))*s=getchar();
-	while(isalpha(*s))*(++s)=getchar();
+	while(!isalpha(*s)) *s=getchar();
+	while(isalpha(*s)) *(++s)=getchar();
 	*s='\0';
 	return;
 }

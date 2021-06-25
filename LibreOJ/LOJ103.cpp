@@ -7,8 +7,8 @@ static char buf[1<<21],*p1=buf,*p2=buf;
 
 inline char* read(reg char *s){
 	*s=getchar();
-	while(!isalpha(*s))*s=getchar();
-	while(isalpha(*s))*(++s)=getchar();
+	while(!isalpha(*s)) *s=getchar();
+	while(isalpha(*s)) *(++s)=getchar();
 	*s='\0';
 	return s;
 }

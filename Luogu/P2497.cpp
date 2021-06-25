@@ -12,7 +12,7 @@ inline ll read(void){
 	reg char ch=getchar();
 	reg ll res=0;
 	while(!isdigit(ch)) f|=(ch=='-'),ch=getchar();
-	while(isdigit(ch)) res=10*res+ch-'0',ch=getchar();
+	while(isdigit(ch)) res=10*res+(ch^'0'),ch=getchar();
 	return f?-res:res;
 }
 

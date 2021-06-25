@@ -6,8 +6,8 @@ typedef long long ll;
 static char buf[1<<21],*p1=buf,*p2=buf;
 inline void read(reg char *s){
 	*s=getchar();
-	while(!isalpha(*s))*s=getchar();
-	while(isalpha(*s))*(++s)=getchar();
+	while(!isalpha(*s)) *s=getchar();
+	while(isalpha(*s)) *(++s)=getchar();
 	*s='\0';
 	return;
 }
