@@ -4,8 +4,8 @@ using namespace std;
 typedef long long ll;
 typedef unsigned long long ull;
 #define INF 0X3F3F3F3F
-#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
-static char buf[100000],*p1=buf,*p2=buf;
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,1<<21,stdin),p1==p2)?EOF:*p1++)
+static char buf[1<<21],*p1=buf,*p2=buf;
 
 bool newline;
 
@@ -13,8 +13,8 @@ inline int read(void){
 	reg bool f=false;
 	reg char ch=getchar();
 	reg int res=0;
-	while(ch<'0'||'9'<ch)f|=(ch=='-'),ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
+	while(!isdigit(ch)) f|=(ch=='-'),ch=getchar();
+	while(isdigit(ch)) res=10*res+ch-'0',ch=getchar();
 	if(ch=='\r'||ch=='\n')
 		newline=true;
 	return f?-res:res;

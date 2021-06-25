@@ -6,8 +6,8 @@ inline int read(void){
 	reg bool f=false;
 	reg char ch=getchar();
 	reg int res=0;
-	while(ch<'0'||'9'<ch)f|=(ch=='-'),ch=getchar();
-	while('0'<=ch&&ch<='9')res=10*res+ch-'0',ch=getchar();
+	while(!isdigit(ch)) f|=(ch=='-'),ch=getchar();
+	while(isdigit(ch)) res=10*res+ch-'0',ch=getchar();
 	return f?-res:res;
 }
 
@@ -25,7 +25,7 @@ inline void read(reg IP &a){
 	reg char ch=getchar();
 	reg uint ip=0;
 	reg int cnt=0;
-	while(ch<'0'||'9'<ch)ch=getchar();
+	while(!isdigit(ch)) ch=getchar();
 	while('0'<=ch&&ch<='1')ip+=((ch-'0')<<cnt),++cnt,ch=getchar();
 	a=IP(ip,cnt);
 	return;

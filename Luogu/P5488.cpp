@@ -1,17 +1,17 @@
 #include<bits/stdc++.h>
 using namespace std;
 #define reg register
-#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,1<<21,stdin),p1==p2)?EOF:*p1++)
 
 const int p=1004535809;
 const int invg=334845270;
 const int g=3;
 
-static char buf[100000],*p1=buf,*p2=buf;
+static char buf[1<<21],*p1=buf,*p2=buf;
 inline int read(void){
 	reg char ch=getchar();
 	reg int res=0;
-	while(ch<'0'||'9'<ch)ch=getchar();
+	while(!isdigit(ch)) ch=getchar();
 	while('0'<=ch&&ch<='9')res=(10ll*res+ch-'0')%p,ch=getchar();
 	return res;
 }

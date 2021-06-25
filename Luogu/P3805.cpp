@@ -4,7 +4,7 @@ using namespace std;
 typedef long long ll;
 typedef unsigned long long ull;
 #define getchar() ((p1==p2)&&(p2=(p1=buf)+fread(buf,1,100000,stdin),p1==p2)?EOF:*p1++)
-static char buf[100000],*p1=buf,*p2=buf;
+static char buf[1<<21],*p1=buf,*p2=buf;
 int cnt=-1;
 inline void read(reg char s[]){
 	reg char ch=getchar();
