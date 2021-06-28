@@ -96,5 +96,7 @@
 		"editor.suggest.insertMode": "replace",
 		"editor.semanticHighlighting.enabled": true
 	},
-	"files.eol": "\n"
+	"files.eol": "\n",
+	"terminal.integrated.automationShell.windows": "F:\\Git\\bin\\bash.exe",
+	"winopacity.opacity": 220
 }
