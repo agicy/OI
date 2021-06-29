@@ -1,19 +1,10 @@
+#pragma GCC optimize("Ofast")
 #include<bits/stdc++.h>
 using namespace std;
 #define reg register
 typedef long long ll;
 
 bool st;
-
-#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,1<<21,stdin),p1==p2)?EOF:*p1++)
-static char buf[1<<21],*p1=buf,*p2=buf;
-inline int read(void){
-	reg char ch=getchar();
-	reg int res=0;
-	while(!isdigit(ch)) ch=getchar();
-	while(isdigit(ch)) res=10*res+(ch^'0'),ch=getchar();
-	return res;
-}
 
 inline int max(reg int a,reg int b){
 	return a>b?a:b;
@@ -37,7 +28,8 @@ inline int sub(reg int a,reg int b){
 
 const int MAXN=200+5;
 
-int n,A[3];
+int n,A[3],U;
+int v[MAXN];
 int cnt,head[MAXN],to[MAXN<<1],nxt[MAXN<<1];
 
 inline void Add_Edge(reg int u,reg int v){
@@ -47,79 +39,90 @@ inline void Add_Edge(reg int u,reg int v){
 	return;
 }
 
-int val[MAXN];
-int siz[MAXN][3];
-int f[MAXN][MAXN/2+1][MAXN/4+1][MAXN/6+1];
-int ans;
+bool del[MAXN];
+int siz[MAXN];
+int rt,MaxPart,sum;
 
-inline void dfs(reg int u,reg int father){
-	f[u][0][0][0]=1;
+inline void getRt(reg int u,reg int father){
+	siz[u]=1;
+	reg int Max=0;
 	for(reg int i=head[u];i;i=nxt[i]){
 		reg int v=to[i];
-		if(v!=father){
-			dfs(v,u);
-			static int tmp[MAXN/2+1][MAXN/4+1][MAXN/6+1];
-			for(reg int a=0;a<=siz[u][0];++a)
-				for(reg int b=0;b<=siz[u][1];++b)
-					for(reg int c=0;c<=siz[u][2];++c)
-						tmp[a][b][c]=f[u][a][b][c],f[u][a][b][c]=0;
-			for(reg int a0=0;a0<=siz[u][0];++a0)
-				for(reg int a1=0;a1<=siz[v][0]&&a0+a1<=A[0];++a1)
-			for(reg int b0=0;b0<=siz[u][1];++b0)
-				for(reg int b1=0;b1<=siz[v][1]&&b0+b1<=A[1];++b1)
-			for(reg int c0=0;c0<=siz[u][2];++c0)
-				for(reg int c1=0;c1<=siz[v][2]&&c0+c1<=A[2];++c1)
-					f[u][a0+a1][b0+b1][c0+c1]=add(f[u][a0+a1][b0+b1][c0+c1],1ll*tmp[a0][b0][c0]*f[v][a1][b1][c1]%mod);
-			siz[u][0]+=siz[v][0];
-			if(siz[u][0]>A[0]) siz[u][0]=A[0];
-			siz[u][1]+=siz[v][1];
-			if(siz[u][1]>A[1]) siz[u][1]=A[1];
-			siz[u][2]+=siz[v][2];
-			if(siz[u][2]>A[2]) siz[u][2]=A[2];
+		if(v!=father&&!del[v]){
+			getRt(v,u);
+			siz[u]+=siz[v];
+			Max=max(Max,siz[v]);
 		}
 	}
-	static int tmp[MAXN/2+1][MAXN/4+1][MAXN/6+1];
-	for(reg int a=0;a<=siz[u][0];++a)
-		for(reg int b=0;b<=siz[u][1];++b)
-			for(reg int c=0;c<=siz[u][2];++c)
-				tmp[a][b][c]=f[u][a][b][c],f[u][a][b][c]=0;
-	for(reg int a=0;a<=siz[u][0];++a)
-		for(reg int b=0;b<=siz[u][1];++b)
-			for(reg int c=0;c<=siz[u][2];++c)
-				f[u][a+(val[u]==0)][b+(val[u]==1)][c+(val[u]==2)]=add(f[u][a+(val[u]==0)][b+(val[u]==1)][c+(val[u]==2)],tmp[a][b][c]);
-	siz[u][val[u]]+=1;
-	if(siz[u][val[u]]>A[val[u]]) siz[u][val[u]]=A[val[u]];
-	for(reg int a=0;a<=siz[u][0];++a)
-		for(reg int b=0;b<=siz[u][1];++b)
-			for(reg int c=0;c<=siz[u][2];++c)
-				if(a|b|c)
-					ans=add(ans,f[u][a][b][c]);
-	f[u][0][0][0]=1;
+	Max=max(Max,sum-siz[u]);
+	if(Max<MaxPart)
+		rt=u,MaxPart=Max;
 	return;
 }
 
-inline bool cmp(reg int a,reg int b){
-	return A[a]>A[b];
+int tim,rnk[MAXN];
+
+inline void dfs(reg int u,reg int father){
+	siz[u]=1;
+	rnk[++tim]=u;
+	for(reg int i=head[u];i;i=nxt[i]){
+		reg int v=to[i];
+		if(v!=father&&!del[v]){
+			dfs(v,u);
+			siz[u]+=siz[v];
+		}
+	}
+	return;
+}
+
+int f[MAXN][42875];
+int ans=0;
+int BAS[3];
+
+inline void solve(reg int u){
+	del[u]=true;
+	tim=0,dfs(u,0);
+	for(reg int i=1;i<=tim+1;++i)
+		memset(f[i],0,sizeof(int)*U);
+	f[1][0]=1;
+	for(reg int i=1;i<=tim;++i){
+		static int a[3];
+		reg int id=0;
+		for(a[0]=0;a[0]<=A[0];++a[0])
+			for(a[1]=0;a[1]<=A[1];++a[1])
+				for(a[2]=0;a[2]<=A[2];++a[2]){
+					f[i+siz[rnk[i]]][id]=add(f[i+siz[rnk[i]]][id],f[i][id]);
+					if(a[v[rnk[i]]]!=A[v[rnk[i]]])
+						f[i+1][id+BAS[v[rnk[i]]]]=add(f[i+1][id+BAS[v[rnk[i]]]],f[i][id]);
+					++id;
+				}
+	}
+	for(reg int i=1;i<U;++i)
+		ans=add(ans,f[tim+1][i]);
+	for(reg int i=head[u];i;i=nxt[i]){
+		reg int v=to[i];
+		if(!del[v]){
+			rt=-1,MaxPart=n+1,sum=siz[v];
+			getRt(v,0),solve(rt);
+		}
+	}
+	return;
 }
 
 bool ed;
 
 int main(void){
-	n=read(),A[0]=read(),A[1]=read(),A[2]=read();
-	int id[3]={0,1,2};
-	sort(id,id+3,cmp);
-	int inv[3];
-	for(reg int i=0;i<3;++i)
-		inv[id[i]]=i;
-	sort(A,A+3),reverse(A,A+3);
+	scanf("%d%d%d%d",&n,&A[0],&A[1],&A[2]);
+	U=(A[0]+1)*(A[1]+1)*(A[2]+1),BAS[0]=(A[1]+1)*(A[2]+1),BAS[1]=A[2]+1,BAS[2]=1;
 	for(reg int i=1;i<=n;++i)
-		val[i]=inv[read()];
+		scanf("%d",&v[i]);
 	for(reg int i=1;i<n;++i){
 		static int u,v;
-		u=read(),v=read();
+		scanf("%d%d",&u,&v);
 		Add_Edge(u,v),Add_Edge(v,u);
 	}
-	dfs(1,0);
+	rt=-1,MaxPart=n+1,sum=n;
+	getRt(1,0),solve(rt);
 	printf("%d\n",ans);
 	fprintf(stderr,"%.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
 	fprintf(stderr,"%.3lf MiB\n",(&ed-&st)/1048576.0);
