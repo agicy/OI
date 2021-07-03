@@ -2,88 +2,96 @@
 using namespace std;
 #define reg register
 typedef long long ll;
+#define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,1<<21,stdin),p1==p2)?EOF:*p1++)
+static char buf[1<<21],*p1=buf,*p2=buf;
 
-const int MAXSIZE=1000000+5;
+inline char* read(reg char* s){
+	*s=getchar();
+	while(!isalpha(*s)) *s=getchar();
+	while(isalpha(*s)) *(++s)=getchar();
+	*s='\0';
+	return s;
+}
 
-char str[MAXSIZE];
-ll ans;
+inline ll max(reg ll a,reg ll b){
+	return a>b?a:b;
+}
+
+const int MAXN=1e6+5;
+
+int n;
+char s[MAXN];
 
 namespace SAM{
+	const int MAXSIZE=MAXN<<1;
+	const int lim=26;
 	struct Node{
-		int dep,link;
-		int ch[26];
+		int fa,len;
+		int ch[lim];
+		#define fa(x) unit[(x)].fa
+		#define len(x) unit[(x)].len
+		#define ch(x) unit[(x)].ch
 	};
-	Node p[MAXSIZE<<1];
-	int size;
-	int last;
-	int cnt[MAXSIZE<<1];
-	inline void Init(void){
-		p[1].dep=0;
-		p[1].link=0;
-		last=1;
-		size=1;
+	int tot,las;
+	Node unit[MAXSIZE];
+	inline int getId(void){
+		reg int p=++tot;
+		//memset(&unit[p],0,sizeof(Node));
+		return p;
+	}
+	inline void init(void){
+		tot=0,las=getId();
 		return;
 	}
-	inline void insert(reg int ch){
-		reg int ID=++size,pre=last;
-		p[ID].dep=p[last].dep+1;
-		++cnt[ID];
-		while(pre!=0&&p[pre].ch[ch]==0){
-			p[pre].ch[ch]=ID;
-			pre=p[pre].link;
-		}
-		if(pre==0)
-			p[ID].link=1;
+	int siz[MAXSIZE];
+	inline void insert(reg int c){
+		reg int np=getId(),p=las;
+		len(np)=len(p)+1;
+		while(p&&!ch(p)[c])
+			ch(p)[c]=np,p=fa(p);
+		if(!p)
+			fa(np)=1;
 		else{
-			reg int q=p[pre].ch[ch];
-			if(p[pre].dep+1==p[q].dep)
-				p[ID].link=q;
+			reg int q=ch(p)[c];
+			if(len(q)==len(p)+1)
+				fa(np)=q;
 			else{
-				reg int clone=++size;
-				p[clone]=p[q];
-				p[clone].dep=p[pre].dep+1;
-				while(pre!=0&&p[pre].ch[ch]==q){
-					p[pre].ch[ch]=clone;
-					pre=p[pre].link;
-				}
-				p[ID].link=p[q].link=clone;
+				reg int nq=getId();
+				unit[nq]=unit[q];
+				len(nq)=len(p)+1;
+				fa(np)=fa(q)=nq;
+				while(p&&ch(p)[c]==q)
+					ch(p)[c]=nq,p=fa(p);
 			}
 		}
-		last=ID;
+		siz[np]=1;
+		las=np;
 		return;
 	}
-}
-
-int cnt,head[MAXSIZE<<1],to[MAXSIZE<<1],Next[MAXSIZE<<1];
-
-inline void Add_Edge(reg int u,reg int v){
-	Next[++cnt]=head[u];
-	to[cnt]=v;
-	head[u]=cnt;
-	return;
-}
-
-inline void DFS(reg int ID){
-	for(reg int i=head[ID];i;i=Next[i]){
-		DFS(to[i]);
-		SAM::cnt[ID]+=SAM::cnt[to[i]];
+	int cnt[MAXN],rnk[MAXSIZE];
+	inline ll solve(void){
+		for(reg int i=1;i<=tot;++i)
+			++cnt[len(i)];
+		for(reg int i=1;i<=n;++i)
+			cnt[i]+=cnt[i-1];
+		for(reg int i=1;i<=tot;++i)
+			rnk[cnt[len(i)]--]=i;
+		reg ll res=0;
+		for(reg int i=tot;i>=1;--i){
+			reg int u=rnk[i];
+			siz[fa(u)]+=siz[u];
+			if(siz[u]>1)
+				res=max(res,1ll*siz[u]*len(u));
+		}
+		return res;
 	}
-	if(SAM::cnt[ID]!=1)
-		ans=max(ans,(ll)SAM::cnt[ID]*SAM::p[ID].dep);
-	return;
 }
-
-using namespace SAM;
 
 int main(void){
-	scanf("%s",str+1);
-	Init();
-	reg int n=strlen(str+1);
-	for(reg int i=1;i<=n;++i)
-		insert(str[i]-'a');
-	for(reg int i=2;i<=size;++i)
-		Add_Edge(p[i].link,i);
-	DFS(1);
-	printf("%lld\n",ans);
+	n=read(s)-s;
+	SAM::init();
+	for(reg int i=0;i<n;++i)
+		SAM::insert(s[i]-'a');
+	printf("%lld\n",SAM::solve());
 	return 0;
 }
