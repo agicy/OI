@@ -2,125 +2,115 @@
 using namespace std;
 #define reg register
 typedef long long ll;
+
+bool st;
+
 #define getchar() (p1==p2&&(p2=(p1=buf)+fread(buf,1,1<<21,stdin),p1==p2)?EOF:*p1++)
 static char buf[1<<21],*p1=buf,*p2=buf;
 inline int read(void){
+	reg bool f=false;
 	reg char ch=getchar();
 	reg int res=0;
-	while(!isdigit(ch)) ch=getchar();
+	while(!isdigit(ch)) f|=(ch=='-'),ch=getchar();
 	while(isdigit(ch)) res=10*res+(ch^'0'),ch=getchar();
-	return res;
+	return f?-res:res;
 }
 
-const int MAXN=200000+5;
-const int MAXV=2*MAXN;
-const int MAXE=2*(MAXN*3+MAXN*2);
+const int MAXN=2e5+5;
 const int inf=0x3f3f3f3f;
+
+struct Node{
+	int id,val;
+	inline Node(reg int id=0,reg int val=0):id(id),val(val){
+		return;
+	}
+	inline bool operator<(const Node& a)const{
+		return val<a.val;
+	}
+	inline bool operator>(const Node& a)const{
+		return val>a.val;
+	}
+};
 
 int n,k,l;
 int a[MAXN],b[MAXN];
-int cnt,head[MAXV],to[MAXE],w[MAXE],p[MAXE],Next[MAXE];
+bool visa[MAXN],visb[MAXN];
+priority_queue<Node,vector<Node>,less<Node>> Q,Qa,Qb,Qap,Qbp;
 
-inline void Add_Edge(reg int u,reg int v,reg int len,reg int val){
-	Next[++cnt]=head[u];
-	to[cnt]=v;
-	w[cnt]=len;
-	p[cnt]=val;
-	head[u]=cnt;
+inline void setA(reg int p){
+	visa[p]=true;
+	if(!visb[p])
+		Qbp.push(Node(p,b[p]));
 	return;
 }
 
-inline void Add_Tube(reg int u,reg int v,reg int len,reg int val){
-	Add_Edge(u,v,len,val);
-	Add_Edge(v,u,0,-val);
+inline void setB(reg int p){
+	visb[p]=true;
+	if(!visa[p])
+		Qap.push(Node(p,a[p]));
 	return;
 }
 
-bitset<MAXV> inque;
-int dis[MAXV];
-queue<int> Q;
-
-inline bool spfa(int s,reg int t){
-	memset(dis,0x3f,sizeof(dis));
-	inque[s]=true,dis[s]=0,Q.push(s);
-	while(!Q.empty()){
-		reg int u=Q.front();
-		Q.pop();
-		inque[u]=false;
-		for(reg int i=head[u];i;i=Next[i]){
-			int v=to[i];
-			if(dis[v]>dis[u]+p[i]&&w[i]){
-				dis[v]=dis[u]+p[i];
-				if(!inque[v]){
-					inque[v]=true;
-					Q.push(v);
-				}
-			}
-		}
-	}
-	return dis[t]!=inf;
-}
-
-ll cost;
-int cur[MAXV];
-bitset<MAXV> vis;
-
-inline int dfs(reg int u,reg int t,reg int lim){
-	if(u==t){
-		cost+=1ll*dis[t]*lim;
-		return lim;
-	}
-	vis[u]=true;
-	reg int flow=0;
-	for(reg int &i=cur[u];i;i=Next[i]){
-		reg int v=to[i];
-		if(dis[v]==dis[u]+p[i]&&w[i]&&!vis[v]){
-			reg int f=dfs(v,t,min(lim-flow,w[i]));
-			if(f){
-				flow+=f;
-				w[i]-=f;
-				w[i^1]+=f;
-				if(flow==lim)
-					break;
-			}
-		}
-	}
-	vis[u]=false;
-	return flow;
-}
-
-inline int dinic(reg int s,reg int t){
-	cost=0;
-	reg int res=0;
-	while(spfa(s,t)){
-		memcpy(cur,head,sizeof(head));
-		res+=dfs(s,t,inf);
-	}
-	return res;
-}
+bool ed;
 
 int main(void){
-	reg int T=read();
-	while(T--){
-		cnt=1,memset(head,0,sizeof(head));
-		n=read(),k=read(),l=read();
+	reg int t=read();
+	while(t--){
+		n=read(),k=read(),l=k-read();
 		for(reg int i=1;i<=n;++i)
 			a[i]=read();
 		for(reg int i=1;i<=n;++i)
 			b[i]=read();
-		reg int s=0,t=2*n+1,ts=2*n+2,tt=2*n+3;
 		for(reg int i=1;i<=n;++i){
-			Add_Tube(s,i,1,-a[i]);
-			Add_Tube(i+n,t,1,-b[i]);
-			Add_Tube(i,i+n,1,0);
-			Add_Tube(i,ts,inf,0);
-			Add_Tube(tt,i+n,inf,0);
+			visa[i]=visb[i]=false;
+			Q.push(Node(i,a[i]+b[i])),Qa.push(Node(i,a[i])),Qb.push(Node(i,b[i]));
 		}
-		Add_Tube(ts,tt,k-l,0);
-		reg int x=2*n+4;
-		Add_Tube(t,x,k,0);
-		dinic(s,x);
-		printf("%lld\n",-cost);
+		Q.push(Node(0,-inf)),Qa.push(Node(0,-inf)),Qb.push(Node(0,-inf)),Qap.push(Node(0,-inf)),Qbp.push(Node(0,-inf));
+		reg ll res=0;
+		for(reg int i=1;i<=k;++i){
+			while(visa[Q.top().id]||visb[Q.top().id])
+				Q.pop();
+			while(visa[Qa.top().id])
+				Qa.pop();
+			while(visb[Qb.top().id])
+				Qb.pop();
+			while(visa[Qap.top().id])
+				Qap.pop();
+			while(visb[Qbp.top().id])
+				Qbp.pop();
+			static Node p,pa,pb,pap,pbp;
+			p=Q.top(),pa=Qa.top(),pb=Qb.top(),pap=Qap.top(),pbp=Qbp.top();
+			reg int opt=1,Max=p.val;
+			if(Max<pap.val+pbp.val)
+				opt=3,Max=pap.val+pbp.val;
+			if(Max<pap.val+pb.val)
+				opt=4,Max=pap.val+pb.val;
+			if(Max<pa.val+pbp.val)
+				opt=5,Max=pa.val+pbp.val;
+			if(pa.id!=pb.id&&l&&Max<pa.val+pb.val)
+				opt=2,Max=pa.val+pb.val;
+			res+=Max;
+			switch(opt){
+				case 1:setA(p.id),setB(p.id);break;
+				case 2:setA(pa.id),setB(pb.id),--l;break;
+				case 3:setA(pap.id),setB(pbp.id),++l;break;
+				case 4:setA(pap.id),setB(pb.id);break;
+				case 5:setA(pa.id),setB(pbp.id);break;
+			}
+		}
+		printf("%lld\n",res);
+		while(!Q.empty())
+			Q.pop();
+		while(!Qa.empty())
+			Qa.pop();
+		while(!Qb.empty())
+			Qb.pop();
+		while(!Qap.empty())
+			Qap.pop();
+		while(!Qbp.empty())
+			Qbp.pop();
 	}
+	fprintf(stderr,"%.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
+	fprintf(stderr,"%.3lf MiB\n",(&ed-&st)/1048576.0);
 	return 0;
 }
