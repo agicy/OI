@@ -128,7 +128,7 @@ namespace SAM{
 			if(len(q)==len(p)+1)
 				fa(np)=q;
 			else{
-				reg int nq=++tot;
+				reg int nq=getId();
 				unit[nq]=unit[q];
 				len(nq)=len(p)+1;
 				fa(np)=fa(q)=nq;
