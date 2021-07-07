@@ -31,14 +31,6 @@ uint32_t n,w;
 uint64_t a[MAXN];
 uint64_t tag[MAXN];
 
-inline uint64_t lowbit(reg uint64_t x){
-	return x&(-x);
-}
-
-inline uint64_t lg(reg uint64_t x){
-	return __builtin_ctzll(x);
-}
-
 bool ed;
 
 int main(void){
@@ -52,7 +44,7 @@ int main(void){
 			static uint32_t cnt[MAXW+1];
 			static uint64_t tmp[MAXN];
 			for(reg uint32_t j=0;j<n;++j)
-				tmp[j]=tag[j]&(~(a[j]>>i)),++cnt[lg(lowbit(tmp[j]))];
+				tmp[j]=tag[j]&(~(a[j]>>i)),++cnt[__builtin_ffsll(tmp[j])-1];
 			reg uint32_t lim=0;
 			for(reg int j=w;j>=0;--j)
 				lim=(lim>>1)+cnt[j],cnt[j]=0;
