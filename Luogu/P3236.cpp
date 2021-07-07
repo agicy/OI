@@ -41,75 +41,60 @@ typedef Vector Point;
 const int MAXN=70+5;
 const int inf=0x3f3f3f3f;
 
-namespace Network{
-	const int MAXV=MAXN*2;
-	const int MAXE=(MAXN*MAXN+MAXN*2)*2;
-	const int inf=0x3f3f3f3f;
-	int cnt,head[MAXV],to[MAXE],w[MAXE],p[MAXE],nxt[MAXE];
-	inline void init(reg int s,reg int t){
-		cnt=1,fill(head+s,head+t+1,0);
-		return;
-	}
-	inline void Add_Edge(reg int u,reg int v,reg int lim,reg int cot){
-		nxt[++cnt]=head[u];
-		to[cnt]=v,w[cnt]=lim,p[cnt]=cot;
-		head[u]=cnt;
-		return;
-	}
-	inline void Add_Tube(reg int u,reg int v,reg int lim,reg int cot){
-		Add_Edge(u,v,lim,cot),Add_Edge(v,u,0,-cot);
-		return;
-	}
-	bool inque[MAXV];
-	int dis[MAXV];
-	int cur[MAXV];
-	queue<int> Q;
-	inline bool spfa(int s,reg int t){
-		fill(dis+s,dis+t+1,inf);
-		inque[s]=true,dis[s]=0,Q.push(s);
-		while(!Q.empty()){
-			reg int u=Q.front();
-			Q.pop();
-			inque[u]=false;
-			cur[u]=head[u];
-			for(reg int i=head[u];i;i=nxt[i]){
-				int v=to[i];
-				if(dis[v]>dis[u]+p[i]&&w[i]){
-					dis[v]=dis[u]+p[i];
-					if(!inque[v])
-						inque[v]=true,Q.push(v);
+namespace KM{
+	int G[MAXN][MAXN];
+	int mat[MAXN];
+	int slack[MAXN],ex[MAXN],ey[MAXN];
+	int pre[MAXN];
+	int tim,vis[MAXN];
+	inline void bfs(reg int n,reg int u){
+		fill(pre+1,pre+n+1,0);
+		for(reg int i=1;i<=n;++i)
+			slack[i]=inf;
+		reg int x,y=0;
+		mat[y]=u;
+		while(true){
+			x=mat[y],vis[y]=tim;
+			reg int tmp=0;
+			reg int delta=inf;
+			for(reg int i=1;i<=n;++i){
+				if(vis[i]==tim)
+					continue;
+				if(slack[i]>ex[x]+ey[i]-G[x][i]){
+					slack[i]=ex[x]+ey[i]-G[x][i];
+					pre[i]=y;
+				}
+				if(slack[i]<delta){
+					delta=slack[i];
+					tmp=i;
 				}
 			}
+			for(reg int i=0;i<=n;++i)
+				if(vis[i]==tim)
+					ex[mat[i]]-=delta,ey[i]+=delta;
+				else
+					slack[i]-=delta;
+			y=tmp;
+			if(!mat[y])
+				break;
 		}
-		return dis[t]!=inf;
+		while(y){
+			mat[y]=mat[pre[y]];
+			y=pre[y];
+		}
+		return;
 	}
-	bool vis[MAXV];
-	inline int dfs(reg int u,reg int t,reg int lim){
-		if(u==t)
-			return lim;
-		vis[u]=true;
-		reg int flow=0;
-		for(reg int& i=cur[u];i;i=nxt[i]){
-			reg int v=to[i];
-			if(dis[v]==dis[u]+p[i]&&w[i]&&!vis[v]){
-				reg int f=dfs(v,t,min(lim-flow,w[i]));
-				if(f){
-					flow+=f,w[i]-=f,w[i^1]+=f;
-					if(flow==lim)
-						break;
-				}
-			}
-		}
-		vis[u]=false;
-		return flow;
-	}
-	inline pair<int,int> dinic(reg int s,reg int t){
-		int flow=0,cost=0;
-		while(spfa(s,t)){
-			reg int f=dfs(s,t,inf);
-			flow+=f,cost+=f*dis[t];
-		}
-		return make_pair(flow,cost);
+	inline int KM(reg int n){
+		fill(mat+1,mat+n+1,0);
+		fill(ex+1,ex+n+1,0);
+		fill(ey+1,ey+n+1,0);
+		for(reg int i=1;i<=n;++i)
+			++tim,bfs(n,i);
+		reg int res=0;
+		for(reg int i=1;i<=n;++i)
+			if(mat[i])
+				res+=G[mat[i]][i];
+		return res;
 	}
 }
 
@@ -120,20 +105,12 @@ int ans;
 
 inline Point getVal(void){
 	Point res(0,0);
-	reg int s=0,t=2*n+1;
-	Network::init(s,t);
-	for(reg int i=1;i<=n;++i)
-		Network::Add_Tube(s,i,1,0),Network::Add_Tube(i+n,t,1,0);
 	for(reg int i=1;i<=n;++i)
 		for(reg int j=1;j<=n;++j)
-			Network::Add_Tube(i,j+n,1,w[i][j]);
-	Network::dinic(s,t);
+			KM::G[i][j]=-w[i][j];
+	KM::KM(n);
 	for(reg int i=1;i<=n;++i)
-		for(reg int j=Network::head[i];j;j=Network::nxt[j])
-			if(!Network::w[j]&&n<Network::to[j]&&Network::to[j]<=n*2){
-				res=res+Point(a[i][Network::to[j]-n],b[i][Network::to[j]-n]);
-				break;
-			}
+		res=res+Point(a[KM::mat[i]][i],b[KM::mat[i]][i]);
 	ans=min(ans,res.x*res.y);
 	return res;
 }
