@@ -55,18 +55,14 @@ inline int dfs(reg int dep,reg int k0,reg int k1,reg int k2){
 }
 
 inline int getVal(reg int S){
-	for(reg int i=0;i<7;++i)
+	for(reg int i=0;i<3;++i)
 		if(((S>>i)&1)&&!l[i])
 			return 0;
-	ll tmp[7];
-	for(reg int i=0;i<7;++i)
+	for(reg int i=0;i<3;++i)
 		if((S>>i)&1)
-			tmp[i]=l[i]-1;
+			Max[i]=l[i]-1;
 		else
-			tmp[i]=r[i];
-	Max[0]=*min_element(tmp,tmp+3);
-	Max[1]=*min_element(tmp+3,tmp+4);
-	Max[2]=*min_element(tmp+4,tmp+7);
+			Max[i]=r[i];
 	memset(f,-1,sizeof(f));
 	return dfs(60,1,1,1);
 }
@@ -79,11 +75,19 @@ int main(void){
 	reg int pod=1,cnt=0;
 	for(reg int i=0;i<7;++i)
 		pod=1ll*pod*((r[i]-l[i]+1)%mod)%mod;
-	for(reg int S=0;S<(1<<7);++S)
-		if(__builtin_parity(S))
-			cnt=sub(cnt,getVal(S));
-		else
-			cnt=add(cnt,getVal(S));
+	reg ll Max0=*min_element(r,r+3),Min0=*max_element(l,l+3);
+	reg ll Max1=*min_element(r+3,r+4),Min1=*max_element(l+3,l+4);
+	reg ll Max2=*min_element(r+4,r+7),Min2=*max_element(l+4,l+7);
+	if(Min0<=Max0&&Min1<=Max1&&Min2<=Max2){
+		l[0]=Min0,r[0]=Max0;
+		l[1]=Min1,r[1]=Max1;
+		l[2]=Min2,r[2]=Max2;
+		for(reg int S=0;S<(1<<3);++S)
+			if(__builtin_parity(S))
+				cnt=sub(cnt,getVal(S));
+			else
+				cnt=add(cnt,getVal(S));
+	}
 	printf("%d\n",sub(pod,cnt));
 	fprintf(stderr,"%.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
 	fprintf(stderr,"%.3lf MiB\n",(&ed-&st)/1048576.0);
