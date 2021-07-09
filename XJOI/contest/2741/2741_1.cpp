@@ -1,9 +1,9 @@
-//stupid time limit
-//ST^2+nT^3logn+qT^2
+//excellent time limit
+//compile time limit exceeded
+//ST+nT^2logn+qT+nT^3
 #pragma GCC optimize("Ofast")
-#pragma GCC target("avx,sse2,sse3,sse4,mmx")
-#pragma GCC optimize("-fno-stack-protecter")
 #include<bits/stdc++.h>
+#include<bitset>
 using namespace std;
 #define reg register
 typedef long long ll;
@@ -65,52 +65,48 @@ inline int sub(reg int a,reg int b){
 	return a<0?a+mod:a;
 }
 
-uint64_t tmp[SIGMA+1][SIGMA+1];
-
-struct Matrix{
-	int n,m,unit[SIGMA+1][SIGMA+1];
-	inline Matrix(void){
+template<const int N,const int M> struct Matrix{
+	int unit[N][M];
+	inline Matrix<N,M>(void){
 		return;
 	}
-	inline Matrix(reg int n,reg int m):n(n),m(m){
-		return;
-	}
-	inline Matrix(reg int n,reg int m,reg int x):n(n),m(m){
-		for(reg int i=0;i<n;++i)
-			for(reg int j=0;j<m;++j)
+	inline Matrix<N,M>(reg int x){
+		for(reg int i=0;i<N;++i)
+			for(reg int j=0;j<M;++j)
 				unit[i][j]=(i==j)?x:0;
 		return;
 	}
-	inline Matrix operator+(const Matrix& a)const{
-		//assert(n==a.n),assert(m==a.m);
-		Matrix res(n,m);
-		for(reg int i=0;i<n;++i)
-			for(reg int j=0;j<m;++j)
-				res.unit[i][j]=add(unit[i][j],a.unit[i][j]);
-		return res;
-	}
-	inline Matrix operator*(const Matrix& a)const{
-		//assert(m==a.n);
-		for(reg int i=0;i<n;++i)
-			for(reg int j=0;j<a.m;++j)
-				tmp[i][j]=0;
-		for(reg int i=0;i<n;++i)
-			for(reg int k=0;k<m;++k)
-				for(reg int j=0;j<a.m;++j)
-					tmp[i][j]+=1ull*unit[i][k]*a.unit[k][j];
-		Matrix res(n,a.m);
-		for(reg int i=0;i<n;++i)
-			for(reg int j=0;j<a.m;++j)
-				res.unit[i][j]=tmp[i][j]%mod;
-		return res;
-	}
 };
+
+template<const int N,const int M> inline Matrix<N,M> operator+(const Matrix<N,M> & a,const Matrix<N,M>& b){
+	Matrix<N,M> res;
+	for(reg int i=0;i<N;++i)
+		for(reg int j=0;j<M;++j)
+			res.unit[i][j]=add(a.unit[i][j],b.unit[i][j]);
+	return res;
+}
+
+template<const int N,const int M,const int K> inline Matrix<N,K> operator*(const Matrix<N,M> & a,const Matrix<M,K>& b){
+	static uint64_t tmp[N][K];
+	for(reg int i=0;i<N;++i)
+		for(reg int j=0;j<K;++j)
+			tmp[i][j]=0;
+	for(reg int i=0;i<N;++i)
+		for(reg int k=0;k<M;++k)
+			for(reg int j=0;j<K;++j)
+				tmp[i][j]+=1ull*a.unit[i][k]*b.unit[k][j];
+	Matrix<N,K> res;
+	for(reg int i=0;i<N;++i)
+		for(reg int j=0;j<K;++j)
+			res.unit[i][j]=tmp[i][j]%mod;
+	return res;
+}
 
 namespace SAM{
 	struct Node{
 		int fa,len;
 		int ch[SIGMA];
-		int f[SIGMA];
+		int f[SIGMA+1];
 		#define fa(x) unit[(x)].fa
 		#define len(x) unit[(x)].len
 		#define ch(x) unit[(x)].ch
@@ -146,35 +142,57 @@ namespace SAM{
 		las=np;
 		return;
 	}
-	int cnt[MAXS];
-	int rnk[MAXS<<1];
-	inline Matrix build(reg char s[],reg int len){
+	namespace Graph{
+		int cnt,head[MAXS<<1],to[MAXS<<1],nxt[MAXS<<1];
+		inline void init(reg int tot){
+			cnt=0,memset(head+1,0,sizeof(int)*tot);
+			return;
+		}
+		inline void Add_Edge(reg int u,reg int v){
+			nxt[++cnt]=head[u];
+			to[cnt]=v;
+			head[u]=cnt;
+			return;
+		}
+	}
+	int inDeg[MAXS<<1];
+	inline Matrix<SIGMA+1,SIGMA+1> build(reg char s[],reg int len){
 		init();
 		for(reg int i=0;i<len;++i)
 			insert(s[i]-'a');
-		memset(cnt,0,sizeof(int)*(len+1));
-		for(reg int i=1;i<=tot;++i) ++cnt[len(i)];
-		for(reg int i=1;i<=len;++i) cnt[i]+=cnt[i-1];
-		for(reg int i=1;i<=tot;++i) rnk[cnt[len(i)]--]=i;
-		Matrix g(SIGMA+1,SIGMA+1,0);
-		for(reg int c=0;c<SIGMA;++c)
-			if(ch(1)[c])
-				f(ch(1)[c])[c]=1;
-			else
-				g.unit[c][c]=1;
-		g.unit[SIGMA][SIGMA]=1;
-		for(reg int i=2;i<=tot;++i){
-			reg int p=rnk[i];
-			for(reg int v=0;v<SIGMA;++v)
-				if(f(p)[v]){
-					for(reg int c=0;c<SIGMA;++c)
-						if(ch(p)[c])
-							f(ch(p)[c])[v]=add(f(ch(p)[c])[v],f(p)[v]);
-						else
-							g.unit[v][c]=add(g.unit[v][c],f(p)[v]);
-					g.unit[v][SIGMA]=add(g.unit[v][SIGMA],f(p)[v]);
-				}
+		Graph::init(tot);
+		for(reg int i=1;i<=tot;++i)
+			for(reg int j=0;j<SIGMA;++j)
+				if(ch(i)[j])
+					++inDeg[i],Graph::Add_Edge(ch(i)[j],i);
+		reg int _head=0,_tail=0;
+		static int Q[MAXS<<1];
+		for(reg int i=1;i<=tot;++i)
+			if(!inDeg[i])
+				Q[_tail++]=i;
+		while(_head<_tail){
+			reg int p=Q[_head++];
+			for(reg int c=0;c<SIGMA;++c)
+				if(!ch(p)[c])
+					f(p)[c]=add(f(p)[c],1);
+			f(p)[SIGMA]=add(f(p)[SIGMA],1);
+			for(reg int i=Graph::head[p];i;i=Graph::nxt[i]){
+				reg int v=Graph::to[i];
+				--inDeg[v];
+				if(!inDeg[v])
+					Q[_tail++]=v;
+				for(reg int c=0;c<SIGMA+1;++c)
+					f(v)[c]=add(f(v)[c],f(p)[c]);
+			}
 		}
+		Matrix<SIGMA+1,SIGMA+1> g(0);
+		for(reg int i=0;i<SIGMA;++i)
+			for(reg int c=0;c<SIGMA+1;++c)
+				g.unit[i][c]=f(ch(1)[i])[c];
+		for(reg int i=0;i<SIGMA;++i)
+			if(!ch(1)[i])
+				g.unit[i][i]=1;
+		g.unit[SIGMA][SIGMA]=1;
 		return g;
 	}
 	#undef fa
@@ -185,71 +203,67 @@ namespace SAM{
 int n,q;
 char s[MAXS];
 uint64_t k1,k2;
-Matrix M[MAXN];
-
-inline int getSum(const Matrix& M){
-	reg uint64_t res=0;
-	for(reg int i=0;i<=SIGMA;++i)
-		res+=M.unit[i][SIGMA];
-	return res%mod;
-}
+Matrix<SIGMA+1,SIGMA+1> M[MAXN];
 
 struct querys{
 	int l,r;
 };
 
 int ans;
-Matrix lsum[MAXN],lpre[MAXN],lsuf[MAXN],lpod[MAXN];
-Matrix rsum[MAXN],rpre[MAXN],rsuf[MAXN],rpod[MAXN];
+Matrix<1,1> lsum[MAXN],rsum[MAXN];
+Matrix<1,SIGMA+1> suf[MAXN];
+Matrix<SIGMA+1,1> pre[MAXN];
 querys qu[MAXQ];
+Matrix<1,SIGMA+1> B;
+Matrix<SIGMA+1,1> D;
 int id[MAXQ];
-Matrix Vec;
 
-inline void solve(reg int l,reg int r,reg int L,reg int R){
-	if(l>r||L>R)
-		return;
-	if(l==r){
-		if((R-L+1)&1)
-			ans^=(Vec*M[l]).unit[0][SIGMA];
+struct Node{
+	Matrix<SIGMA+1,SIGMA+1> pod;
+	Matrix<SIGMA+1,1> Sl;
+	Matrix<1,SIGMA+1> Sr;
+	inline Node(const Matrix<SIGMA+1,SIGMA+1>& pod,const Matrix<SIGMA+1,1>& Sl,const Matrix<1,SIGMA+1>& Sr):pod(pod),Sl(Sl),Sr(Sr){
 		return;
 	}
+};
+
+inline Node solve(reg int l,reg int r,reg int L,reg int R){
+	if(l==r){
+		if((R-L+1)&1)
+			ans^=(B*M[l]*D).unit[0][0];
+		lsum[l]=rsum[l]=B*M[l]*D;
+		pre[l]=M[l]*D,suf[l]=B*M[l];
+		return Node(M[l],M[l]*D,B*M[l]);
+	}
 	reg int mid=(l+r)>>1;
-	reg int __l=mid+1,__r=mid;
 	reg int tot=0,cntl=0,cntr=0;
 	static int V[MAXQ],lef[MAXQ],rig[MAXQ];
 	for(reg int i=L;i<=R;++i)
-		if(qu[id[i]].l<=mid&&mid<qu[id[i]].r){
-			__l=min(__l,qu[id[i]].l),__r=max(__r,qu[id[i]].r);
+		if(qu[id[i]].l<=mid&&mid<qu[id[i]].r)
 			V[++tot]=id[i];
-		}
 		else if(qu[id[i]].l<=mid)
 			lef[++cntl]=id[i];
 		else
 			rig[++cntr]=id[i];
-	if(__l<__r){
-		lsum[mid]=lpre[mid]=lsuf[mid]=lpod[mid]=M[mid];
-		for(reg int i=mid-1;i>=__l;--i){
-			lsum[i]=M[i]+lsum[i+1]+M[i]*lsuf[i+1];
-			lpre[i]=M[i]*lpod[i+1]+lpre[i+1];
-			lsuf[i]=M[i]+M[i]*lsuf[i+1];
-			lpod[i]=M[i]*lpod[i+1];
-		}
-		rsum[mid+1]=rpre[mid+1]=rsuf[mid+1]=rpod[mid+1]=M[mid+1];
-		for(reg int i=mid+2;i<=__r;++i){
-			rsum[i]=rsum[i-1]+M[i]+rpre[i-1]*M[i];
-			rpre[i]=rpre[i-1]*M[i]+M[i];
-			rsuf[i]=rsuf[i-1]+rpod[i-1]*M[i];
-			rpod[i]=rpod[i-1]*M[i];
-		}
-		for(reg int i=1;i<=tot;++i)
-			ans^=(Vec*(lsum[qu[V[i]].l]+rsum[qu[V[i]].r])+(Vec*lpre[qu[V[i]].l])*rsuf[qu[V[i]].r]).unit[0][SIGMA];
-	}
 	for(reg int i=1;i<=cntl;++i)
 		id[L+i-1]=lef[i];
 	for(reg int i=1;i<=cntr;++i)
 		id[R-i+1]=rig[i];
-	solve(l,mid,L,L+cntl-1),solve(mid+1,r,R-cntr+1,R);
-	return;
+	reg int beg=L+cntl,end=R-cntr;
+	for(reg int i=1;i<=tot;++i)
+		id[L+cntl+i-1]=V[i];
+	Node __l=solve(l,mid,L,L+cntl-1),__r=solve(mid+1,r,R-cntr+1,R);
+	for(reg int i=beg;i<=end;++i)
+		ans^=(rsum[qu[id[i]].l]+lsum[qu[id[i]].r]+suf[qu[id[i]].l]*pre[qu[id[i]].r]).unit[0][0];
+	for(reg int i=l;i<=mid;++i){
+		rsum[i]=suf[i]*__r.Sl+rsum[i]+rsum[mid+1];
+		suf[i]=suf[i]*__r.pod+suf[mid+1];
+	}
+	for(reg int i=mid+1;i<=r;++i){
+		lsum[i]=__l.Sr*pre[i]+lsum[i]+lsum[mid];
+		pre[i]=pre[mid]+__l.pod*pre[i];
+	}
+	return Node(__l.pod*__r.pod,__l.Sl+__l.pod*__r.Sl,__l.Sr*__r.pod+__r.Sr);
 }
 
 inline uint64_t Rand(void){
@@ -269,11 +283,13 @@ int main(void){
 		static int l,r;
 		l=Rand()%n+1,r=Rand()%n+1;
 		if(l>r) swap(l,r);
-		id[i]=i,qu[i].l=l,qu[i].r=r;
+		qu[i].l=l,qu[i].r=r;
 	}
-	Vec.n=1,Vec.m=SIGMA+1;
 	for(reg int i=0;i<=SIGMA;++i)
-		Vec.unit[0][i]=1;
+		B.unit[0][i]=1;
+	D.unit[SIGMA][0]=1;
+	for(reg int i=1;i<=q;++i)
+		id[i]=i;
 	solve(1,n,1,q);
 	printf("%d\n",ans);
 	fprintf(stderr,"%.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
