@@ -26,15 +26,15 @@ inline void Add_Edge(reg int u,reg int v){
 	return;
 }
 
-int son[MAXN],size[MAXN];
+int son[MAXN],siz[MAXN];
 
 inline void DFS1(reg int ID,reg int father){
-	size[ID]=1;
+	siz[ID]=1;
 	for(reg int i=head[ID];i;i=Next[i])
 		if(to[i]!=father){
 			DFS1(to[i],ID);
-			size[ID]+=size[to[i]];
-			if(size[son[ID]]<size[to[i]])
+			siz[ID]+=siz[to[i]];
+			if(siz[son[ID]]<siz[to[i]])
 				son[ID]=to[i];
 		}
 	return;

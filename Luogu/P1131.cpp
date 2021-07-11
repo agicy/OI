@@ -15,12 +15,11 @@ inline int read(void){
 const int MAXN=5e5+5;
 
 int n,rt;
-int cnt,head[MAXN],to[MAXN<<1],w[MAXN<<1],Next[MAXN<<1];
+int cnt,head[MAXN],to[MAXN<<1],w[MAXN<<1],nxt[MAXN<<1];
 
 inline void Add_Edge(reg int u,reg int v,reg int len){
-	Next[++cnt]=head[u];
-	to[cnt]=v;
-	w[cnt]=len;
+	nxt[++cnt]=head[u];
+	to[cnt]=v,w[cnt]=len;
 	head[u]=cnt;
 	return;
 }
@@ -28,7 +27,7 @@ inline void Add_Edge(reg int u,reg int v,reg int len){
 ll f[MAXN],g[MAXN];
 
 inline void dfs(reg int u,reg int father){
-	for(reg int i=head[u];i;i=Next[i]){
+	for(reg int i=head[u];i;i=nxt[i]){
 		reg int v=to[i];
 		if(v!=father){
 			dfs(v,u);
@@ -36,7 +35,7 @@ inline void dfs(reg int u,reg int father){
 			g[u]+=g[v];
 		}
 	}
-	for(reg int i=head[u];i;i=Next[i]){
+	for(reg int i=head[u];i;i=nxt[i]){
 		reg int v=to[i];
 		if(v!=father)
 			g[u]+=f[u]-(f[v]+w[i]);
