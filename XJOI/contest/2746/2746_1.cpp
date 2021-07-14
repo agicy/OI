@@ -38,17 +38,13 @@ int main(void){
 			++cnt;
 		reg int val=v[sa[i]];
 		val-=cnt,ans+=abs(val),val=max(val,0);
-		printf("add %lld\n",val);
 		Q.push(val),Q.push(val),Q.pop();
 	}
 	if(cnt>m)
 		puts("-1");
 	else{
-		while(!Q.empty()){
-			
-		printf("sub %lld\n",Q.top());
+		while(!Q.empty())
 			ans-=Q.top(),Q.pop();
-		}
 		printf("%lld\n",ans);
 	}
 	fprintf(stderr,"%.3lf s\n",1.0*clock()/CLOCKS_PER_SEC);
