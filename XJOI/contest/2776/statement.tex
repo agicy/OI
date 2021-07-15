@@ -1,0 +1,276 @@
+\documentclass[UTF8]{article}
+\usepackage{multirow}
+\usepackage{ctex}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{CJKulem}
+\title{NOI模拟赛}
+\author{s\_r\_f,01191020csl}
+\begin{document}
+\maketitle
+\begin{tabular}{|c|c|c|c|}
+	\hline
+	题目名称 & tennis & bet & function\\
+	\hline
+	输入文件名 & \texttt{tennis.in} & \texttt{bet.in} & \texttt{function.in}\\
+	\hline
+	输出文件名 & \texttt{tennis.out} & \texttt{bet.out} & \texttt{function.out}\\
+	\hline
+	时间限制 & 5s & 1s & 1s\\
+	\hline
+	空间限制 & 256MB & 256MB & 256MB\\
+	\hline
+	测试点数量 & 6 & 20 & 4 \\
+	\hline
+	每个测试点分值 & N/A & 5 & N/A  \\
+	\hline
+	比较方式 & 全文比较 & 全文比较 & 全文比较 \\
+	\hline
+	编译命令 & \texttt{-O2 -std=c++11} & \texttt{-O2 -std=c++11} & \texttt{-O2 -std=c++11}  \\
+	\hline
+\end{tabular}
+
+提示：
+
+1.把最简分数对 $\frac pq$ 对 $m$ 取模的定义为：求出 $pq'\bmod m$，其中 $qq'\bmod m=1$。你可以认为本套题中所有用到分数取模的场合都保证了答案存在且唯一。
+
+2.随机变量 $X$ 的方差定义为 $E(X^2)-E(X)^2$。
+
+3.积性函数的定义为：对任意 $a,b$ 互质，$f(ab)=f(a)f(b)$ 的函数 $f(x)$。
+\newpage
+\section{tennis}
+\subsection{题目描述}
+有两个盒子，一个里面有 $n$ 个乒乓球，另一个里面有 $m$ 个乒乓球。
+
+有 $10^9$ 对人想打乒乓球。每对人依次获取乒乓球，每对人会\textbf{等概率随机}选一个盒子（每对人做出的选择\textbf{独立}），看看里面有没有球：如果有的话，拿走一个；如果没有，那么看看另一个盒子：如果有就拿走一个，如果没有，人们就会愤怒的离开。
+
+形式化的讲，记盒子里乒乓球的状态为 $(n,m)$，不妨设被随机选到的盒子里有 $n$ 个。
+
+【情况1】如果 $n\geq 1$ 那么状态变为 $(n-1,m)$，然后继续；
+
+【情况2】如果 $n=0,m \geq 1$ 那么状态变为 $(n,m-1)$，然后继续；
+
+【情况3】如果 $n=m=0$ 那么人们会愤怒的离开，整个流程终止。
+
+记 $p_{n,m}$ 为开始时盒子的状态为 $(n,m)$，\textbf{【情况2】在整个过程中始终不会发生}的概率，多次询问 $p_{n,m}$ 对 $P$ 取模的结果。
+
+咦，你说这题太简单了？那么就改难一点.
+
+记 $f_{n,m}$ 为开始时盒子的状态为 $(n,m)$，\textbf{【情况2】或【情况3】第一次发生时(如果是【情况2】那么状态还没有变化)}，$n+m$ 的期望，多次询问 $f_{n,m}$ 对 $P$ 取模的结果。
+
+\subsection{输入格式}
+
+从文件 \texttt{tennis.in} 中读入数据。
+
+第一行一个整数 $Num$ 表示子任务编号，$Num=-1$表示样例。
+
+第二行两个整数 $Q$ 和 $P$ 表示总询问次数和模数。
+
+接下来 $Q$ 行，每行一个询问 \texttt{1 n m} 或者 \texttt{2 n m}，\texttt{1 n m} 表示查询 $p_{n,m}$；\texttt{2 n m} 表示查询 $f_{n,m}$。
+
+\subsection{输出格式}
+
+输出到文件 \texttt{tennis.out} 中。
+
+输出 $Q$ 行，一行一个整数表示答案对 $P$ 取模的结果。
+
+\subsection{样例输入}
+
+\texttt{-1}
+
+\texttt{2 998244353}
+
+\texttt{1 1 1}
+
+\texttt{2 1 1}
+
+\subsection{样例输出}
+
+\texttt{499122177}
+
+\texttt{499122177}
+
+\subsection{更多输入输出样例}
+	参见选手目录。
+
+\subsection{数据范围}
+
+本题共分为 $6$ 个子任务，每个子任务内部捆绑测试。
+
+记第一类询问次数为 $Q_1$，第二类询问次数为 $Q_2$。
+
+\begin{tabular}
+{|c|c|c|c|c|c|}
+	\hline
+	Num & $\max(n,m) \leq$ & $Q_1 \leq$ & $Q_2 \leq$ & P & 分值\\
+	\hline
+	0 & 1 & 1 & 1  & =998244353 & 1\\
+	\hline
+	1 & $5\times 10^3$ & $2\times10^5$ & $3\times10^5$  &  & 9\\
+	\hline
+	2 & $2\times 10^5$ & $2\times 10^5$ & 0 &  & 10\\
+	\hline
+	3 & $2\times 10^5$ & $2\times 10^5$ & $1\times 10^2$ &  & 10\\
+	\hline
+	4 & $2\times 10^5$ & $2\times 10^5$ & $5\times 10^4$ &  & 40\\
+	\hline
+	5 & $2\times 10^5$ & $2\times 10^5$ & $3\times 10^5$ &  & 30\\
+	\hline
+\end{tabular}
+
+对于所有数据，保证 $0\leq Q_1+Q_2 \leq 5\times 10^5$；对于所有询问，保证 $1\leq n,m\leq 2\times 10^5$；保证 $P$ 为质数，且 $10^6 \leq P \leq 2^{30}$。
+
+\textbf{来自良心出题人的提醒：建议使用输入/输出优化，写正解的同学请注意自己实现的常数。}
+\newpage
+\section{bet}
+\subsection{题目描述}
+
+现在有 $n$ 个赌场排成一行，第 $i$ 个赌场有 $\dfrac{p_i}{998244354}$ 的概率让你获胜，这会使你的钱翻 $a_i$ 倍，并在此基础上获得 $b_i$ 元（当然还有 $1-\dfrac{p_i}{998244354}$ 的概率你无法获胜，此时你的钱不受影响）。
+
+你可以认为每个赌场是否会改变你的钱与历史状态是独立的。
+
+接下来依次发生了 $q$ 个事件，每个事件的形式如下如下：
+
+\texttt{0 i p a b} 表示第 $i$ 个赌场的参数更新为 $p_i'=p,a_i'=a,b_i=b$ 。
+
+\texttt{1 l r x} 或 \texttt{2 l r x} 表示一个赌徒初始携带 $x$ 元钱，并依次参与第 $l$ 个赌场到第 $r$ 个赌场。当事件类型为 \texttt{1} 时，他希望知道自己结束后钱数的期望。当事件类型为 \texttt{2} 时，他希望知道自己结束后钱数的方差。
+
+你可以认为这些事件之间的时间间隔足够大。
+
+\subsection{输入格式}
+
+第一行两个整数 $n$ 和 $q$ 表示赌场的数量和事件的数量。
+
+接下来 $n$ 行，分别为初始时的 $p_i,a_i,b_i$。
+
+接下来 $q$ 行，每行一个事件。格式见题目描述。
+
+\subsection{输出格式}
+
+对每个编号为 \texttt{1} 或 \texttt{2} 的事件，按事件发生顺序依次输出答案对 $998244353$ 取模的结果。
+
+\subsection{样例输入}
+
+	\texttt{5 5}
+	
+	\texttt{499122177 1 1}
+	
+	\texttt{499122177 2 0}
+	
+	\texttt{499122177 1 0}
+	
+	\texttt{499122177 1 1}
+	
+	\texttt{499122177 2 0}
+	
+	\texttt{1 1 5 1}
+	
+	\texttt{2 1 5 1}
+	
+	\texttt{0 3 499122177 1 1}
+	
+	\texttt{1 1 5 1}
+	
+	\texttt{2 1 5 1}
+
+\subsection{样例输出}
+
+	\texttt{873463813}
+	
+	\texttt{514719750}
+	
+	\texttt{124780549}
+	
+	\texttt{140378119}
+
+\subsection{更多输入输出样例}
+	参见选手目录。
+
+\subsection{数据范围}
+
+\begin{tabular}{|c|c|c|c|}
+	\hline
+	测试点编号 & $n\leq$ & $q\leq$ & 特殊性质\\
+	\hline
+	1,2 & 10 & 10 & 无\\
+	\hline
+	3 & 1000 & 1000 & A\\
+	\hline
+	4 & 1000 & 1000 & 无\\
+	\hline
+	5,6,7,8 & 50000 & 50000 & A\\
+	\hline
+	9,10 & 50000 & 50000 & B\\
+	\hline
+	11,12 & 50000 & 50000 & C\\
+	\hline
+	13,14 & 50000 & 50000 & D\\
+	\hline
+	15,16,17,18,19,20 & 50000 & 50000 & 无\\
+	\hline
+\end{tabular}
+
+特殊性质A：不存在编号为 \texttt{2} 的事件。
+
+特殊性质B：所有赌场在任何时刻均有 $a_i=1$。
+
+特殊性质C：所有赌场在任何时刻均有 $b_i=0$。
+
+特殊性质D：所有事件编号均为 \texttt{1} 或 \texttt{2} 且满足 $l=1,r=n$。
+
+对于所有数据，保证 $1\leq n,q \leq 50000$；所有赌场在任何时刻均有 $1\leq p_i\leq 998244353,1\leq a_i\leq 998244352,0\leq b_i\leq 998244352$。
+
+对事件 \texttt{0}，保证 $1\leq i\leq n$；对事件 \texttt{1,2}，保证 $1\leq l\leq r\leq n,0\leq x\leq 998244352$。 
+\newpage
+\section{function}
+\subsection{题目描述}
+
+有一个积性函数 $F$ 满足 $F(p^k)=p^m$（$p$ 是质数，$k$ 是正整数），求 $\sum\limits_{i=1}^n F(i)$ 对 $P$ 取模的结果。
+
+\subsection{输入格式}
+
+第一行一个整数 $Num$ 表示子任务编号，$Num=-1$表示样例。
+
+第二行三个整数 $n,m,P$。
+
+\subsection{输出格式}
+
+一行一个整数表示 $\sum\limits_{i=1}^n F(i)$ 对 $P$  取模的结果。
+
+\subsection{输入样例}
+
+\texttt{-1}
+
+\texttt{1 1 998244353}
+
+\subsection{输出样例}
+
+\texttt{1}
+
+\subsection{更多输入输出样例}
+	参见选手目录。
+
+\subsection{数据范围}
+
+本题共分为 $4$ 个子任务，每个子任务内部捆绑测试。
+
+\begin{tabular}{|c|c|c|c|c|}
+	\hline
+	Num & $n \leq$ & $m \leq$ & P & score\\
+	\hline
+	0 & 1 & 1 & =998244353 & 1\\
+	\hline
+	1 & $10^7$ & 3 & & 9\\
+	\hline
+	2 & $10^{10}$ & 3 & & 20\\
+	\hline
+	3 & $9\times10^{12}$ & 3 &  & 70\\
+	\hline
+\end{tabular}
+
+对于所有数据，保证 $1\leq n \leq 9\times10^{12},1\leq m \leq 3$；保证 $P$ 为质数，且 $10^6 \leq P \leq 2^{30}$。
+
+
+\end{document}
