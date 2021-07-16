@@ -115,7 +115,6 @@ inline void dfs(reg int las,reg ll x,const modInt& h){
 }
 
 bool ed;
-
 int main(void){
 	scanf("%*d%lld%d%d",&n,&m,&mod);
 	inv2=fpow(2,mod-2),inv6=fpow(6,mod-2);
